@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página de Teste</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../static/CSS/styles.css">
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">Typeset</div>
+        <ul class="nav-links">
+            <li><a href="#textos">Textos</a></li>
+            <li><a href="#carrossel">Carrossel</a></li>
+            <li><a href="#componentes">Componentes</a></li>
+            <li><a href="#formulario">Formulário</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-deco"></div>
+        <span class="hero-tag">✦ Página de Teste</span>
+        <h1>Elementos de<br /><em>Interface</em> em ação</h1>
+        <p class="hero-sub">Uma página de demonstração reunindo títulos, textos, carrosséis, listas, tabelas,
+            formulários e muito mais — tudo num único lugar.</p>
+        <div class="hero-cta">
+            <a href="#textos" class="btn btn-primary">Explorar</a>
+            <a href="#formulario" class="btn btn-outline">Ver Formulário</a>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- TIPOGRAFIA -->
+    <section id="textos">
+        <p class="section-label">Tipografia</p>
+        <h2>Hierarquia de Títulos e Textos</h2>
+
+        <p class="lead">Este é um parágrafo de destaque (lead), usado para introduzir seções com mais ênfase. Ele tem
+            fonte levemente maior e peso mais regular.</p>
+
+        <p>Este é um parágrafo comum com texto corrido. A tipografia foi escolhida para equilibrar elegância com
+            legibilidade — a <em>Playfair Display</em> nos títulos traz sofisticação, enquanto a <em>DM Sans</em>
+            garante clareza no corpo do texto.</p>
+
+        <h3>Título de Nível 3</h3>
+        <p>Após um H3, o texto acompanha o fluxo natural da leitura. Parágrafos podem conter <strong>texto em
+                negrito</strong>, <em>itálico</em> ou <a href="#" style="color:var(--accent)">links destacados</a> sem
+            quebrar o ritmo.</p>
+
+        <h4>Título de Nível 4</h4>
+        <p>H4 é útil para subseções menores dentro de um bloco de conteúdo, como etapas, termos ou categorias.</p>
+
+        <blockquote>
+            <p>"Design não é apenas como uma coisa parece. Design é como uma coisa funciona."</p>
+            <cite>— Steve Jobs</cite>
+        </blockquote>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- CARROSSEL -->
+    <section id="carrossel">
+        <p class="section-label">Carrossel</p>
+        <h2>Slides Interativos</h2>
+        <p>Use os botões ou os indicadores para navegar entre os slides.</p>
+
+        <div class="carousel-wrap">
+            <div class="carousel">
+                <div class="carousel-track" id="track">
+                    <div class="carousel-slide slide-1">
+                        <span class="slide-num">01</span>
+                        <div class="slide-content">
+                            <h3>Primeira Cena</h3>
+                            <p>Uma narrativa começa com atmosfera e intenção.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-2">
+                        <span class="slide-num">02</span>
+                        <div class="slide-content">
+                            <h3>Natureza & Equilíbrio</h3>
+                            <p>Tons de verde evocam crescimento e tranquilidade.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-3">
+                        <span class="slide-num">03</span>
+                        <div class="slide-content">
+                            <h3>Tensão Criativa</h3>
+                            <p>O vermelho carrega urgência e energia concentrada.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-4">
+                        <span class="slide-num">04</span>
+                        <div class="slide-content">
+                            <h3>Profundidade Azul</h3>
+                            <p>Azul profundo comunica confiança e profissionalismo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-controls">
+                <button class="carousel-btn" id="prev">&#8592;</button>
+                <button class="carousel-btn" id="next">&#8594;</button>
+                <div class="carousel-dots" id="dots"></div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- CARDS -->
+    <section id="componentes">
+        <p class="section-label">Cards</p>
+        <h2>Componentes de Cartão</h2>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">🎨</div>
+                <h3>Design Visual</h3>
+                <p>Cards são ótimos para agrupar conteúdo relacionado de forma clara e escanável.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Performance</h3>
+                <p>Transições suaves com CSS puro garantem fluidez sem depender de bibliotecas externas.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📐</div>
+                <h3>Grid Responsivo</h3>
+                <p>O layout se adapta automaticamente a diferentes larguras de tela usando CSS Grid.</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- LISTA -->
+    <section>
+        <p class="section-label">Lista</p>
+        <h2>Lista Numerada Estilizada</h2>
+        <ul class="fancy-list">
+            <li>
+                <span class="list-num">01</span>
+                <div class="list-body">
+                    <h4>Planejamento</h4>
+                    <p>Defina objetivos claros antes de iniciar qualquer projeto.</p>
+                </div>
+            </li>
+            <li>
+                <span class="list-num">02</span>
+                <div class="list-body">
+                    <h4>Prototipagem</h4>
+                    <p>Valide ideias rapidamente com protótipos de baixa fidelidade.</p>
+                </div>
+            </li>
+            <li>
+                <span class="list-num">03</span>
+                <div class="list-body">
+                    <h4>Desenvolvimento</h4>
+                    <p>Implemente com código limpo, semântico e acessível.</p>
+                </div>
+            </li>
+            <li>
+                <span class="list-num">04</span>
+                <div class="list-body">
+                    <h4>Revisão & Entrega</h4>
+                    <p>Teste em diferentes dispositivos e colete feedback real.</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- BADGES -->
+    <section>
+        <p class="section-label">Badges & Alertas</p>
+        <h2>Marcadores e Notificações</h2>
+        <p>Badges são úteis para status, categorias e etiquetas:</p>
+        <div class="badge-row">
+            <span class="badge badge-gold">Destaque</span>
+            <span class="badge badge-green">✓ Ativo</span>
+            <span class="badge badge-red">! Erro</span>
+            <span class="badge badge-blue">Info</span>
+            <span class="badge badge-gray">Arquivado</span>
+        </div>
+
+        <div style="margin-top: 2.5rem;">
+            <div class="callout callout-info">
+                <span class="callout-icon">ℹ️</span>
+                <p>Esta é uma mensagem informativa. Use para dicas ou contexto adicional sem urgência.</p>
+            </div>
+            <div class="callout callout-warn">
+                <span class="callout-icon">⚠️</span>
+                <p>Atenção: esta ação pode ter consequências que merecem revisão antes de prosseguir.</p>
+            </div>
+            <div class="callout callout-err">
+                <span class="callout-icon">✕</span>
+                <p>Erro: não foi possível completar a operação. Verifique os dados e tente novamente.</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- TABELA -->
+    <section>
+        <p class="section-label">Tabela</p>
+        <h2>Dados em Formato Tabular</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Status</th>
+                        <th>Atividade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ana Lima</td>
+                        <td>Desenvolvedora Front-end</td>
+                        <td><span class="badge badge-green">Ativo</span></td>
+                        <td>Hoje, 14h22</td>
+                    </tr>
+                    <tr>
+                        <td>Carlos Melo</td>
+                        <td>Designer de Produto</td>
+                        <td><span class="badge badge-green">Ativo</span></td>
+                        <td>Ontem, 09h05</td>
+                    </tr>
+                    <tr>
+                        <td>Fernanda Costa</td>
+                        <td>Engenheira de Dados</td>
+                        <td><span class="badge badge-gray">Ausente</span></td>
+                        <td>3 dias atrás</td>
+                    </tr>
+                    <tr>
+                        <td>Rafael Nunes</td>
+                        <td>Gerente de Produto</td>
+                        <td><span class="badge badge-blue">Revisão</span></td>
+                        <td>Hoje, 11h47</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- FORMULÁRIO -->
+    <section id="formulario">
+        <p class="section-label">Formulário</p>
+        <h2>Campos de Entrada</h2>
+        <p>Formulários com estados de foco, campos de texto, selects e áreas de texto.</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" placeholder="Seu nome aqui" />
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="voce@email.com" />
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" placeholder="(11) 00000-0000" />
+            </div>
+            <div class="form-group">
+                <label for="categoria">Categoria</label>
+                <select id="categoria">
+                    <option value="">Selecione...</option>
+                    <option>Design</option>
+                    <option>Desenvolvimento</option>
+                    <option>Marketing</option>
+                    <option>Produto</option>
+                </select>
+            </div>
+            <div class="form-group full">
+                <label for="mensagem">Mensagem</label>
+                <textarea id="mensagem" placeholder="Escreva sua mensagem aqui..."></textarea>
+            </div>
+            <div class="form-group full">
+                <button class="btn btn-primary" style="width:fit-content">Enviar mensagem</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <span>© 2025 Typeset · Página de Teste HTML</span>
+        <span>Feito com HTML, CSS & JS puro</span>
+    </footer>
+
+    <script src="../static/JS/script.js"></script>
+</body>
+
+</html>
