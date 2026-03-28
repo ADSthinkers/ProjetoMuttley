@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import org.springframework.web.bind.annotation.SessionAttributes;
+//import org.springframework.web.bind.annotation.SessionAttributes;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,7 +30,7 @@ public class Palestra {
     private Long id;
     private String titulo;
     //private List<Competencia> competencias;
-    //private List<Palestrante> palestrantes;
+    //private List<String> palestrantes;
     private LocalDateTime inicio;
     private LocalDateTime fim;
 }
