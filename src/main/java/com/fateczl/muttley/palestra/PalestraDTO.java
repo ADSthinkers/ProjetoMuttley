@@ -8,11 +8,13 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record PalestraDTO(
     Long id, 
 
     @NotBlank(message = "Título obrigatório")
+    @Size(max = 50, message = "Título não pode ultrapassar de 50 caracteres")
     String titulo,
 
     @NotBlank(message = "Descrição obrigatória")
