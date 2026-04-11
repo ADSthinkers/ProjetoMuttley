@@ -1,6 +1,6 @@
 package com.fateczl.muttley.admin;
 
-public record ListagemAdmin(
+public record AdminListagem(
     Long id,
     String login,
     String nome,

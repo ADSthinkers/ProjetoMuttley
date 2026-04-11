@@ -1,6 +1,6 @@
 package com.fateczl.muttley.admin;
 
-public record AtualizacaoAdmin(
+public record AdminAtualizacao(
     Long id,
     String login,
     String senha,

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/head :: head('Manter Admin')}"></head>
+<body>
+	<header th:replace="~{fragmentos/header :: header(activePage='Admin')}"></header>
+	
+	<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+		<h2 class="text-center"
+			th:text="(${admin.id != null} ? 'Editar Administrador' : 'Novo Administrador')"></h2>
+
+		<div th:if="${message != null}"
+			class="alert alert-success alert-dismissible fade show text-center" role="alert">
+			[[${message}]]
+			<button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+
+		<form th:action="@{/admin/usuarios/salvar}" th:object="${admin}" method="post">
+			<input type="hidden" th:field="*{id}" />
+
+			<div class="form-group" style="margin-top: 20px;">
+				<label for="nome">Nome Completo:</label> 
+				<input class="form-control" type="text" th:field="*{nome}"
+					th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+				<div th:errors="*{nome}" class="invalid-feedback"></div>
+			</div>
+
+			<div class="form-group">
+				<label for="login">Login:</label> 
+				<input class="form-control" type="text" th:field="*{login}"
+					th:classappend="${#fields.hasErrors('login')} ? 'is-invalid'">
+				<div th:errors="*{login}" class="invalid-feedback"></div>
+			</div>
+
+			<div class="form-group">
+				<label for="senha">Senha:</label> 
+				<input class="form-control" type="password" th:field="*{senha}"
+					th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
+				<div th:errors="*{senha}" class="invalid-feedback"></div>
+			</div>
+
+			<div class="form-group">
+				<label for="cpf">CPF:</label> 
+				<input class="form-control" type="text" th:field="*{cpf}"
+					th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid'">
+				<div th:errors="*{cpf}" class="invalid-feedback"></div>
+			</div>
+
+			<div class="form-group">
+				<label for="email">E-mail:</label> 
+				<input class="form-control" type="email" th:field="*{email}"
+					th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+				<div th:errors="*{email}" class="invalid-feedback"></div>
+			</div>
+			
+			<div class="mt-3">
+				<button type="submit" class="btn btn-primary">Salvar</button>
+				<a th:href="@{/admin/usuarios}" class="btn btn-secondary">Cancelar</a>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

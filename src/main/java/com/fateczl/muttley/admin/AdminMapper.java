@@ -5,13 +5,13 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface AdminMapper {
 
-    AtualizacaoAdmin toAtualizacaoDto(Admin admin);
+    AdminAtualizacao toAtualizacaoDto(Admin admin);
 
     @Mapping(target = "id", ignore = true)
-    Admin toEntity(AtualizacaoAdmin dto);
+    Admin toEntity(AdminAtualizacao dto);
 
     @Mapping(target = "id", ignore = true)
-    void updateEntity(AtualizacaoAdmin dto, @MappingTarget Admin admin);
+    void updateEntity(AdminAtualizacao dto, @MappingTarget Admin admin);
 
-    ListagemAdmin toListagemDto(Admin admin);
+    AdminListagem toListagemDto(Admin admin);
 }

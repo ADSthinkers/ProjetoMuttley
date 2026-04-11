@@ -17,7 +17,7 @@ public class AdminService {
     @Autowired
     private AdminMapper mapper;
 
-    public Admin salvarOuAtualizar(AtualizacaoAdmin dto) {
+    public Admin salvarOuAtualizar(AdminAtualizacao dto) {
 
         if (dto.id() != null) {
             Admin existente = repository.findById(dto.id())

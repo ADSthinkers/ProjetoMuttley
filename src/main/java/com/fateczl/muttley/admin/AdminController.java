@@ -15,34 +15,30 @@ public class AdminController {
     @Autowired
     private AdminMapper mapper;
 
-    // 🔹 LISTAR
     @GetMapping
-    public List<ListagemAdmin> listar() {
+    public List<AdminListagem> listar() {
         return service.listarTodos()
                 .stream()
                 .map(mapper::toListagemDto)
                 .toList();
     }
 
-    // 🔹 BUSCAR POR ID
     @GetMapping("/{id}")
-    public AtualizacaoAdmin buscar(@PathVariable Long id) {
+    public AdminAtualizacao buscar(@PathVariable Long id) {
         return service.buscarPorId(id)
                 .map(mapper::toAtualizacaoDto)
                 .orElseThrow(() -> new RuntimeException("Admin não encontrado"));
     }
 
-    // 🔹 CRIAR
     @PostMapping
-    public Admin criar(@RequestBody AtualizacaoAdmin dto) {
+    public Admin criar(@RequestBody AdminAtualizacao dto) {
         return service.salvarOuAtualizar(dto);
     }
 
-    // 🔹 ATUALIZAR
     @PutMapping("/{id}")
-    public Admin atualizar(@PathVariable Long id, @RequestBody AtualizacaoAdmin dto) {
+    public Admin atualizar(@PathVariable Long id, @RequestBody AdminAtualizacao dto) {
 
-        AtualizacaoAdmin novoDto = new AtualizacaoAdmin(
+        AdminAtualizacao novoDto = new AdminAtualizacao(
                 id,
                 dto.login(),
                 dto.senha(),
@@ -54,7 +50,6 @@ public class AdminController {
         return service.salvarOuAtualizar(novoDto);
     }
 
-    // 🔹 DELETAR
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
