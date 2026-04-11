@@ -6,6 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import com.fateczl.muttley.competencia.Competencia;
+
+import jakarta.persistence.EntityNotFoundException;
     
 
 @Service
@@ -13,11 +17,11 @@ public class PalestraService {
     @Autowired
     private PalestraRepository palestraRepository;
 
-    // @Autowired
-    // private CompetenciaService competenciaService;
+     @Autowired
+     private CompetenciaService competenciaService;
 
-    //@Autowired
-    //private PalestraMapper palestraMapper;
+    @Autowired
+    private PalestraMapper palestraMapper;
 
     public List<Palestra> findAll(){
         return palestraRepository.findAll(Sort.by("titulo").ascending());
@@ -31,5 +35,19 @@ public class PalestraService {
         return palestraRepository.findById(id);
     }
 
-    //TO-DO: Salvar e/ou Atualizar
+    public Palestra saveOrUpdate(PalestraDTO dto){
+        List<Competencia> competencias = competenciaService.findAllByID(dto.competencia_ids());
+
+        if (dto.id() != null){
+            Palestra existingPalestra = palestraRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada: " + dto.titulo()));
+                palestraMapper.updateEntityFromDto(dto, existingPalestra);
+                existingPalestra.setCompetencias(competencias);
+                return palestraRepository.save(existingPalestra);
+        } else {
+            Palestra newPalestra = palestraMapper.toEntity(dto);
+            newPalestra.setCompetencias(competencias);
+            return palestraRepository.save(newPalestra);
+        }
+    }
 }
