@@ -3,57 +3,48 @@
 <head th:replace="~{fragmentos/head :: head('Listagem Admins')}"></head>
 <body>
 <header th:replace="~{fragmentos/header :: header(activePage='Admin')}"></header>
+    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center">Lista de Administradores</h2>
+        
+        <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+            [[${message}]]
+            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
 
-	<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-		<h2 class="text-center">Lista de Administradores</h2>
-		
-		<div th:if="${message != null}"
-			class="alert alert-success alert-dismissible fade show text-center" role="alert">
-			[[${message}]]
-			<button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
-		</div>
+        <a href="/admin/usuarios/formulario" class="btn btn-primary mb-3">Novo Administrador</a>
 
-		<div class="mb-3">
-			<a th:href="@{/admin/usuarios/formulario}" class="btn btn-primary">Novo Administrador</a>
-		</div>
-
-		<div th:if="${listaAdmins.size() > 0}">
-			<table class="table table-hover table-responsive-xl">
-				<thead class="thead-light">
-					<tr>
-						<th scope="col">Nome</th>
-						<th scope="col">Login</th>
-						<th scope="col">CPF</th>
-						<th scope="col">E-mail</th>
-						<th scope="col">Ações</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="admin : ${listaAdmins}">
-						<td th:text="${admin.nome}"></td>
-						<td th:text="${admin.login}"></td>
-						<td th:text="${admin.cpf}"></td>
-						<td th:text="${admin.email}"></td>
-						<td>
-							<a th:href="@{'/admin/usuarios/formulario/' + ${admin.id}}"
-								title="Editar Administrador"
-								class="fa-regular fa-pen-to-square btn btn-sm btn-warning">Editar</a>
-							
-							<a th:href="@{'/admin/usuarios/delete/' + ${admin.id}}"
-								title="Excluir Administrador"
-								class="btn btn-sm btn-danger"
-								onclick="return confirm('Tem certeza que deseja excluir este administrador?')">Excluir</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		
-		<div th:unless="${listaAdmins.size() > 0}">
-			<p class="text-center">Nenhum administrador encontrado.</p>
-		</div>
-	</div>
+        <div th:if="${listaAdmins.size() > 0}">
+            <table class="table table-hover table-responsive-xl">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Login</th>
+                        <th scope="col">CPF</th>
+                        <th scope="col">E-mail</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="admin : ${listaAdmins}">
+                        <td th:text="${admin.nome}"></td>
+                        <td th:text="${admin.login}"></td>
+                        <td th:text="${admin.cpf}"></td>
+                        <td th:text="${admin.email}"></td>
+                        <td>
+                            <a th:href="@{'/admin/usuarios/formulario/' + ${admin.id}}"
+                               title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
+                            &nbsp;
+                            <a th:href="@{'/admin/usuarios/delete/' + ${admin.id}}"
+                               title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
+                               onclick="return confirm('Deseja realmente excluir?')"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragmentos/footer :: footer}"></div>
 </body>
 </html>

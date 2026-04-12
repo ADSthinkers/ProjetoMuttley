@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/usuarios")
 public class AdminController {
 
-    @Autowired
-    private AdminService service;
+    private final AdminService service;
+    private final AdminMapper mapper;
 
-    @Autowired
-    private AdminMapper mapper;
+    public AdminController(AdminService service, AdminMapper mapper) {
+        this.service = service;
+        this.mapper = mapper;
+    }
 
     @GetMapping
     public List<AdminListagem> listar() {
@@ -37,17 +39,9 @@ public class AdminController {
 
     @PutMapping("/{id}")
     public Admin atualizar(@PathVariable Long id, @RequestBody AdminAtualizacao dto) {
-
-        AdminAtualizacao novoDto = new AdminAtualizacao(
-                id,
-                dto.login(),
-                dto.senha(),
-                dto.nome(),
-                dto.cpf(),
-                dto.email()
-        );
-
-        return service.salvarOuAtualizar(novoDto);
+        // Garantindo que o ID da URL seja o ID usado na atualização
+        AdminAtualizacao dtoComId = new AdminAtualizacao(id, dto.login(), dto.senha(), dto.nome(), dto.cpf(), dto.email());
+        return service.salvarOuAtualizar(dtoComId);
     }
 
     @DeleteMapping("/{id}")
