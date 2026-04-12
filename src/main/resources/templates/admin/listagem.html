@@ -13,7 +13,7 @@
             </button>
         </div>
 
-        <a href="/admin/usuarios/formulario" class="btn btn-primary mb-3">Novo Administrador</a>
+        <a th:href="@{/admin/formulario}" class="btn btn-primary mb-3">Novo Administrador</a>
 
         <div th:if="${listaAdmins.size() > 0}">
             <table class="table table-hover table-responsive-xl">
@@ -33,10 +33,10 @@
                         <td th:text="${admin.cpf}"></td>
                         <td th:text="${admin.email}"></td>
                         <td>
-                            <a th:href="@{'/admin/usuarios/formulario/' + ${admin.id}}"
+                            <a th:href="@{/admin/formulario/{id}(id=${admin.id})}"
                                title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
                             &nbsp;
-                            <a th:href="@{'/admin/usuarios/delete/' + ${admin.id}}"
+                            <a th:href="@{/admin/delete/{id}(id=${admin.id})}"
                                title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
                                onclick="return confirm('Deseja realmente excluir?')"></a>
                         </td>

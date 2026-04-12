@@ -11,7 +11,10 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class AdminService {
 
+    @Autowired
     private final AdminRepository repository;
+  
+    @Autowired
     private final AdminMapper mapper;
 
     public AdminService(AdminRepository repository, AdminMapper mapper) {

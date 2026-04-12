@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragmentos/head :: head('Manter Admin')}"></head>
 <body>
-    <header th:replace="~{fragmentos/header :: header(activePage='Admin')}"></header>
     <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
         <h2 class="text-center" th:text="(${admin.id != null} ? 'Editar Administrador' : 'Novo Administrador')"></h2>
 
-        <form th:action="@{/admin/usuarios/salvar}" th:object="${admin}" method="post">
+        <form th:action="@{/admin/salvar}" th:object="${admin}" method="post">
             <input type="hidden" th:field="*{id}" />
 
             <div class="form-group">
@@ -42,9 +40,8 @@
             <button type="submit" class="btn btn-primary mt-3">
                 <span th:text="${admin.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
             </button>
-            <a th:href="@{/admin/usuarios}" class="btn btn-secondary mt-3">Cancelar</a>
+            <a th:href="@{/admin}" class="btn btn-secondary mt-3">Cancelar</a>
         </form>
     </div>
-    <div th:replace="~{fragmentos/footer :: footer}"></div>
 </body>
 </html>
