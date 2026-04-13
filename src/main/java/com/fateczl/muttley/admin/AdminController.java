@@ -54,7 +54,7 @@ public class AdminController {
         }
 
         // Utilizando o mapper para converter a entidade em DTO
-        AdminAtualizacao dto = mapper.toAtualizacaoDto(admin);
+        AdminDTO dto = mapper.toAtualizacaoDto(admin);
         
         service.salvarOuAtualizar(dto);
         redirectAttributes.addFlashAttribute("message", "Administrador salvo com sucesso!");

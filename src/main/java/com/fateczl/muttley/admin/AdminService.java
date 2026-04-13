@@ -22,7 +22,7 @@ public class AdminService {
         this.mapper = mapper;
     }
 
-    public Admin salvarOuAtualizar(AdminAtualizacao dto) {
+    public Admin salvarOuAtualizar(AdminDTO dto) {
 
         if (dto.id() != null) {
             Admin existente = repository.findById(dto.id())
