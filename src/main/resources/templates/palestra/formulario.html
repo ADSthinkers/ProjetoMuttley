@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/head :: head('Manter Palestra')}"></head>
+<body>
+
+<header th:replace="~{fragmentos/header :: header(activePage='Palestras')}"></header>
+
+<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+
+    <h2 class="text-center"
+        th:text="(${palestra.id != null} ? 'Editar Palestra' : 'Nova Palestra')">
+    </h2>
+
+    <div th:if="${message != null}"
+         class="alert alert-success alert-dismissible fade show text-center">
+        [[${message}]]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <form th:action="@{/palestra/salvar}" th:object="${palestra}" method="post">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <!-- TÍTULO -->
+        <div class="form-group mt-3">
+            <label>Título:</label>
+            <input class="form-control" type="text"
+                   th:field="*{titulo}"
+                   th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
+            <div th:errors="*{titulo}" class="invalid-feedback"></div>
+        </div>
+
+        <!-- DESCRIÇÃO -->
+        <div class="form-group">
+            <label>Descrição:</label>
+            <textarea class="form-control"
+                      th:field="*{descricao}"
+                      th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'">
+            </textarea>
+            <div th:errors="*{descricao}" class="invalid-feedback"></div>
+        </div>
+
+        <!-- COMPETÊNCIAS -->
+        <div class="form-group">
+            <label>Competências:</label>
+
+            <select multiple
+                    class="form-control"
+                    th:field="*{competenciaIds}"
+                    th:classappend="${#fields.hasErrors('competenciaIds')} ? 'is-invalid'">
+
+                <option th:each="comp : ${competencias}"
+                        th:value="${comp.id}"
+                        th:text="${comp.nome}">
+                </option>
+
+            </select>
+
+            <div th:errors="*{competenciaIds}" class="invalid-feedback"></div>
+        </div>
+
+        <!-- PALESTRANTES -->
+        <div class="form-group">
+            <label>Palestrantes (separados por vírgula):</label>
+
+            <input class="form-control" type="text"
+                   th:value="${palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}"
+                   name="palestrantesTexto">
+
+        </div>
+
+        <!-- DATA INÍCIO -->
+        <div class="form-group">
+            <label>Data/Hora Início:</label>
+            <input type="datetime-local" class="form-control"
+                   th:field="*{inicio}"
+                   th:classappend="${#fields.hasErrors('inicio')} ? 'is-invalid'">
+            <div th:errors="*{inicio}" class="invalid-feedback"></div>
+        </div>
+
+        <!-- DATA FIM -->
+        <div class="form-group">
+            <label>Data/Hora Fim:</label>
+            <input type="datetime-local" class="form-control"
+                   th:field="*{fim}"
+                   th:classappend="${#fields.hasErrors('fim')} ? 'is-invalid'">
+            <div th:errors="*{fim}" class="invalid-feedback"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">
+            <span th:text="${palestra.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
+        </button>
+
+        <a th:href="@{/palestra}" class="btn btn-secondary mt-3">Cancelar</a>
+
+    </form>
+
+</div>
+
+<div th:replace="~{fragmentos/footer :: footer}"></div>
+
+</body>
+</html>

@@ -10,9 +10,7 @@
     <div th:if="${message != null}"
         class="alert alert-success alert-dismissible fade show text-center" role="alert">
         [[${message}]]
-        <button type="button" class="close btn-sm" data-dismiss="alert">
-            <span>&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
     <div th:if="${error != null}"
@@ -26,8 +24,8 @@
         </a>
     </div>
 
-    <div th:if="${listPalestra != null and !listPalestra.isEmpty()}">
-        <table class="table table-hover table-responsive-xl align-middle">
+    <div class="table-responsive-xl">
+        <table class="table table-hover align-middle">
             <thead class="thead-light">
                 <tr>
                     <th>Título</th>
@@ -48,7 +46,7 @@
                     <td>
                         <span th:if="${palestra.competencias != null and !palestra.competencias.isEmpty()}">
                             <span th:each="comp : ${palestra.competencias}"
-                                  class="badge bg-secondary me-1"
+                                  class="badge bg-info text-dark me-1"
                                   th:text="${comp.nome}">
                             </span>
                         </span>
@@ -68,16 +66,18 @@
                     </td>
 
                     <td>
-                        <a th:href="@{'/palestra/formulario?id=' + ${palestra.id}}"
-                           class="btn btn-sm btn-warning">
-                           Editar
+                        <a th:href="@{'/palestra/formulario/' + ${palestra.id}}"
+                        class="btn btn-sm btn-warning">
+                        Editar
                         </a>
                         
-                        <a th:href="@{'/palestra/delete/' + ${palestra.id}}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">
-                           Excluir
-                        </a>
+                        <form th:action="@{'/palestra/delete/' + ${palestra.id}}" 
+                            method="post" style="display:inline;">
+                            <button class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">
+                                Excluir
+                            </button>
+                        </form>
                     </td>
 
                 </tr>

@@ -13,17 +13,17 @@ import com.fateczl.muttley.competencia.Competencia;
 public interface PalestraMapper {
 
     //Entity para DTO
-    @Mapping(target = "competencia_ids", source = "competencias", qualifiedByName = "competenciasToIds")
+    @Mapping(target = "competenciaIds", source = "competencias", qualifiedByName = "competenciasToIds")
     PalestraDTO toDto(Palestra palestra);
 
     // DTO para Entity - Criação
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "competencias", source = "competencia_ids", qualifiedByName = "idsToCompetencias")
+    @Mapping(target = "competencias", ignore = true)
     Palestra toEntity(PalestraDTO dto);
 
     //DTO para Entity - Atualização
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "competencias", source = "competencia_ids", qualifiedByName = "idsToCompetencias")
+    @Mapping(target = "competencias", ignore = true)
     void updateEntityFromDto(PalestraDTO dto, @MappingTarget Palestra palestra);
 
     @Named("competenciasToIds")
@@ -33,16 +33,5 @@ public interface PalestraMapper {
         return competencias.stream()
             .map(Competencia::getId)
             .toList();
-        }
-
-    @Named("idsToCompetencias")
-    default List<Competencia> idsToCompetencias(List<Long> ids) {
-        if (ids == null) return null;
-
-        return ids.stream().map(id -> {
-            Competencia c = new Competencia();
-            c.setId(id);
-            return c;
-        }).toList();
     }
 }

@@ -56,7 +56,7 @@ public class Palestra {
     public Palestra(PalestraDTO dados, List<Competencia> competencias){
         this.titulo = dados.titulo();
         this.descricao = dados.descricao();
-        this.competencias = dados.competencias();
+        this.competencias = competencias;
         this.palestrantes = dados.palestrantes();
         this.inicio = dados.inicio();
         this.fim = dados.fim();
@@ -67,8 +67,8 @@ public class Palestra {
 			this.titulo = dados.titulo();
         if (dados.descricao() != null)
 			this.descricao = dados.descricao();
-        if (dados.competencias() != null)
-            this.competencias = dados.competencias();
+        if (competencias != null)
+            this.competencias = competencias;
 		if (dados.palestrantes() != null)
 			this.palestrantes = dados.palestrantes();
 		if (dados.inicio() != null)

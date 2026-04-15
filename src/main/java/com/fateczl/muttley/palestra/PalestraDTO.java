@@ -23,7 +23,7 @@ public record PalestraDTO(
     String descricao,
 
     @NotNull(message = "Selecione pelo menos uma competência")
-    List<Competencia> competencias,
+    List<Long> competenciaIds,
 
     @NotEmpty(message = "Palestrante(s) são obrigatórios")
     List<@NotBlank(message = "Nome do palestrante não pode ser vazio") String> palestrantes,
