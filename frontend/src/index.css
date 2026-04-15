@@ -48,6 +48,14 @@
 }
 
 @theme {
-      --font-primary: "Tomato Grotesk Bold", sans-serif; 
+      --font-primary: "Tomato Grotesk", sans-serif;
       --font-secondary: "Inter Tight", sans-serif; 
+}
+
+body {
+  /* For WebKit (Safari, Chrome) */
+  -webkit-font-smoothing: antialiased;
+  
+  /* For Firefox on macOS */
+  -moz-osx-font-smoothing: grayscale;
 }

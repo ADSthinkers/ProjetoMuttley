@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import MuttleyLogo from "../assets/muttley_logo.svg"
-import MuttleyLogoRed from "../assets/muttley_logo_red.svg"
 import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react"
 
 const Sidebar = (props) => {
@@ -19,7 +18,7 @@ const Sidebar = (props) => {
     const [isExpanded, setIsExpanded] = useState(largura);
 
     const entradasMenu = [
-        {"nome": "Home", "icone": <HouseIcon size={28} weight="light" />, "link": "/"},
+        {"nome": "Home", "icone": <HouseIcon size={28} weight="light" />, "link": "/home"},
         {"nome": "Eventos e Palestras", "icone": <BookOpenIcon size={28} weight="light" />, "link": "/evento-palestra"},
         {"nome": "Alunos", "icone": <UsersIcon size={28} weight="light" />, "link": "/alunos"},
         {"nome": "Competências", "icone": <MedalIcon size={28} weight="light" />, "link": "/competencias"},
