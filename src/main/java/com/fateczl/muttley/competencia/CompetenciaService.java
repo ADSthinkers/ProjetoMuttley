@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.fateczl.muttley.palestra.Palestra;
+//import com.fateczl.muttley.palestra.Palestra;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
+//import ch.qos.logback.core.net.SyslogOutputStream;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
