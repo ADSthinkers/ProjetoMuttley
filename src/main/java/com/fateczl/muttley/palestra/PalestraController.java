@@ -20,6 +20,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+import com.fateczl.muttley.competencia.CompetenciaService;
 
 @Controller
 @RequestMapping("/palestra")
@@ -51,7 +52,7 @@ public class PalestraController {
             dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(), null, null);
         }
         model.addAttribute("palestra", dto);
-        model.addAttribute("competencias", competenciaService.findAll());
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
         return "palestra/formulario";
     }
 
@@ -62,7 +63,7 @@ public class PalestraController {
             if (id != null) {
                 Palestra palestra = palestraService.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
-                    model.addAttribute("competencias", competenciaService.findAll());
+                    model.addAttribute("competencias", competenciaService.findAllCompetencias());
                     dto = palestraMapper.toDto(palestra);
                     model.addAttribute("palestra", dto);
             }
@@ -81,7 +82,7 @@ public class PalestraController {
                     Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("competencias", competenciaService.findAll());
+            model.addAttribute("competencias", competenciaService.findAllCompetencias());
             return "palestra/formulario";
         }
 

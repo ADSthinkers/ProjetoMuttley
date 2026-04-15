@@ -3,8 +3,6 @@ package com.fateczl.muttley.palestra;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fateczl.muttley.competencia.Competencia;
-
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.competencia.Competencia;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -38,7 +39,7 @@ public class PalestraService {
     public Palestra saveOrUpdate(PalestraDTO dto){
         List<Long> ids = dto.competenciaIds();
 
-        List<Competencia> competencias = competenciaService.findAllByIdCompetencias(ids);
+        List<Competencia> competencias = competenciaService.findAllbyIdCompetencias(ids);
         if (competencias.size() != ids.size()) {
             throw new EntityNotFoundException("Uma ou mais competências não existem");
         }
