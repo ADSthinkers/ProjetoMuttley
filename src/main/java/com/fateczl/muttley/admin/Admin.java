@@ -1,4 +1,4 @@
-package com.fateczl.muttley.aluno;
+package com.fateczl.muttley.admin;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -13,14 +13,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Aluno {
+public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "RA é obrigatório")
-    private String ra;
+    @NotBlank(message = "Login é obrigatório")
+    private String login;
     
     @NotBlank(message = "CPF é obrigatório")
     private String cpf;
@@ -31,4 +31,7 @@ public class Aluno {
     @Email(message = "E-mail inválido")
     @NotBlank(message = "E-mail é obrigatório")
     private String email;
+    
+    @NotBlank(message = "Senha é obrigatória")
+    private String senha;
 }

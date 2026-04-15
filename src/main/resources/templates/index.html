@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistema de Gestão de Eventos</title>
+    <title>Página de Teste</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap"
         rel="stylesheet" />
@@ -12,734 +12,295 @@
 </head>
 
 <body>
-    <div class="app">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">EventoGest<span>Plataforma Acadêmica</span></div>
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">Typeset</div>
+        <ul class="nav-links">
+            <li><a href="#textos">Textos</a></li>
+            <li><a href="#carrossel">Carrossel</a></li>
+            <li><a href="#componentes">Componentes</a></li>
+            <li><a href="#formulario">Formulário</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-deco"></div>
+        <span class="hero-tag">✦ Página de Teste</span>
+        <h1>Elementos de<br /><em>Interface</em> em ação</h1>
+        <p class="hero-sub">Uma página de demonstração reunindo títulos, textos, carrosséis, listas, tabelas,
+            formulários e muito mais — tudo num único lugar.</p>
+        <div class="hero-cta">
+            <a href="#textos" class="btn btn-primary">Explorar</a>
+            <a href="#formulario" class="btn btn-outline">Ver Formulário</a>
+        </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- TIPOGRAFIA -->
+    <section id="textos">
+        <p class="section-label">Tipografia</p>
+        <h2>Hierarquia de Títulos e Textos</h2>
+
+        <p class="lead">Este é um parágrafo de destaque (lead), usado para introduzir seções com mais ênfase. Ele tem
+            fonte levemente maior e peso mais regular.</p>
+
+        <p>Este é um parágrafo comum com texto corrido. A tipografia foi escolhida para equilibrar elegância com
+            legibilidade — a <em>Playfair Display</em> nos títulos traz sofisticação, enquanto a <em>DM Sans</em>
+            garante clareza no corpo do texto.</p>
+
+        <h3>Título de Nível 3</h3>
+        <p>Após um H3, o texto acompanha o fluxo natural da leitura. Parágrafos podem conter <strong>texto em
+                negrito</strong>, <em>itálico</em> ou <a href="#" style="color:var(--accent)">links destacados</a> sem
+            quebrar o ritmo.</p>
+
+        <h4>Título de Nível 4</h4>
+        <p>H4 é útil para subseções menores dentro de um bloco de conteúdo, como etapas, termos ou categorias.</p>
+
+        <blockquote>
+            <p>"Design não é apenas como uma coisa parece. Design é como uma coisa funciona."</p>
+            <cite>— Steve Jobs</cite>
+        </blockquote>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- CARROSSEL -->
+    <section id="carrossel">
+        <p class="section-label">Carrossel</p>
+        <h2>Slides Interativos</h2>
+        <p>Use os botões ou os indicadores para navegar entre os slides.</p>
+
+        <div class="carousel-wrap">
+            <div class="carousel">
+                <div class="carousel-track" id="track">
+                    <div class="carousel-slide slide-1">
+                        <span class="slide-num">01</span>
+                        <div class="slide-content">
+                            <h3>Primeira Cena</h3>
+                            <p>Uma narrativa começa com atmosfera e intenção.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-2">
+                        <span class="slide-num">02</span>
+                        <div class="slide-content">
+                            <h3>Natureza & Equilíbrio</h3>
+                            <p>Tons de verde evocam crescimento e tranquilidade.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-3">
+                        <span class="slide-num">03</span>
+                        <div class="slide-content">
+                            <h3>Tensão Criativa</h3>
+                            <p>O vermelho carrega urgência e energia concentrada.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide slide-4">
+                        <span class="slide-num">04</span>
+                        <div class="slide-content">
+                            <h3>Profundidade Azul</h3>
+                            <p>Azul profundo comunica confiança e profissionalismo.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <nav class="nav">
-                <div class="nav-item active" onclick="showSection('evento')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                        <path d="M16 2v4M8 2v4M3 10h18" />
-                    </svg>
-                    Evento
-                </div>
-                <div class="nav-item" onclick="showSection('palestra')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                    Palestra
-                </div>
-                <div class="nav-item" onclick="showSection('palestrante')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4" />
-                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                    </svg>
-                    Palestrante
-                </div>
-                <div class="nav-item" onclick="showSection('aluno')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                        <path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5" />
-                    </svg>
-                    Aluno
-                </div>
-                <div class="nav-item" onclick="showSection('curso')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                    Curso
-                </div>
-                <div class="nav-item" onclick="showSection('competencia')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <polygon
-                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    Competência
-                </div>
-                <div class="nav-item" onclick="showSection('atribuir')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
-                    Atribuir Competência
-                </div>
-                <div class="nav-item" onclick="showSection('associar')">
-                    <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                    </svg>
-                    Aluno × Palestra
-                </div>
-            </nav>
-        </aside>
-
-        <!-- MAIN -->
-        <div class="main">
-            <div class="topbar">
-                <span id="topbar-title" class="topbar-title">Cadastro de Evento</span>
-                <span id="topbar-sub" class="topbar-sub">— Parte 1</span>
-                <div class="topbar-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="clearForm()">Limpar</button>
-                </div>
+            <div class="carousel-controls">
+                <button class="carousel-btn" id="prev">&#8592;</button>
+                <button class="carousel-btn" id="next">&#8594;</button>
+                <div class="carousel-dots" id="dots"></div>
             </div>
+        </div>
+    </section>
 
-            <div class="content">
+    <hr class="divider" />
 
-                <!-- ══ PARTE 1: EVENTO ══ -->
-                <div id="section-evento" class="section active">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Evento</div>
-                                <div class="card-subtitle">Preencha as informações do evento e vincule palestras</div>
-                            </div>
-                            <span class="card-badge badge-evento">Evento</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID <span class="required">*</span></label>
-                                <input type="number" id="ev-id" placeholder="Gerado automaticamente" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Título <span class="required">*</span></label>
-                                <input type="text" id="ev-titulo" placeholder="Nome do evento">
-                            </div>
-                            <div class="field">
-                                <label>Data de Início <span class="required">*</span></label>
-                                <input type="date" id="ev-dataInicio">
-                            </div>
-                            <div class="field">
-                                <label>Local <span class="required">*</span></label>
-                                <input type="text" id="ev-local" placeholder="Endereço ou nome do local">
-                            </div>
-                            <div class="field span-2">
-                                <label>Palestras vinculadas</label>
-                                <div class="multi-select-box" id="ev-palestras-list">
-                                    <label style="color:var(--text-muted); font-style:italic;">Nenhuma palestra
-                                        cadastrada ainda</label>
-                                </div>
-                                <span class="hint">Cadastre palestras na seção "Palestra" para vinculá-las aqui</span>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveEvento()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Evento
-                            </button>
-                        </div>
-                    </div>
+    <!-- CARDS -->
+    <section id="componentes">
+        <p class="section-label">Cards</p>
+        <h2>Componentes de Cartão</h2>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">🎨</div>
+                <h3>Design Visual</h3>
+                <p>Cards são ótimos para agrupar conteúdo relacionado de forma clara e escanável.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Performance</h3>
+                <p>Transições suaves com CSS puro garantem fluidez sem depender de bibliotecas externas.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📐</div>
+                <h3>Grid Responsivo</h3>
+                <p>O layout se adapta automaticamente a diferentes larguras de tela usando CSS Grid.</p>
+            </div>
+        </div>
+    </section>
 
-                    <!-- Tabela -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Eventos Cadastrados</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Título</th>
-                                        <th>Data Início</th>
-                                        <th>Local</th>
-                                        <th>Palestras</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ev-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="6">Nenhum evento cadastrado</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+    <hr class="divider" />
+
+    <!-- LISTA -->
+    <section>
+        <p class="section-label">Lista</p>
+        <h2>Lista Numerada Estilizada</h2>
+        <ul class="fancy-list">
+            <li>
+                <span class="list-num">01</span>
+                <div class="list-body">
+                    <h4>Planejamento</h4>
+                    <p>Defina objetivos claros antes de iniciar qualquer projeto.</p>
                 </div>
-
-                <!-- ══ PARTE 2: PALESTRA ══ -->
-                <div id="section-palestra" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Palestra</div>
-                                <div class="card-subtitle">Defina título, competências, palestrantes e horários</div>
-                            </div>
-                            <span class="card-badge badge-palestra">Palestra</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="pl-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Título <span class="required">*</span></label>
-                                <input type="text" id="pl-titulo" placeholder="Título da palestra">
-                            </div>
-                            <div class="field">
-                                <label>Início <span class="required">*</span></label>
-                                <input type="datetime-local" id="pl-inicio">
-                            </div>
-                            <div class="field">
-                                <label>Fim <span class="required">*</span></label>
-                                <input type="datetime-local" id="pl-fim">
-                            </div>
-                            <div class="field span-2">
-                                <label>Competências</label>
-                                <div class="tags-container" id="pl-comp-tags"
-                                    onclick="document.getElementById('pl-comp-input').focus()">
-                                    <input class="tags-input" id="pl-comp-input" placeholder="Digite e pressione Enter…"
-                                        onkeydown="addTag(event,'pl-comp-tags','pl-comp-input')">
-                                </div>
-                                <span class="hint">Pressione Enter para adicionar cada competência</span>
-                            </div>
-                            <div class="field span-2">
-                                <label>Palestrantes vinculados</label>
-                                <div class="multi-select-box" id="pl-palestrantes-list">
-                                    <label style="color:var(--text-muted); font-style:italic;">Nenhum palestrante
-                                        cadastrado ainda</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="savePalestra()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Palestra
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Palestras Cadastradas</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Título</th>
-                                        <th>Início</th>
-                                        <th>Fim</th>
-                                        <th>Competências</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pl-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="6">Nenhuma palestra cadastrada</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            </li>
+            <li>
+                <span class="list-num">02</span>
+                <div class="list-body">
+                    <h4>Prototipagem</h4>
+                    <p>Valide ideias rapidamente com protótipos de baixa fidelidade.</p>
                 </div>
-
-                <!-- ══ PARTE 3: PALESTRANTE ══ -->
-                <div id="section-palestrante" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Palestrante</div>
-                                <div class="card-subtitle">Dados pessoais, credenciais e formação acadêmica</div>
-                            </div>
-                            <span class="card-badge badge-palestrante">Palestrante</span>
-                        </div>
-                        <div class="form-grid cols-3">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="ptr-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Login <span class="required">*</span></label>
-                                <input type="text" id="ptr-login" placeholder="nome.sobrenome">
-                            </div>
-                            <div class="field">
-                                <label>Senha <span class="required">*</span></label>
-                                <div class="input-wrap">
-                                    <input type="password" id="ptr-senha" placeholder="••••••••">
-                                    <button class="eye-btn" onclick="togglePass('ptr-senha',this)" tabindex="-1">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                            viewBox="0 0 24 24">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label>Nome Completo <span class="required">*</span></label>
-                                <input type="text" id="ptr-nome" placeholder="Nome completo">
-                            </div>
-                            <div class="field">
-                                <label>CPF <span class="required">*</span></label>
-                                <input type="text" id="ptr-cpf" placeholder="000.000.000-00" maxlength="14"
-                                    oninput="maskCPF(this)">
-                            </div>
-                            <div class="field">
-                                <label>E-mail <span class="required">*</span></label>
-                                <input type="email" id="ptr-email" placeholder="email@dominio.com">
-                            </div>
-                            <div class="field span-3">
-                                <label>Formação Acadêmica</label>
-                                <div class="tags-container" id="ptr-form-tags"
-                                    onclick="document.getElementById('ptr-form-input').focus()">
-                                    <input class="tags-input" id="ptr-form-input"
-                                        placeholder="Ex: Doutorado em Ciência da Computação — Enter…"
-                                        onkeydown="addTag(event,'ptr-form-tags','ptr-form-input')">
-                                </div>
-                                <span class="hint">Adicione cada formação pressionando Enter</span>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="savePalestrante()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Palestrante
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Palestrantes Cadastrados</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Login</th>
-                                        <th>CPF</th>
-                                        <th>E-mail</th>
-                                        <th>Formação</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ptr-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="7">Nenhum palestrante cadastrado</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            </li>
+            <li>
+                <span class="list-num">03</span>
+                <div class="list-body">
+                    <h4>Desenvolvimento</h4>
+                    <p>Implemente com código limpo, semântico e acessível.</p>
                 </div>
-
-                <!-- ══ PARTE 4: ALUNO ══ -->
-                <div id="section-aluno" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Aluno</div>
-                                <div class="card-subtitle">Dados pessoais, credenciais e registro acadêmico</div>
-                            </div>
-                            <span class="card-badge badge-aluno">Aluno</span>
-                        </div>
-                        <div class="form-grid cols-3">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="al-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Login <span class="required">*</span></label>
-                                <input type="text" id="al-login" placeholder="login do aluno">
-                            </div>
-                            <div class="field">
-                                <label>Senha <span class="required">*</span></label>
-                                <div class="input-wrap">
-                                    <input type="password" id="al-senha" placeholder="••••••••">
-                                    <button class="eye-btn" onclick="togglePass('al-senha',this)" tabindex="-1">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                            viewBox="0 0 24 24">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label>Nome Completo <span class="required">*</span></label>
-                                <input type="text" id="al-nome" placeholder="Nome completo">
-                            </div>
-                            <div class="field">
-                                <label>CPF <span class="required">*</span></label>
-                                <input type="text" id="al-cpf" placeholder="000.000.000-00" maxlength="14"
-                                    oninput="maskCPF(this)">
-                            </div>
-                            <div class="field">
-                                <label>E-mail <span class="required">*</span></label>
-                                <input type="email" id="al-email" placeholder="email@dominio.com">
-                            </div>
-                            <div class="field">
-                                <label>RA (Registro Acadêmico) <span class="required">*</span></label>
-                                <input type="text" id="al-ra" placeholder="Ex: 2024001234">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveAluno()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Aluno
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Alunos Cadastrados</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Login</th>
-                                        <th>RA</th>
-                                        <th>CPF</th>
-                                        <th>E-mail</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="al-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="7">Nenhum aluno cadastrado</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            </li>
+            <li>
+                <span class="list-num">04</span>
+                <div class="list-body">
+                    <h4>Revisão & Entrega</h4>
+                    <p>Teste em diferentes dispositivos e colete feedback real.</p>
                 </div>
+            </li>
+        </ul>
+    </section>
 
-                <!-- ══ PARTE 5: CURSO ══ -->
-                <div id="section-curso" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Curso</div>
-                                <div class="card-subtitle">Nome e sigla do curso</div>
-                            </div>
-                            <span class="card-badge badge-curso">Curso</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="cr-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Sigla <span class="required">*</span></label>
-                                <input type="text" id="cr-sigla" placeholder="Ex: ADS, CC, SI"
-                                    style="text-transform:uppercase">
-                            </div>
-                            <div class="field span-2">
-                                <label>Nome do Curso <span class="required">*</span></label>
-                                <input type="text" id="cr-nome" placeholder="Ex: Análise e Desenvolvimento de Sistemas">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveCurso()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Curso
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cursos Cadastrados</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Sigla</th>
-                                        <th>Nome</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cr-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="4">Nenhum curso cadastrado</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+    <hr class="divider" />
 
-                <!-- ══ PARTE 7: COMPETÊNCIA (declarado antes para reuso) ══ -->
-                <div id="section-competencia" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Cadastro de Competência</div>
-                                <div class="card-subtitle">Nome e nível máximo de proficiência</div>
-                            </div>
-                            <span class="card-badge badge-comp">Competência</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="comp-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Nome da Competência <span class="required">*</span></label>
-                                <input type="text" id="comp-nome" placeholder="Ex: Desenvolvimento Web">
-                            </div>
-                            <div class="field">
-                                <label>Nível Máximo <span class="required">*</span></label>
-                                <input type="number" id="comp-nivel-max" placeholder="Ex: 5" min="1" max="10">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveCompetencia()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Salvar Competência
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Competências Cadastradas</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Nível Máximo</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="comp-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="4">Nenhuma competência cadastrada</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+    <!-- BADGES -->
+    <section>
+        <p class="section-label">Badges & Alertas</p>
+        <h2>Marcadores e Notificações</h2>
+        <p>Badges são úteis para status, categorias e etiquetas:</p>
+        <div class="badge-row">
+            <span class="badge badge-gold">Destaque</span>
+            <span class="badge badge-green">✓ Ativo</span>
+            <span class="badge badge-red">! Erro</span>
+            <span class="badge badge-blue">Info</span>
+            <span class="badge badge-gray">Arquivado</span>
+        </div>
 
-                <!-- ══ PARTE 6: ATRIBUIR COMPETÊNCIA A ALUNO ══ -->
-                <div id="section-atribuir" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Atribuir Competência a Aluno</div>
-                                <div class="card-subtitle">Selecione aluno e competência e defina nível e carga horária
-                                </div>
-                            </div>
-                            <span class="card-badge badge-atrib">Atribuição</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="atr-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Nome (referência) <span class="required">*</span></label>
-                                <input type="text" id="atr-nome" placeholder="Ex: Java Avançado — Nível 3">
-                            </div>
-                            <div class="field">
-                                <label>Aluno <span class="required">*</span></label>
-                                <select id="atr-aluno">
-                                    <option value="">— Selecione o aluno —</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Competência <span class="required">*</span></label>
-                                <select id="atr-competencia">
-                                    <option value="">— Selecione a competência —</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Horas <span class="required">*</span></label>
-                                <input type="number" id="atr-horas" placeholder="Ex: 40.5" step="0.5" min="0">
-                            </div>
-                            <div class="field">
-                                <label>Nível <span class="required">*</span></label>
-                                <input type="number" id="atr-nivel" placeholder="Ex: 3" min="1">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveAtribuicao()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Atribuir
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Atribuições Registradas</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>Aluno</th>
-                                        <th>Competência</th>
-                                        <th>Horas</th>
-                                        <th>Nível</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="atr-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="7">Nenhuma atribuição registrada</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        <div style="margin-top: 2.5rem;">
+            <div class="callout callout-info">
+                <span class="callout-icon">ℹ️</span>
+                <p>Esta é uma mensagem informativa. Use para dicas ou contexto adicional sem urgência.</p>
+            </div>
+            <div class="callout callout-warn">
+                <span class="callout-icon">⚠️</span>
+                <p>Atenção: esta ação pode ter consequências que merecem revisão antes de prosseguir.</p>
+            </div>
+            <div class="callout callout-err">
+                <span class="callout-icon">✕</span>
+                <p>Erro: não foi possível completar a operação. Verifique os dados e tente novamente.</p>
+            </div>
+        </div>
+    </section>
 
-                <!-- ══ PARTE 8: ASSOCIAR ALUNO E PALESTRA ══ -->
-                <div id="section-associar" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Associar Aluno e Palestra</div>
-                                <div class="card-subtitle">Registre a presença do aluno em uma palestra com horários
-                                </div>
-                            </div>
-                            <span class="card-badge badge-assoc">Associação</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>ID</label>
-                                <input type="number" id="ass-id" placeholder="Automático" readonly>
-                            </div>
-                            <div class="field">
-                                <label>Aluno <span class="required">*</span></label>
-                                <select id="ass-aluno">
-                                    <option value="">— Selecione o aluno —</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Palestra <span class="required">*</span></label>
-                                <select id="ass-palestra">
-                                    <option value="">— Selecione a palestra —</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Entrada <span class="required">*</span></label>
-                                <input type="datetime-local" id="ass-entrada">
-                            </div>
-                            <div class="field">
-                                <label>Saída <span class="required">*</span></label>
-                                <input type="datetime-local" id="ass-saida">
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="saveAssociacao()">
-                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Associar
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Associações Registradas</div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Aluno</th>
-                                        <th>Palestra</th>
-                                        <th>Entrada</th>
-                                        <th>Saída</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ass-tbody">
-                                    <tr class="empty-row">
-                                        <td colspan="6">Nenhuma associação registrada</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+    <hr class="divider" />
 
-            </div><!-- /content -->
-        </div><!-- /main -->
-    </div><!-- /app -->
+    <!-- TABELA -->
+    <section>
+        <p class="section-label">Tabela</p>
+        <h2>Dados em Formato Tabular</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Status</th>
+                        <th>Atividade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ana Lima</td>
+                        <td>Desenvolvedora Front-end</td>
+                        <td><span class="badge badge-green">Ativo</span></td>
+                        <td>Hoje, 14h22</td>
+                    </tr>
+                    <tr>
+                        <td>Carlos Melo</td>
+                        <td>Designer de Produto</td>
+                        <td><span class="badge badge-green">Ativo</span></td>
+                        <td>Ontem, 09h05</td>
+                    </tr>
+                    <tr>
+                        <td>Fernanda Costa</td>
+                        <td>Engenheira de Dados</td>
+                        <td><span class="badge badge-gray">Ausente</span></td>
+                        <td>3 dias atrás</td>
+                    </tr>
+                    <tr>
+                        <td>Rafael Nunes</td>
+                        <td>Gerente de Produto</td>
+                        <td><span class="badge badge-blue">Revisão</span></td>
+                        <td>Hoje, 11h47</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-    <div id="toast">✓ <span id="toast-msg"></span></div>
+    <hr class="divider" />
 
-    <script th:src="@{/js/script.js}"></script>
+    <!-- FORMULÁRIO -->
+    <section id="formulario">
+        <p class="section-label">Formulário</p>
+        <h2>Campos de Entrada</h2>
+        <p>Formulários com estados de foco, campos de texto, selects e áreas de texto.</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" placeholder="Seu nome aqui" />
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="voce@email.com" />
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" placeholder="(11) 00000-0000" />
+            </div>
+            <div class="form-group">
+                <label for="categoria">Categoria</label>
+                <select id="categoria">
+                    <option value="">Selecione...</option>
+                    <option>Design</option>
+                    <option>Desenvolvimento</option>
+                    <option>Marketing</option>
+                    <option>Produto</option>
+                </select>
+            </div>
+            <div class="form-group full">
+                <label for="mensagem">Mensagem</label>
+                <textarea id="mensagem" placeholder="Escreva sua mensagem aqui..."></textarea>
+            </div>
+            <div class="form-group full">
+                <button class="btn btn-primary" style="width:fit-content">Enviar mensagem</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <span>© 2025 Typeset · Página de Teste HTML</span>
+        <span>Feito com HTML, CSS & JS puro</span>
+    </footer>
+
+    <script th:src="@{/JS/script.js}"></script>
 </body>
 
 </html>
