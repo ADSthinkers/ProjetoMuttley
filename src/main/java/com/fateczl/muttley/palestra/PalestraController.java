@@ -35,7 +35,7 @@ public class PalestraController {
     @Autowired
     private CompetenciaService competenciaService;
 
-    @GetMapping
+    @GetMapping("/listagem")
     public String loadListingPage(Model model) {
         model.addAttribute("listPalestra", palestraService.findAll());
         return "palestra/listagem";
