@@ -1,13 +1,24 @@
 package com.fateczl.muttley.palestra;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.fateczl.muttley.competencia.Competencia;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 
 @Controller
@@ -25,29 +36,73 @@ public class PalestraController {
 
     @GetMapping
     public String loadListingPage(Model model) {
-        model.addAttribute("listPalestras", palestraService.findAll())
+        model.addAttribute("listPalestra", palestraService.findAll());
         return "palestra/listagem";
     }
 
     @GetMapping("/formulario")
-    public String showForm(@RequestParam(required = false) long id, Model model) {
+    public String showForm(@RequestParam(required = false) Long id, Model model) {
         PalestraDTO dto;
         if(id != null){
             Palestra palestra = palestraService.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             dto = palestraMapper.toDto(palestra);
         } else {
-            dto = new PalestraDTO(null, null, null, null, null, null, null);
+            dto = new PalestraDTO(null, "", "", new ArrayList(), new ArrayList(), null, null);
         }
         model.addAttribute("palestra", dto);
         model.addAttribute("competencias", competenciaService.findAll());
         return "palestra/formulario";
     }
-    //TO-DO
+
     @GetMapping("/formulario/{id}")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    public String loadPageForm(@PathVariable("id")Long id, Model model, RedirectAttributes redirectAttributes) {
+        PalestraDTO dto;
+        try{
+            if (id != null) {
+                Palestra palestra = palestraService.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+                    model.addAttribute("competencias", competenciaService.findAll());
+                    model.addAttribute("palestra", dto);
+            }
+            return "palestra/formulario";
+        } catch (EntityNotFoundException e){
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/palestra";
+        }
     }
     
-    
+    @PostMapping("/salvar")
+    public String save(@ModelAttribute("palestra") @Valid PalestraDTO dto,
+                        BindingResult result,
+                        RedirectAttributes redirectAttributes,
+                        Model model) {
+		if (result.hasErrors()) {
+	        model.addAttribute("competencias", competenciaService.findAll());
+	        return "palestra/formulario";
+	    }
+	    try {
+	        Palestra savedP = palestraService.saveOrUpdate(dto);
+	        String message = dto.id() != null ?
+                 "Palestra '" + savedP.getTitulo() + "' atualizada com sucesso!"
+	            : "Palestra '" + savedP.getTitulo() + "' criada com sucesso!";
+	        redirectAttributes.addFlashAttribute("message", message);
+	        return "redirect:/palestra";
+	    } catch (EntityNotFoundException e) {
+	        redirectAttributes.addFlashAttribute("error", e.getMessage());
+	        return "redirect:/palestra/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
+	    }
+	}
+
+    @GetMapping("/delete/{id}")
+	@Transactional
+	public String deletePalestra(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		try {
+			palestraService.deletById(id);
+			redirectAttributes.addFlashAttribute("message", "A palestra " + id + " foi apagada!");
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
+		}
+		return "redirect:/palestra";
+	}
 }

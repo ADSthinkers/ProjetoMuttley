@@ -36,7 +36,12 @@ public class PalestraService {
     }
 
     public Palestra saveOrUpdate(PalestraDTO dto){
-        List<Competencia> competencias = competenciaService.findAllByID(dto.competencia_ids());
+        List<Long> ids = dto.competencias()
+        .stream()
+        .map(Competencia::getId)
+        .toList();
+
+        List<Competencia> competencias = competenciaService.findAllById(ids);
 
         if (dto.id() != null){
             Palestra existingPalestra = palestraRepository.findById(dto.id())

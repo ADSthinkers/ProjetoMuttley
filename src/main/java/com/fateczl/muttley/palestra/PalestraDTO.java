@@ -3,6 +3,8 @@ package com.fateczl.muttley.palestra;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fateczl.muttley.competencia.Competencia;
+
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -20,8 +22,8 @@ public record PalestraDTO(
     @NotBlank(message = "Descrição obrigatória")
     String descricao,
 
-    @NotEmpty(message = "Competência(s) são obrigatórias")
-    List<@NotNull(message = "Competência não pode estar vazia") Long> competencia_ids,
+    @NotNull(message = "Selecione pelo menos uma competência")
+    List<Competencia> competencias,
 
     @NotEmpty(message = "Palestrante(s) são obrigatórios")
     List<@NotBlank(message = "Nome do palestrante não pode ser vazio") String> palestrantes,
