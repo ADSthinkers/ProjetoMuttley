@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class = "container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center" th:text="(${competencia.id != null} ? 'Editar competencia' : 'Novo Administrador')"></h2>
+
+        <form th:action="@{/competencia/salvar}" th:object="${admin}" method="post">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input class="form-control" type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid' ">
+                <div th:errors="*{nome}" class="invalid-feedback"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">
+                <span th:text="${competencia.id != null} ? 'Atualizar' : 'Criar' "></span>
+
+            </button>
+            <a th:href="@{/competencia}" class="btn btn-secondary mt-3">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>

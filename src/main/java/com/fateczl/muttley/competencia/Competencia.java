@@ -28,7 +28,7 @@ public class Competencia {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column (name = "competencia_id")
     
-    private int id;
+    private long id;
     private String nome;
 //    @JoinColumn(name = "competencia_id", referencedColumnName = "competencia_id")
 
