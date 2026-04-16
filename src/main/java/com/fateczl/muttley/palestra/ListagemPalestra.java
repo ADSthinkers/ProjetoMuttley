@@ -10,6 +10,7 @@ public record ListagemPalestra(
     String titulo,
     String descricao,
     List<Competencia> competencias,
+    List<String> palestrantes,
     LocalDateTime inicio,
     LocalDateTime fim
 ) {}

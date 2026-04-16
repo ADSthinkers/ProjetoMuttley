@@ -51,8 +51,6 @@ public class Palestra {
     private LocalDateTime inicio;
     private LocalDateTime fim;
 
-    //TO-DO: Eventos e conexão
-
     public Palestra(PalestraDTO dados, List<Competencia> competencias){
         this.titulo = dados.titulo();
         this.descricao = dados.descricao();
