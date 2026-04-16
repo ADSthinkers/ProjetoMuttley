@@ -1,6 +1,7 @@
 package com.fateczl.muttley.competencia;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -52,5 +53,13 @@ public class CompetenciaService {
         }
         
         return competencias;
+    }
+
+    public void apagarPorId (Long id) {
+        competenciaRepository.deleteById(id);
+    }
+    
+    public Optional<Competencia> procurarPorId(Long id){
+        return competenciaRepository.findById(id);
     }
 }
