@@ -18,7 +18,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 import com.fateczl.muttley.competencia.CompetenciaService;
 
@@ -37,7 +36,7 @@ public class PalestraController {
 
     @GetMapping("/listagem")
     public String loadListingPage(Model model) {
-        model.addAttribute("listPalestra", palestraService.findAll());
+        model.addAttribute("palestras", palestraService.findAll());
         return "palestra/listagem";
     }
 
@@ -70,57 +69,64 @@ public class PalestraController {
             return "palestra/formulario";
         } catch (EntityNotFoundException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/palestra";
+            return "redirect:/palestra/listagem";
         }
     }
     
-    @PostMapping("/salvar")
-    public String save(@ModelAttribute("palestra") @Valid PalestraDTO dto,
-                    BindingResult result,
-                    @RequestParam(name = "palestrantesTexto", required = false) String palestrantesTexto,
-                    RedirectAttributes redirectAttributes,
-                    Model model) {
+@PostMapping("/salvar")
+public String save(@ModelAttribute("palestra") PalestraDTO dto,
+                   BindingResult result,
+                   @RequestParam(name = "palestrantesTexto", required = false) String palestrantesTexto,
+                   RedirectAttributes redirectAttributes,
+                   Model model) {
 
-        if (result.hasErrors()) {
-            model.addAttribute("competencias", competenciaService.findAllCompetencias());
-            return "palestra/formulario";
-        }
+    List<String> listaPalestrantes = new ArrayList<>();
 
-        try {
-            List<String> listaPalestrantes = new ArrayList<>();
-
-            if (palestrantesTexto != null && !palestrantesTexto.isBlank()) {
-                listaPalestrantes = Arrays.stream(palestrantesTexto.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .toList();
-            }
-
-            dto = new PalestraDTO(
-                dto.id(),
-                dto.titulo(),
-                dto.descricao(),
-                dto.competenciaIds(),
-                listaPalestrantes,
-                dto.inicio(),
-                dto.fim()
-            );
-
-            Palestra savedP = palestraService.saveOrUpdate(dto);
-
-            String message = dto.id() != null
-                ? "Palestra '" + savedP.getTitulo() + "' atualizada com sucesso!"
-                : "Palestra '" + savedP.getTitulo() + "' criada com sucesso!";
-
-            redirectAttributes.addFlashAttribute("message", message);
-
-            return "redirect:/palestra";
-
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/palestra/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
-        }
+    if (palestrantesTexto != null && !palestrantesTexto.isBlank()) {
+        listaPalestrantes = Arrays.stream(palestrantesTexto.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .toList();
     }
+
+    if (listaPalestrantes.isEmpty()) {
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("error", "Palestrantes são obrigatórios");
+        return "palestra/formulario";
+    }
+
+    dto = new PalestraDTO(
+        dto.id(),
+        dto.titulo(),
+        dto.descricao(),
+        dto.competenciaIds(),
+        listaPalestrantes,
+        dto.inicio(),
+        dto.fim()
+    );
+
+    if (dto.titulo() == null || dto.titulo().isBlank()) {
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("error", "Título é obrigatório");
+        return "palestra/formulario";
+    }
+
+    try {
+        Palestra savedP = palestraService.saveOrUpdate(dto);
+
+        String message = dto.id() != null
+            ? "Palestra '" + savedP.getTitulo() + "' atualizada com sucesso!"
+            : "Palestra '" + savedP.getTitulo() + "' criada com sucesso!";
+
+        redirectAttributes.addFlashAttribute("message", message);
+
+        return "redirect:/palestra/listagem";
+
+    } catch (EntityNotFoundException e) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/palestra/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
+    }
+}
 
     @GetMapping("/delete/{id}")
 	@Transactional
@@ -131,6 +137,6 @@ public class PalestraController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
 		}
-		return "redirect:/palestra";
+		return "redirect:/palestra/listagem";
 	}
 }

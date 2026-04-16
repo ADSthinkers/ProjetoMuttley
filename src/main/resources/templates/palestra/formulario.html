@@ -30,8 +30,8 @@
         <div class="form-group">
             <label>Descrição:</label>
             <textarea class="form-control"
-                      th:field="*{descricao}"
-                      th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'">
+                th:field="*{descricao}"
+                th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'">
             </textarea>
             <div th:errors="*{descricao}" class="invalid-feedback"></div>
         </div>
@@ -60,7 +60,7 @@
             <label>Palestrantes (separados por vírgula):</label>
 
             <input class="form-control" type="text"
-                   th:value="${palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}"
+                   th:value="${palestra != null && palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}"
                    name="palestrantesTexto">
 
         </div>

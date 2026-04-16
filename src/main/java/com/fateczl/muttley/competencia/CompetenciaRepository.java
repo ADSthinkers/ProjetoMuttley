@@ -6,5 +6,4 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Transactional
-public interface CompetenciaRepository extends JpaRepository<Competencia, Long> {
-}
+public interface CompetenciaRepository extends JpaRepository<Competencia, Long> {}

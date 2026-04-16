@@ -34,7 +34,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="palestra : ${listPalestra}">
+                <tr th:each="palestra : ${palestras}">
                     
                     <td th:text="${palestra.titulo}"></td>
 
@@ -68,13 +68,11 @@
                         Editar
                         </a>
                         
-                        <form th:action="@{'/palestra/delete/' + ${palestra.id}}" 
-                            method="post" style="display:inline;">
-                            <button class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">
-                                Excluir
-                            </button>
-                        </form>
+                        <a th:href="@{'/palestra/delete/' + ${palestra.id}}"
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">
+                        Excluir
+                        </a>
                     </td>
 
                 </tr>

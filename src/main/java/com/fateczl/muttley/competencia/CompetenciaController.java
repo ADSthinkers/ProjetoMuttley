@@ -38,7 +38,7 @@ public class CompetenciaController {
             dto = new CompetenciaDTO(null, "");
         }
         model.addAttribute("competencia", dto);
-        return "caminhao/formulario";
+        return "competencia/formulario";
     }
 
     @GetMapping ("/formulario/{id}")
@@ -50,17 +50,17 @@ public class CompetenciaController {
                     Competencia competencia = competenciaService.procurarPorId(id)
                         .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
                     dto = competenciaMapper.toCompetenciaDTO(competencia);
-                    model.addAttribute("caminhao", dto);
+                    model.addAttribute("competencia", dto);
                 }
-                return "caminhao/formulario";
+                return "competencia/formulario";
             } catch (EntityNotFoundException e) {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
-                return "redirect:/caminhao";
+                return "redirect:/competencia";
             }
         }
         
     @PostMapping("/salvar")
-    public String salvar(@ModelAttribute("caminhao") @Valid CompetenciaDTO dto,
+    public String salvar(@ModelAttribute("competencia") @Valid CompetenciaDTO dto,
                         BindingResult result,
                         RedirectAttributes redirectAttributes,
                         Model model) {
@@ -82,11 +82,17 @@ public class CompetenciaController {
     public String deleteCompetencia(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             competenciaService.apagarPorId(id);
-            redirectAttributes.addFlashAttribute("meessage", "A competencia " + id + " foi apagado!");
+            redirectAttributes.addFlashAttribute("message", "A competencia " + id + " foi apagado!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
         }
         return "redirect:/competencia";
+    }
+
+    @GetMapping
+    public String listar(Model model) {
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        return "competencia/listagem";
     }
 
     
