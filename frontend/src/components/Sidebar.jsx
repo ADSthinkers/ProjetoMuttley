@@ -3,7 +3,7 @@ import { useState } from "react";
 import MuttleyLogo from "../assets/muttley_logo.svg"
 import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react"
 
-const Sidebar = (props) => {
+const Sidebar = ({ className, compact }) => {
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -15,14 +15,15 @@ const Sidebar = (props) => {
     const largura = window.innerWidth > 1200
     
 
-    const [isExpanded, setIsExpanded] = useState(largura);
+    const [isExpanded, setIsExpanded] = useState(compact ? false : largura);
+    
 
     const entradasMenu = [
-        {"nome": "Home", "icone": <HouseIcon size={28} weight="light" />, "link": "/home"},
+        {"nome": "Home", "icone": <HouseIcon size={28} weight="light" />, "link": "/"},
         {"nome": "Eventos e Palestras", "icone": <BookOpenIcon size={28} weight="light" />, "link": "/evento-palestra"},
         {"nome": "Alunos", "icone": <UsersIcon size={28} weight="light" />, "link": "/alunos"},
         {"nome": "Competências", "icone": <MedalIcon size={28} weight="light" />, "link": "/competencias"},
-        {"nome": "Buscar", "icone": <MagnifyingGlassIcon size={28} weight="light" />, "link": "/busca"},
+        {"nome": "Buscar", "icone": <MagnifyingGlassIcon size={28} weight="light" />, "link": "/buscar"},
         {"nome": "Novo", "icone": <PlusIcon size={28} weight="light" />, "link": "/novo"},
     ]
 
@@ -33,7 +34,7 @@ const Sidebar = (props) => {
 
 
     return (
-        <div className={`${props.className}`}>
+        <div className={`${className}`}>
                 <div className={`${isExpanded ? "w-80 min-w-80" : "w-23 min-w-23"} h-[95vh] min-h-175 bg-accent/40 text-primary m-5 rounded-3xl flex flex-col justify-between py-4 px-4 font-light transition-all duration-300`}>
                     {/* Top: Logo + collapse icon */}
                     <div className={isExpanded ? "" : "flex flex-col gap-15 justify-between"}>
@@ -49,7 +50,8 @@ const Sidebar = (props) => {
                         {/* Main nav */}
                         <nav className="flex flex-col font-secondary">
                             {entradasMenu.map((item) => {
-                                const isActive = location.pathname.includes(item.link)
+                                const isActive = item.link === "/" ? location.pathname === "/" : location.pathname.includes(item.link)
+
                                 return (
                                     <button key={item.nome} onClick={() => navegarPara(item.link)} className={`flex items-center gap-3 px-4 py-2 h-15 rounded-2xl text-base transition-all cursor-pointer ${isActive ? "bg-accent/60 text-primary font-medium" : "text-primary/80 hover:bg-accent/20 font-light" }`}>
                                         <span className="shrink-0">{item.icone}</span>

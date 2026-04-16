@@ -39,15 +39,13 @@ const Aluno = () => {
     const [busca, setBusca] = useState("")
     const [ordenar, setOrdenar] = useState("")
 
-    const ordens = ["Nome (A-Z)", "Nome (Z-A)", "Email (A-Z)", "Email (Z-A)"]
+    const ordens = ["Nome (A-Z)", "Nome (Z-A)"]
 
     const alunosFiltrados = alunos
         .filter(a => a.nome.toLowerCase().includes(busca.toLowerCase()))
         .sort((a, b) => {
             if (ordenar === "Nome (A-Z)") return a.nome.localeCompare(b.nome)
             if (ordenar === "Nome (Z-A)") return b.nome.localeCompare(a.nome)
-            if (ordenar === "Email (A-Z)") return a.emailPessoal.localeCompare(b.emailPessoal)
-            if (ordenar === "Email (Z-A)") return b.emailPessoal.localeCompare(a.emailPessoal)
             return 0
         })
 
@@ -86,7 +84,7 @@ const Aluno = () => {
                 <div className="flex flex-col gap-3">
                     {alunosFiltrados.length > 0
                         ? alunosFiltrados.map(aluno => (
-                            <AlunoCard key={aluno.id} aluno={aluno} />
+                            <AlunoCard key={aluno.id} aluno={aluno} pageAluno={true} />
                         ))
                         : (
                             <div className="text-sm font-secondary text-primary/40 py-8 text-center">

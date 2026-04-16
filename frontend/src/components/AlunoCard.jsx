@@ -30,16 +30,18 @@ const AlunoAvatar = ({ email, nome }) => {
 }
 
 // Card de aluno
-const AlunoCard = ({ aluno }) => {
+const AlunoCard = ({ aluno, pageAluno }) => {
     const [selecionado, setSelecionado] = useState(false)
+    console.log(pageAluno);
+    
 
     return (
         <div className={`flex items-center gap-4 bg-accent/60 rounded-2xl px-5 py-4 transition-all hover:bg-accent/80 group cursor-pointer ${selecionado ? "ring-2 ring-primary/30" : ""}`}>
             {/* Checkbox */}
-            <div className="relative">
+            {pageAluno ? <div className="relative">
                 <button onClick={() => setSelecionado(!selecionado)} className={`w-7 h-7 rounded-lg border-2 shrink-0 transition-all cursor-pointer ${selecionado ? "bg-primary/10 border-primary/40" : "bg-accent/30 border-primary/20 hover:border-primary/40"}`}/>
                 <CheckIcon size={20} weight="light" className={`absolute text-primary top-1 left-1 pointer-events-none ${selecionado ? "opacity-75" : "opacity-0"}`}/>
-            </div>
+            </div> : null}
 
             {/* Avatar */}
             <AlunoAvatar email={aluno.emailPessoal} nome={aluno.nome} />
