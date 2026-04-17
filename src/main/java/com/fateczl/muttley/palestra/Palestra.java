@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.ElementCollection;
+import org.springframework.web.bind.annotation.SessionAttributes;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -48,6 +50,8 @@ public class Palestra {
     @ElementCollection
     private List<String> palestrantes;
 
+    //private List<Competencia> competencias;
+    //private List<Palestrante> palestrantes;
     private LocalDateTime inicio;
     private LocalDateTime fim;
 

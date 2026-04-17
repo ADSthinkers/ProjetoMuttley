@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/head :: head('Listagem Participações')}"></head>
+<body>
+<header th:replace="~{fragmentos/header :: header(activePage='Participacao')}"></header>
+    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center">Lista de Participações</h2>
+
+        <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+            [[${message}]]
+            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <a th:href="@{/participacao/formulario}" class="btn btn-primary mb-3">Nova Participação</a>
+
+        <div th:if="${listaParticipacoes.size() > 0}">
+            <table class="table table-hover table-responsive-xl">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Aluno</th>
+                        <th scope="col">Palestra</th>
+                        <th scope="col">Horas</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${listaParticipacoes}">
+                        <td th:text="${p.alunoNome}"></td>
+                        <td th:text="${p.palestinaTitulo}"></td>
+                        <td th:text="${p.horas}"></td>
+                        <td>
+                            <a th:href="@{/participacao/formulario/{id}(id=${p.id})}"
+                               title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
+                            &nbsp;
+                            <a th:href="@{/participacao/delete/{id}(id=${p.id})}"
+                               title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
+                               onclick="return confirm('Deseja realmente excluir?')"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragmentos/footer :: footer}"></div>
+</body>
+</html>
