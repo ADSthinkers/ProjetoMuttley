@@ -7,7 +7,8 @@ import Competencias from "./pages/Competencias.jsx";
 import Aluno from "./pages/Aluno.jsx";
 import EventoPalestra from "./pages/EventoPalestra.jsx";
 import Buscar from "./pages/Buscar.jsx";
-import EventoPalestraDetalhe from "./pages/EventoPalestraDetalhe.jsx";
+import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
+import EventoDetalhe from "./pages/EventoDetalhe.jsx";
 
 
 
@@ -22,7 +23,8 @@ function App() {
           <Route path="/competencias" element={<Competencias />} />
           <Route path="/alunos" element={<Aluno />} />
           <Route path="/evento-palestra" element={<EventoPalestra />} />
-          <Route path="/evento-palestra/:idEvPal" element={<EventoPalestraDetalhe />} />
+          <Route path="/palestra/:idPal" element={<PalestraDetalhe />} />
+          <Route path="/evento/:idEvento" element={<EventoDetalhe />} />
           <Route path="/buscar" element={<Buscar />} />
         </Routes>
       </AnimatePresence>
