@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/head :: head('Listagem Eventos')}"></head>
+<body>
+<header th:replace="~{fragmentos/header :: header(activePage='Evento')}"></header>
+    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center">Lista de Eventos</h2>
+
+        <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+            [[${message}]]
+            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <a th:href="@{/evento/formulario}" class="btn btn-primary mb-3">Novo Evento</a>
+
+        <div th:if="${listaEventos.size() > 0}">
+            <table class="table table-hover table-responsive-xl">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Título</th>
+                        <th scope="col">Data de Início</th>
+                        <th scope="col">Local</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="evento : ${listaEventos}">
+                        <td th:text="${evento.titulo}"></td>
+                        <td th:text="${#dates.format(evento.dataInicio, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${evento.local}"></td>
+                        <td>
+                            <a th:href="@{/evento/formulario/{id}(id=${evento.id})}"
+                               title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
+                            &nbsp;
+                            <a th:href="@{/evento/delete/{id}(id=${evento.id})}"
+                               title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
+                               onclick="return confirm('Deseja realmente excluir?')"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:unless="${listaEventos.size() > 0}" class="alert alert-info text-center">
+            Nenhum evento cadastrado.
+        </div>
+    </div>
+    <div th:replace="~{fragmentos/footer :: footer}"></div>
+</body>
+</html>
