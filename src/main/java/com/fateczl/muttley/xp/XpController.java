@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 
-// linha 62~79 ta dando erro(parece que é no getter e setter)
+// linha 62~79 tava dando erro, mas parou milagrosamente, revisar caso o codigo não rode :C
 
 @Controller
 @RequestMapping("/xp")
@@ -62,7 +62,7 @@ public class XpController {
             }
         }
 
-     /*   @PostMapping("/salvar")
+       @PostMapping("/salvar")
         public String salvar (@ModelAttribute("xp") @Valid XpDTO dto,
                             BindingResult result,
                             RedirectAttributes redirectAttributes,
@@ -79,7 +79,7 @@ public class XpController {
                 redirectAttributes.addFlashAttribute("error", e.getMessage());
                 return "redirect:/xp/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
             }
-        } */
+        }
 
     @GetMapping("/delete/{id}")
     @Transactional

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class = "container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center" th:text="(${xp.id != null} ? 'Editar xp' : 'Novo xp')"></h2>
+
+        <form th:action="@{/xp/salvar}" th:object="${xp}" method="post">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="horas">horas:</label>
+                <input class="form-control" type="text"
+                    th:field="*{horas}"
+                    th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
+                
+                <div th:errors="*{horas}" class="invalid-feedback"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">
+                <span th:text="${xp.id != null} ? 'Atualizar' : 'Criar' "></span>
+
+            </button>
+            <a th:href="@{/xp}" class="btn btn-secondary mt-3">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>
