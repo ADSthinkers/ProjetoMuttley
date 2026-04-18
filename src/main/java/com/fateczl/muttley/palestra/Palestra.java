@@ -11,7 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.ElementCollection;
+import org.springframework.web.bind.annotation.SessionAttributes;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,18 +37,8 @@ public class Palestra {
     private Long id;
     private String titulo;
     private String descricao;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "palestra_competencia",
-        joinColumns = @JoinColumn(name = "palestra_id"),
-        inverseJoinColumns = @JoinColumn(name = "competencia_id")
-    )
     private List<Competencia> competencias;
-
-    @ElementCollection
     private List<String> palestrantes;
-
     private LocalDateTime inicio;
     private LocalDateTime fim;
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+        <h2 class="text-center"
+            th:text="${participacaoDTO.id() != null} ? 'Editar Participação' : 'Nova Participação'"></h2>
+ 
+        <form th:action="@{/participacao/salvar}" th:object="${participacaoDTO}" method="post">
+            <input type="hidden" th:field="*{id}" />
+ 
+            <div class="form-group">
+                <label for="alunoId">Aluno:</label>
+                <select class="form-control" th:field="*{alunoId}"
+                        th:classappend="${#fields.hasErrors('alunoId')} ? 'is-invalid'">
+                    <option value="">-- Selecione um Aluno --</option>
+                    <option th:each="aluno : ${alunos}"
+                            th:value="${aluno.id}"
+                            th:text="${aluno.nome}"></option>
+                </select>
+                <div th:errors="*{alunoId}" class="invalid-feedback"></div>
+            </div>
+ 
+            <div class="form-group">
+                <label for="palestraId">Palestra:</label>
+                <select class="form-control" th:field="*{palestraId}"
+                        th:classappend="${#fields.hasErrors('palestraId')} ? 'is-invalid'">
+                    <option value="">-- Selecione uma Palestra --</option>
+                    <option th:each="palestra : ${palestras}"
+                            th:value="${palestra.id}"
+                            th:text="${palestra.titulo}"></option>
+                </select>
+                <div th:errors="*{palestraId}" class="invalid-feedback"></div>
+            </div>
+ 
+            <div class="form-group">
+                <label for="horas">Horas:</label>
+                <input class="form-control" type="number" step="0.5" min="0"
+                       th:field="*{horas}"
+                       th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
+                <div th:errors="*{horas}" class="invalid-feedback"></div>
+            </div>
+ 
+            <button type="submit" class="btn btn-primary mt-3">
+                <span th:text="${participacaoDTO.id() != null} ? 'Atualizar' : 'Cadastrar'"></span>
+            </button>
+            <a th:href="@{/participacao}" class="btn btn-secondary mt-3">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>
