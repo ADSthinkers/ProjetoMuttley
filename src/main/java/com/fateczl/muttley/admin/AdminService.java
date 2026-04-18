@@ -12,16 +12,17 @@ import jakarta.persistence.EntityNotFoundException;
 public class AdminService {
 
     @Autowired
-    private final AdminRepository repository;
+    private AdminRepository repository;
   
     @Autowired
-    private final AdminMapper mapper;
+    private AdminMapper mapper;
 
     public AdminService(AdminRepository repository, AdminMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
 
+    @SuppressWarnings("null")
     public Admin salvarOuAtualizar(AdminDTO dto) {
 
         if (dto.id() != null) {
@@ -40,10 +41,12 @@ public class AdminService {
         return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Admin> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }

@@ -16,6 +16,7 @@ public class AlunoService {
         this.mapper = mapper;
     }
 
+    @SuppressWarnings("null")
     public Aluno salvarOuAtualizar(AlunoDTO dto) {
         if (dto.id() != null) {
             Aluno existente = repository.findById(dto.id())
@@ -33,10 +34,12 @@ public class AlunoService {
         return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Aluno> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }

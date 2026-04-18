@@ -22,8 +22,10 @@ public class ParticipacaoService {
         this.mapper = mapper;
     }
 
+    @SuppressWarnings("null")
     public Participacao salvarOuAtualizar(ParticipacaoDTO dto) {
         if (dto.id() != null) {
+            @SuppressWarnings("null")
             Participacao existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Participação não encontrada"));
 
@@ -39,10 +41,12 @@ public class ParticipacaoService {
         return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Participacao> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }

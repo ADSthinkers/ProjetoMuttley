@@ -48,7 +48,7 @@ public class PalestraController {
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             dto = palestraMapper.toDto(palestra);
         } else {
-            dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(), null, null);
+            dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(), null, null, null);
         }
         model.addAttribute("palestra", dto);
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
@@ -101,6 +101,7 @@ public String save(@ModelAttribute("palestra") PalestraDTO dto,
         dto.descricao(),
         dto.competenciaIds(),
         listaPalestrantes,
+        dto.evento(),
         dto.inicio(),
         dto.fim()
     );

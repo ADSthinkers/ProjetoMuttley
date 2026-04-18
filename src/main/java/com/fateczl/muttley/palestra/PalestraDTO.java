@@ -3,6 +3,8 @@ package com.fateczl.muttley.palestra;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fateczl.muttley.evento.Evento;
+
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +27,8 @@ public record PalestraDTO(
 
     @NotEmpty(message = "Palestrante(s) são obrigatórios")
     List<@NotBlank(message = "Nome do palestrante não pode ser vazio") String> palestrantes,
+    
+    Evento evento,
 
     @NotNull(message = "Data/Horario inicial é obrigatório")
     @FutureOrPresent(message = "Data/hora inicial inválida")

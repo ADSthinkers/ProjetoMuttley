@@ -18,6 +18,7 @@ public class EventoService {
         this.mapper = mapper;
     }
 
+    @SuppressWarnings("null")
     public Evento salvarOuAtualizar(EventoDTO dto) {
         if (dto.id() != null) {
             Evento existente = repository.findById(dto.id())
@@ -34,10 +35,12 @@ public class EventoService {
         return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Evento> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }

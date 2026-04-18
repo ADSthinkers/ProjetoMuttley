@@ -21,6 +21,7 @@ public class CompetenciaService {
     @Autowired
     private CompetenciaMapper competenciaMapper;
 
+    @SuppressWarnings("null")
     public Competencia saveOrAtualize(CompetenciaDTO dto) {
         
     if (dto.id() != null) {    
@@ -42,6 +43,7 @@ public class CompetenciaService {
 
     public List<Competencia> findAllbyIdCompetencias(List<Long> ids) {
         
+        @SuppressWarnings("null")
         List<Competencia> competencias = competenciaRepository.findAllById(ids);
     
         if (ids == null || ids.isEmpty()) {
@@ -55,10 +57,12 @@ public class CompetenciaService {
         return competencias;
     }
 
+    @SuppressWarnings("null")
     public void apagarPorId (Long id) {
         competenciaRepository.deleteById(id);
     }
     
+    @SuppressWarnings("null")
     public Optional<Competencia> procurarPorId(Long id){
         return competenciaRepository.findById(id);
     }
