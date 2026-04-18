@@ -89,6 +89,7 @@ public class CompetenciaController {
         return "redirect:/competencia";
     }
 
+    // esse getmapping aqui embaixo foi excluido (rever)
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
