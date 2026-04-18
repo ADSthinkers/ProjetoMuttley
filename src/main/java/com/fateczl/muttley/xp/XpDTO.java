@@ -10,7 +10,7 @@ public record XpDTO(
     @NotNull(message ="Horas é obrigatório")
     @PositiveOrZero
     float horas,
-    Long palestraId,
+    Long competenciaId,
     Long alunoId
 ) {}
 

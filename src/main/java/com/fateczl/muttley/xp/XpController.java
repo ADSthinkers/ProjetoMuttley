@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fateczl.muttley.aluno.AlunoService;
-import com.fateczl.muttley.palestra.PalestraService;
+import com.fateczl.muttley.competencia.CompetenciaService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -31,7 +31,7 @@ public class XpController {
     private AlunoService alunoService;
 
     @Autowired
-    private PalestraService palestraService;
+    private CompetenciaService competenciaService;
 
     @Autowired
     private XpService xpService;
@@ -55,6 +55,8 @@ public class XpController {
             dto = new XpDTO(null, 0, null, null);
         }
         model.addAttribute("xp" ,dto);
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("alunos", alunoService.listarTodos());
         return "xp/formulario";
     }
 
@@ -68,7 +70,7 @@ public class XpController {
                         .orElseThrow(() -> new EntityNotFoundException("xp não encontrado"));
                     dto = xpMapper.toXpDTO(xp);
                     model.addAttribute("xp", dto);
-                    model.addAttribute("palestras", palestraService.findAll());
+                    model.addAttribute("competencias", competenciaService.findAllCompetencias());
                     model.addAttribute("alunos", alunoService.listarTodos());
                 }
                 return "xp/formulario";
@@ -108,7 +110,7 @@ public class XpController {
     public String deleteXp(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             xpService.apagarPorId(id);
-            redirectAttributes.addFlashAttribute("message", "O Xp" + id + " foi apagado!");
+            redirectAttributes.addFlashAttribute("message", "O Xp " + id + " foi apagado!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
         }

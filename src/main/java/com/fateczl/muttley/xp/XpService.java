@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.fateczl.muttley.aluno.Aluno;
 import com.fateczl.muttley.aluno.AlunoService;
-import com.fateczl.muttley.palestra.Palestra;
-import com.fateczl.muttley.palestra.PalestraService;
+import com.fateczl.muttley.competencia.Competencia;
+import com.fateczl.muttley.competencia.CompetenciaService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -26,13 +26,13 @@ public class XpService {
     private AlunoService alunoService;
 
     @Autowired
-    private PalestraService palestraService;
+    private CompetenciaService competenciaService;
 
     @SuppressWarnings("null")
-public Xp saveOrAtualizeXp(XpDTO dto) {
+    public Xp saveOrAtualizeXp(XpDTO dto) {
 
-    Palestra palestra = palestraService.findById(dto.palestraId())
-        .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+    Competencia competencia = competenciaService.procurarPorId(dto.competenciaId())
+        .orElseThrow(() -> new EntityNotFoundException("Competência não encontrada"));
 
     Aluno aluno = alunoService.buscarPorId(dto.alunoId())
         .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
@@ -42,7 +42,7 @@ public Xp saveOrAtualizeXp(XpDTO dto) {
             .orElseThrow(() -> new EntityNotFoundException("Xp não encontrado"));
 
         existente.setHoras(dto.horas());
-        existente.setPalestra(palestra);
+        existente.setCompetencia(competencia);
         existente.setAluno(aluno);
 
         return xpRepository.save(existente);
@@ -50,7 +50,7 @@ public Xp saveOrAtualizeXp(XpDTO dto) {
     } else {
         Xp novo = new Xp();
         novo.setHoras(dto.horas());
-        novo.setPalestra(palestra);
+        novo.setCompetencia(competencia);
         novo.setAluno(aluno);
 
         return xpRepository.save(novo);

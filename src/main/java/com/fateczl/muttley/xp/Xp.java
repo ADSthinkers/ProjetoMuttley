@@ -1,7 +1,7 @@
 package com.fateczl.muttley.xp;
 
 import com.fateczl.muttley.aluno.Aluno;
-import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.competencia.Competencia;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,8 +37,8 @@ public class Xp {
     private float horas;
 
         @ManyToOne
-    @JoinColumn(name = "palestra_id")
-    private Palestra palestra;
+    @JoinColumn(name = "competencia_id")
+    private Competencia competencia;
 
     @ManyToOne
     @JoinColumn(name = "aluno_id")

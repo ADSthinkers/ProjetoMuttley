@@ -20,21 +20,15 @@
             <div th:errors="*{horas}" class="invalid-feedback"></div>
         </div>
 
-        <!-- PALESTRA -->
-        <div class="form-group mt-3">
-            <label>Palestra:</label>
-            <select class="form-control"
-                    th:field="*{palestraId}">
-
-                <option value="">Selecione uma palestra</option>
-
-                <option th:each="p : ${palestras}"
-                        th:value="${p.id}"
-                        th:text="${p.titulo}">
-                </option>
-
-            </select>
-        </div>
+        <!-- COMPETÊNCIA -->
+        <label>Competencia:</label>
+        <select th:field="*{competenciaId}">
+            <option value="">Selecione</option>
+            <option th:each="c : ${competencias}" 
+                    th:value="${c.id}" 
+                    th:text="${c.nome}">
+            </option>
+        </select>
 
         <!-- ALUNO -->
         <div class="form-group mt-3">
