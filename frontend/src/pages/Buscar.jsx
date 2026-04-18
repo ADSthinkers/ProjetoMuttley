@@ -113,7 +113,7 @@ const Buscar = () => {
                     <div className="flex flex-col gap-3">
                         {buscaFiltradas.length > 0
                             ? buscaFiltradas.map(b => (
-                               b.tipo.toLowerCase() === "aluno" ? <AlunoCard key={b.id} aluno={b} pageAluno={false}  /> : <EventoPalestraCard tipo="compact" item={{tipo: b.tipo, descricao: b.descricao, titulo: b.nome, data: b.inicio, link: `/evento-palestra/${encodeURI(b.nome)}`}} />))
+                               b.tipo.toLowerCase() === "aluno" ? <AlunoCard key={b.id} aluno={b} check={false}  /> : <EventoPalestraCard tipo="compact" item={{tipo: b.tipo, descricao: b.descricao, titulo: b.nome, data: b.inicio, link: b.tipo.toLowerCase === "palestra" ? `/palestra/${encodeURI(b.id)}` : `/evento/${encodeURI(b.id)}`}} />))
                             : (
                                 <div className="text-sm font-secondary text-primary/40 py-8 text-center">
                                     Digite algo para buscar

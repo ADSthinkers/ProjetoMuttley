@@ -1,5 +1,7 @@
 import Textura from "../assets/textura.webp"
 import { LecternIcon, CalendarStarIcon, CaretRightIcon } from "@phosphor-icons/react"
+import { useNavigate } from "react-router-dom";
+
 
 /**
  * EventoPalestraCard
@@ -9,6 +11,7 @@ import { LecternIcon, CalendarStarIcon, CaretRightIcon } from "@phosphor-icons/r
  *  - item:      { tipo: "Palestra"|"Evento", titulo, descricao, data, link }
  *               data pode ser string formatada ("27 de março de 2026") ou objeto Date
  */
+
 
 const formatarData = (data) => {
     if (!data) return ""
@@ -26,11 +29,12 @@ const Badge = ({ tipo }) => (
 )
 
 // ── Variante FULL (com imagem) ────────────────────────────────────────────────
-const CardFull = ({ item }) => (
-    <a href={item.link ?? "#"} className="flex flex-col rounded-3xl overflow-hidden bg-accent/70 hover:bg-accent/90 transition-all group w-72">
+const CardFull = ({ item, navegarItem }) => (
+
+    <div onClick={navegarItem} className="flex flex-col rounded-3xl overflow-hidden bg-accent/70 hover:bg-accent/90 transition-all group w-72">
         {/* Imagem */}
         <div className="h-50 overflow-hidden">
-            <img src={item.imagem ?? Textura} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-500"/>
+            <img src={item.imagem ?? Textura} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
         </div>
 
         {/* Conteúdo */}
@@ -46,22 +50,19 @@ const CardFull = ({ item }) => (
             {/* 3. A div de data/ícone fica no rodapé */}
             <div className="flex items-center justify-between mt-1">
                 <span className="text-sm font-secondary text-primary/50">
-                    {formatarData(item.data)}   
+                    {formatarData(item.inicio)}{item.tipo.toLowerCase() === "evento" ? ` - ${formatarData(item.fim)}` : ""}  
                 </span>
                 <CaretRightIcon size={18} weight="light" className="text-primary/50 group-hover:translate-x-0.5 transition-transform"/>
             </div>
         </div>
-    </a>
+    </div>
 )
 
 
 
 // ── Variante COMPACT (sem imagem) ─────────────────────────────────────────────
-const CardCompact = ({ item }) => (
-    <a
-        href={item.link ?? "#"}
-        className="flex items-center gap-4 bg-accent/70 rounded-2xl px-6 py-5 hover:bg-accent/90 transition-all group w-full"
-    >
+const CardCompact = ({ item, navegarItem}) => (
+    <div onClick={navegarItem} className="flex items-center gap-4 bg-accent/70 rounded-2xl px-6 py-5 hover:bg-accent/90 transition-all group w-full">
         {/* Conteúdo */}
         <div className="flex flex-col gap-2 flex-1 min-w-0">
             {/* Data + Badge */}
@@ -89,13 +90,20 @@ const CardCompact = ({ item }) => (
             weight="light"
             className="text-primary/50 shrink-0 group-hover:translate-x-0.5 transition-transform"
         />
-    </a>
+    </div>
 )
 
 // ── Componente principal ──────────────────────────────────────────────────────
 const EventoPalestraCard = ({ tipo = "full", item }) => {
-    if (tipo === "compact") return <CardCompact item={item} />
-    return <CardFull item={item} />
+
+    const navigate = useNavigate();
+
+    const navegarItem = () => {
+        navigate(`/${item.tipo}/${item.id}`)
+    }
+
+    if (tipo === "compact") return <CardCompact item={item} navegarItem={navegarItem} />
+    return <CardFull item={item} navegarItem={navegarItem} />
 }
 
 export default EventoPalestraCard

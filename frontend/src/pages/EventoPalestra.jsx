@@ -201,7 +201,7 @@ const EventoPalestra = () => {
                     
                     <div className="flex flex-wrap gap-3">
                         {evePalFiltrados.length > 0 ? evePalFiltrados.map(ep => (
-                                <EventoPalestraCard tipo="full" item={{tipo: ep.tipo, titulo: ep.titulo, data: ep.inicio, link: `/evento-palestra/${encodeURI(ep.titulo)}`}} />
+                                <EventoPalestraCard tipo="full" item={ep}/>
                             )) : (
                                 <div className="text-sm font-secondary text-primary/40 py-8 text-center">
                                     Nenhuma palestra/evento encontrada.

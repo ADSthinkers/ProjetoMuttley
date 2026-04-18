@@ -9,6 +9,7 @@ import EventoPalestra from "./pages/EventoPalestra.jsx";
 import Buscar from "./pages/Buscar.jsx";
 import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
 import EventoDetalhe from "./pages/EventoDetalhe.jsx";
+import Novo from "./pages/Novo.jsx";
 
 
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/palestra/:idPal" element={<PalestraDetalhe />} />
           <Route path="/evento/:idEvento" element={<EventoDetalhe />} />
           <Route path="/buscar" element={<Buscar />} />
+          <Route path="/novo" element={<Novo />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>
