@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fateczl.muttley.aluno.AlunoService;
+import com.fateczl.muttley.palestra.PalestraService;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+
 
 
 // linha 62~79 tava dando erro, mas parou milagrosamente, revisar caso o codigo não rode :C
@@ -24,10 +28,20 @@ import jakarta.validation.Valid;
 public class XpController {
 
     @Autowired
+    private AlunoService alunoService;
+
+    @Autowired
+    private PalestraService palestraService;
+
+    @Autowired
     private XpService xpService;
     
     @Autowired
     private XpMapper xpMapper;
+
+    XpController(AlunoService alunoService) {
+        this.alunoService = alunoService;
+    }
 
     @GetMapping("/formulario")
     public String formularioXp(@RequestParam(required = false) Long id, Model model) {
@@ -38,7 +52,7 @@ public class XpController {
             .orElseThrow(() -> new EntityNotFoundException("Xp não encontrado"));
         dto = xpMapper.toXpDTO(xp);
         } else {
-            dto = new XpDTO(null, 0);
+            dto = new XpDTO(null, 0, null, null);
         }
         model.addAttribute("xp" ,dto);
         return "xp/formulario";
@@ -54,6 +68,8 @@ public class XpController {
                         .orElseThrow(() -> new EntityNotFoundException("xp não encontrado"));
                     dto = xpMapper.toXpDTO(xp);
                     model.addAttribute("xp", dto);
+                    model.addAttribute("palestras", palestraService.findAll());
+                    model.addAttribute("alunos", alunoService.listarTodos());
                 }
                 return "xp/formulario";
             } catch (EntityNotFoundException e) {
@@ -81,12 +97,18 @@ public class XpController {
             }
         }
 
+        @GetMapping
+        public String listar(Model model) {
+            model.addAttribute("xps", xpService.findAllXps());
+            return "xp/listagem";
+        }
+
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteXp(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             xpService.apagarPorId(id);
-            redirectAttributes.addFlashAttribute("meessage", "O Xp" + id + " foi apagado!");
+            redirectAttributes.addFlashAttribute("message", "O Xp" + id + " foi apagado!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message", e.getMessage());
         }

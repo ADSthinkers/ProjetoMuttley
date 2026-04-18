@@ -7,6 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.fateczl.muttley.aluno.Aluno;
+import com.fateczl.muttley.aluno.AlunoService;
+import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.palestra.PalestraService;
+
 import jakarta.persistence.EntityNotFoundException;
 
 
@@ -17,23 +22,40 @@ public class XpService {
     @Autowired
     private XpRepository xpRepository;
 
+        @Autowired
+    private AlunoService alunoService;
+
     @Autowired
-    private XpMapper xpMapper;
+    private PalestraService palestraService;
 
-    public Xp saveOrAtualizeXp(XpDTO dto) {
+    @SuppressWarnings("null")
+public Xp saveOrAtualizeXp(XpDTO dto) {
 
-        if (dto.id() != null) {
-            Xp existente = xpRepository.findById(dto.id())
-                .orElseThrow(() -> new EntityNotFoundException("Xp não encontrado com ID: " + dto.id()));            
-            xpMapper.updateEntityFromXp(dto, existente);
-            return xpRepository.save(existente);
-         }  else {
-            Xp novoXp = xpMapper.toEntityFromXp(dto);
+    Palestra palestra = palestraService.findById(dto.palestraId())
+        .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
 
-            return xpRepository.save(novoXp);
-         }
-    
+    Aluno aluno = alunoService.buscarPorId(dto.alunoId())
+        .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
+
+    if (dto.id() != null) {
+        Xp existente = xpRepository.findById(dto.id())
+            .orElseThrow(() -> new EntityNotFoundException("Xp não encontrado"));
+
+        existente.setHoras(dto.horas());
+        existente.setPalestra(palestra);
+        existente.setAluno(aluno);
+
+        return xpRepository.save(existente);
+
+    } else {
+        Xp novo = new Xp();
+        novo.setHoras(dto.horas());
+        novo.setPalestra(palestra);
+        novo.setAluno(aluno);
+
+        return xpRepository.save(novo);
     }
+}
 
     public List<Xp> findAllXps(){
         return xpRepository.findAll(Sort.by("id").ascending());
@@ -41,6 +63,7 @@ public class XpService {
 
     public List<Xp> findAllbyIdXps(List<Long> ids) {
 
+        @SuppressWarnings("null")
         List<Xp> xps = xpRepository.findAllById(ids);
 
         if (ids == null  || ids.isEmpty()) {
@@ -54,10 +77,12 @@ public class XpService {
         return xps;
     }
 
+    @SuppressWarnings("null")
     public void apagarPorId (Long id) {
         xpRepository.deleteById(id);
     }
 
+    @SuppressWarnings("null")
     public Optional<Xp> procurarPorId(Long id){
         return xpRepository.findById(id);
     }

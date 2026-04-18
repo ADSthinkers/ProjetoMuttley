@@ -2,42 +2,60 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-    <h2 class="text-center">Lista de xp</h2>
-    <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+
+    <h2 class="text-center">Lista de XP</h2>
+
+    <div th:if="${message != null}" 
+         class="alert alert-success alert-dismissible fade show text-center" role="alert">
         [[${message}]]
-        <button type="button" class="close btn-sm" data-dismiss="alert">
-            <span>&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+
     <a th:href="@{/xp/formulario}" class="btn btn-primary mb-3">
-        Novo xp
+        Novo XP
     </a>
-    <div th:if="${xp.size() > 0}">
+
+    <div th:if="${xps != null and !xps.isEmpty()}">
         <table class="table table-hover table-responsive-xl">
-            
             <thead class="thead-light">
                 <tr>
-                    <th scope="col">Nome</th>
+                    <th scope="col">Horas</th>
+                    <th scope="col">Palestra</th>
+                    <th scope="col">Alunos</th>
                     <th scope="col">Ações</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="xp : ${xp}">
+                <tr th:each="xp : ${xps}">
+                    
                     <td th:text="${xp.horas}"></td>
+
+                    <td th:text="${xp.palestra != null ? xp.palestra.titulo : '-'}"></td>
+
+                    <td th:text="${xp.aluno != null ? xp.aluno.nome : '-'}"></td>
+
                     <td>
-                        <a th:href="@{/xp/formulario/{id}(id=${xp.id})}">
-                            Editar
+                        <a th:href="@{/xp/formulario/{id}(id=${xp.id})}"
+                           class="btn btn-sm btn-warning">
+                           Editar
                         </a>
-                        |
+
                         <a th:href="@{/xp/delete/{id}(id=${xp.id})}"
+                           class="btn btn-sm btn-danger"
                            onclick="return confirm('Deseja realmente excluir?')">
-                            Excluir
+                           Excluir
                         </a>
                     </td>
+
                 </tr>
             </tbody>
         </table>
     </div>
+
+    <div th:unless="${xps != null and !xps.isEmpty()}" class="alert alert-info text-center">
+        Nenhum XP cadastrado.
+    </div>
+
 </div>
 </body>
 </html>

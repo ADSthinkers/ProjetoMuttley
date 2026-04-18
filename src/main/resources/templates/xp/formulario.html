@@ -1,27 +1,66 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <body>
-    <div class = "container-fluid" style="max-width: 900px; margin: 0 auto;">
-        <h2 class="text-center" th:text="(${xp.id != null} ? 'Editar xp' : 'Novo xp')"></h2>
+<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
 
-        <form th:action="@{/xp/salvar}" th:object="${xp}" method="post">
-            <input type="hidden" th:field="*{id}" />
+    <h2 class="text-center"
+        th:text="(${xp.id != null} ? 'Editar XP' : 'Novo XP')">
+    </h2>
 
-            <div class="form-group">
-                <label for="horas">horas:</label>
-                <input class="form-control" type="text"
-                    th:field="*{horas}"
-                    th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
-                
-                <div th:errors="*{horas}" class="invalid-feedback"></div>
-            </div>
+    <form th:action="@{/xp/salvar}" th:object="${xp}" method="post">
 
-            <button type="submit" class="btn btn-primary mt-3">
-                <span th:text="${xp.id != null} ? 'Atualizar' : 'Criar' "></span>
+        <input type="hidden" th:field="*{id}" />
 
-            </button>
-            <a th:href="@{/xp}" class="btn btn-secondary mt-3">Cancelar</a>
-        </form>
-    </div>
+        <!-- HORAS -->
+        <div class="form-group">
+            <label>Horas:</label>
+            <input type="number" step="0.1" class="form-control"
+                   th:field="*{horas}"
+                   th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
+            <div th:errors="*{horas}" class="invalid-feedback"></div>
+        </div>
+
+        <!-- PALESTRA -->
+        <div class="form-group mt-3">
+            <label>Palestra:</label>
+            <select class="form-control"
+                    th:field="*{palestraId}">
+
+                <option value="">Selecione uma palestra</option>
+
+                <option th:each="p : ${palestras}"
+                        th:value="${p.id}"
+                        th:text="${p.titulo}">
+                </option>
+
+            </select>
+        </div>
+
+        <!-- ALUNO -->
+        <div class="form-group mt-3">
+            <label>Aluno:</label>
+            <select class="form-control"
+                    th:field="*{alunoId}">
+
+                <option value="">Selecione um aluno</option>
+
+                <option th:each="a : ${alunos}"
+                        th:value="${a.id}"
+                        th:text="${a.nome}">
+                </option>
+
+            </select>
+        </div>
+
+        <!-- BOTÕES -->
+        <button type="submit" class="btn btn-primary mt-3">
+            <span th:text="${xp.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
+        </button>
+
+        <a th:href="@{/xp}" class="btn btn-secondary mt-3">Cancelar</a>
+
+    </form>
+
+</div>
 </body>
 </html>

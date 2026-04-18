@@ -1,12 +1,16 @@
 package com.fateczl.muttley.xp;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 //Notblank?? não inserimos dados aqui
 
 public record XpDTO(
     Long id,
-    @NotBlank(message ="Horas é obrigatório")
-    float horas
+    @NotNull(message ="Horas é obrigatório")
+    @PositiveOrZero
+    float horas,
+    Long palestraId,
+    Long alunoId
 ) {}
 
