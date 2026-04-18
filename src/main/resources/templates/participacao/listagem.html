@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragmentos/head :: head('Listagem Participações')}"></head>
+<head>
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
 <body>
-<header th:replace="~{fragmentos/header :: header(activePage='Participacao')}"></header>
     <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
         <h2 class="text-center">Lista de Participações</h2>
 
@@ -43,6 +45,5 @@
             </table>
         </div>
     </div>
-    <div th:replace="~{fragmentos/footer :: footer}"></div>
 </body>
 </html>

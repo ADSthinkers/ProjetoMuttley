@@ -25,7 +25,6 @@ public class ParticipacaoService {
     @SuppressWarnings("null")
     public Participacao salvarOuAtualizar(ParticipacaoDTO dto) {
         if (dto.id() != null) {
-            @SuppressWarnings("null")
             Participacao existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Participação não encontrada"));
 

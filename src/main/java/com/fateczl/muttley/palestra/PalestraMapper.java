@@ -12,18 +12,21 @@ import com.fateczl.muttley.competencia.Competencia;
 @Mapper(componentModel = "spring")
 public interface PalestraMapper {
 
-    //Entity para DTO
+    // Entity → DTO
     @Mapping(target = "competenciaIds", source = "competencias", qualifiedByName = "competenciasToIds")
+    @Mapping(target = "eventoId", source = "evento.id")
     PalestraDTO toDto(Palestra palestra);
 
-    // DTO para Entity - Criação
+    // DTO → Entity (criação)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencias", ignore = true)
+    @Mapping(target = "evento", ignore = true)
     Palestra toEntity(PalestraDTO dto);
 
-    //DTO para Entity - Atualização
+    // DTO → Entity (update)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencias", ignore = true)
+    @Mapping(target = "evento", ignore = true)
     void updateEntityFromDto(PalestraDTO dto, @MappingTarget Palestra palestra);
 
     @Named("competenciasToIds")

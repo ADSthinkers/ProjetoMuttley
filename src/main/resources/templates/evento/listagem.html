@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragmentos/head :: head('Listagem Eventos')}"></head>
+<head>
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
 <body>
-<header th:replace="~{fragmentos/header :: header(activePage='Evento')}"></header>
     <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
         <h2 class="text-center">Lista de Eventos</h2>
 
@@ -28,7 +30,7 @@
                 <tbody>
                     <tr th:each="evento : ${listaEventos}">
                         <td th:text="${evento.titulo}"></td>
-                        <td th:text="${#dates.format(evento.dataInicio, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#temporals.format(evento.dataInicio, 'dd/MM/yyyy')}"></td>
                         <td th:text="${evento.local}"></td>
                         <td>
                             <a th:href="@{/evento/formulario/{id}(id=${evento.id})}"
@@ -46,6 +48,5 @@
             Nenhum evento cadastrado.
         </div>
     </div>
-    <div th:replace="~{fragmentos/footer :: footer}"></div>
 </body>
 </html>

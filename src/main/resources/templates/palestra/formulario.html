@@ -65,6 +65,25 @@
 
         </div>
 
+        <!-- EVENTO -->
+        <div class="form-group mt-3">
+            <label>Evento:</label>
+
+            <select class="form-control"
+                    th:field="*{eventoId}"
+                    th:classappend="${#fields.hasErrors('eventoId')} ? 'is-invalid'">
+
+                <option value="">Selecione um evento</option>
+
+                <option th:each="ev : ${eventos}"
+                        th:value="${ev.id}"
+                        th:text="${ev.titulo}">
+                </option>
+
+            </select>
+            <div th:errors="*{eventoId}" class="invalid-feedback"></div>
+        </div>
+
         <!-- DATA INÍCIO -->
         <div class="form-group">
             <label>Data/Hora Início:</label>
@@ -87,7 +106,7 @@
             <span th:text="${palestra.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
         </button>
 
-        <a th:href="@{/palestra}" class="btn btn-secondary mt-3">Cancelar</a>
+        <a th:href="@{/palestra/listagem}" class="btn btn-secondary mt-3">Cancelar</a>
 
     </form>
 

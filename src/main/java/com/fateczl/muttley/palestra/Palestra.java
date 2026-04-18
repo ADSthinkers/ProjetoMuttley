@@ -62,7 +62,6 @@ public class Palestra {
         this.descricao = dados.descricao();
         this.competencias = competencias;
         this.palestrantes = dados.palestrantes();
-        this.evento = dados.evento();
         this.inicio = dados.inicio();
         this.fim = dados.fim();
     }

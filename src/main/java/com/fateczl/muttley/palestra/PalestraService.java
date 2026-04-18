@@ -8,6 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.fateczl.muttley.competencia.CompetenciaService;
+import com.fateczl.muttley.evento.Evento;
+import com.fateczl.muttley.evento.EventoService;
 import com.fateczl.muttley.competencia.Competencia;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +22,9 @@ public class PalestraService {
 
     @Autowired
     private CompetenciaService competenciaService;
+
+    @Autowired
+    private EventoService eventoService;
 
     @Autowired
     private PalestraMapper palestraMapper;
@@ -46,16 +51,21 @@ public class PalestraService {
             throw new EntityNotFoundException("Uma ou mais competências não existem");
         }
 
+        Evento evento = eventoService.buscarPorId(dto.eventoId())
+        .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
+
         if (dto.id() != null){
             @SuppressWarnings("null")
             Palestra existingPalestra = palestraRepository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             palestraMapper.updateEntityFromDto(dto, existingPalestra);
             existingPalestra.setCompetencias(competencias);
+            existingPalestra.setEvento(evento);
             return palestraRepository.save(existingPalestra);
         } else {
             Palestra newPalestra = palestraMapper.toEntity(dto);
             newPalestra.setCompetencias(competencias);
+            newPalestra.setEvento(evento); 
             return palestraRepository.save(newPalestra);
         }
     }

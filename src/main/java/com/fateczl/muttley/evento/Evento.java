@@ -1,6 +1,6 @@
 package com.fateczl.muttley.evento;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fateczl.muttley.palestra.Palestra;
@@ -26,7 +26,7 @@ public class Evento {
 
     @NotNull(message = "Data de início é obrigatória")
     @Temporal(TemporalType.DATE)
-    private Date dataInicio;
+    private LocalDate dataInicio;
 
     @NotBlank(message = "Local é obrigatório")
     private String local;

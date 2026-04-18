@@ -1,5 +1,6 @@
 package com.fateczl.muttley.palestra;
 
+import com.fateczl.muttley.evento.EventoService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,9 @@ public class PalestraController {
     @Autowired
     private CompetenciaService competenciaService;
 
+    @Autowired
+    private EventoService eventoService;
+
     @GetMapping("/listagem")
     public String loadListingPage(Model model) {
         model.addAttribute("palestras", palestraService.findAll());
@@ -52,6 +56,7 @@ public class PalestraController {
         }
         model.addAttribute("palestra", dto);
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("eventos", eventoService.listarTodos());
         return "palestra/formulario";
     }
 
@@ -63,6 +68,7 @@ public class PalestraController {
                 Palestra palestra = palestraService.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
                     model.addAttribute("competencias", competenciaService.findAllCompetencias());
+                    model.addAttribute("eventos", eventoService.listarTodos());
                     dto = palestraMapper.toDto(palestra);
                     model.addAttribute("palestra", dto);
             }
@@ -91,6 +97,7 @@ public String save(@ModelAttribute("palestra") PalestraDTO dto,
 
     if (listaPalestrantes.isEmpty()) {
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("eventos", eventoService.listarTodos());
         model.addAttribute("error", "Palestrantes são obrigatórios");
         return "palestra/formulario";
     }
@@ -101,13 +108,14 @@ public String save(@ModelAttribute("palestra") PalestraDTO dto,
         dto.descricao(),
         dto.competenciaIds(),
         listaPalestrantes,
-        dto.evento(),
+        dto.eventoId(),
         dto.inicio(),
         dto.fim()
     );
 
     if (dto.titulo() == null || dto.titulo().isBlank()) {
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("eventos", eventoService.listarTodos());
         model.addAttribute("error", "Título é obrigatório");
         return "palestra/formulario";
     }

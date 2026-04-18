@@ -1,10 +1,10 @@
 package com.fateczl.muttley.evento;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record EventoDTO(
     Long id,
     String titulo,
-    Date dataInicio,
+    LocalDate dataInicio,
     String local
 ) {}
