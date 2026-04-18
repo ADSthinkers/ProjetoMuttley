@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Índice do Sistema - Localhost</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f9;
+            color: #333;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #3498db;
+            text-transform: capitalize;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #555;
+            display: block;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        a:hover {
+            background-color: #e1f5fe;
+            color: #000;
+        }
+
+        .url-preview {
+            font-size: 0.8rem;
+            color: #999;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Índice de Páginas</h1>
+
+    <div class="container">
+        <!-- Admin -->
+        <div class="card">
+            <h2>Admin</h2>
+            <ul>
+                <li><a href="http://localhost:8080/admin/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/admin">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- Aluno -->
+        <div class="card">
+            <h2>Aluno</h2>
+            <ul>
+                <li><a href="http://localhost:8080/aluno/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/aluno">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- Competência -->
+        <div class="card">
+            <h2>Competência</h2>
+            <ul>
+                <li><a href="http://localhost:8080/competencia/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/competencia">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- Evento -->
+        <div class="card">
+            <h2>Evento</h2>
+            <ul>
+                <li><a href="http://localhost:8080/evento/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/evento">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- Palestra -->
+        <div class="card">
+            <h2>Palestra</h2>
+            <ul>
+                <li><a href="http://localhost:8080/palestra/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/palestra/listagem">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- Participação -->
+        <div class="card">
+            <h2>Participação</h2>
+            <ul>
+                <li><a href="http://localhost:8080/participacao/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/participacao">📋 Listagem</a></li>
+            </ul>
+        </div>
+
+        <!-- XP -->
+        <div class="card">
+            <h2>XP</h2>
+            <ul>
+                <li><a href="http://localhost:8080/xp/formulario">📝 Formulário</a></li>
+                <li><a href="http://localhost:8080/xp">📋 Listagem</a></li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+
+</html>
