@@ -28,10 +28,12 @@ public class PalestraService {
         return palestraRepository.findAll(Sort.by("titulo").ascending());
     }
 
+    @SuppressWarnings("null")
     public void deleteById(Long id){
         palestraRepository.deleteById(id);
     }
 
+    @SuppressWarnings("null")
     public Optional<Palestra> findById(Long id){
         return palestraRepository.findById(id);
     }
@@ -45,6 +47,7 @@ public class PalestraService {
         }
 
         if (dto.id() != null){
+            @SuppressWarnings("null")
             Palestra existingPalestra = palestraRepository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             palestraMapper.updateEntityFromDto(dto, existingPalestra);
