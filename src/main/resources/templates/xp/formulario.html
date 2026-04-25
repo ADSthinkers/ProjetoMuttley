@@ -1,60 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de XP</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @media (min-width: 480px) {
+            .actions {
+                flex-direction: row-reverse;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
 <body>
-<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+    <div class="card">
+        <h2 th:text="(${xp.id != null} ? 'Editar XP' : 'Novo XP')"></h2>
 
-    <h2 class="text-center"
-        th:text="(${xp.id != null} ? 'Editar XP' : 'Novo XP')">
-    </h2>
+        <form th:action="@{/xp/salvar}" th:object="${xp}" method="post">
+            <input type="hidden" th:field="*{id}" />
 
-    <form th:action="@{/xp/salvar}" th:object="${xp}" method="post">
+            <div class="form-group">
+                <label for="horas">Quantidade de Horas</label>
+                <input type="number" step="0.1" th:field="*{horas}"
+                    th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('horas')}" th:errors="*{horas}" class="error-message"></span>
+            </div>
 
-        <input type="hidden" th:field="*{id}" />
+            <div class="form-group">
+                <label for="competenciaId">Competência</label>
+                <select th:field="*{competenciaId}"
+                    th:classappend="${#fields.hasErrors('competenciaId')} ? 'is-invalid'">
+                    <option value="">Selecione uma competência</option>
+                    <option th:each="c : ${competencias}" th:value="${c.id}" th:text="${c.nome}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('competenciaId')}" th:errors="*{competenciaId}"
+                    class="error-message"></span>
+            </div>
 
-        <!-- HORAS -->
-        <div class="form-group">
-            <label>Horas:</label>
-            <input type="number" step="0.1" class="form-control"
-                   th:field="*{horas}"
-                   th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
-            <div th:errors="*{horas}" class="invalid-feedback"></div>
-        </div>
+            <div class="form-group">
+                <label for="alunoId">Aluno</label>
+                <select th:field="*{alunoId}" th:classappend="${#fields.hasErrors('alunoId')} ? 'is-invalid'">
+                    <option value="">Selecione um aluno</option>
+                    <option th:each="a : ${alunos}" th:value="${a.id}" th:text="${a.nome}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('alunoId')}" th:errors="*{alunoId}" class="error-message"></span>
+            </div>
 
-        <!-- COMPETÊNCIA -->
-        <label>Competencia:</label>
-        <select th:field="*{competenciaId}">
-            <option value="">Selecione</option>
-            <option th:each="c : ${competencias}" 
-                    th:value="${c.id}" 
-                    th:text="${c.nome}">
-            </option>
-        </select>
-
-        <!-- ALUNO -->
-        <div class="form-group mt-3">
-            <label>Aluno:</label>
-            <select class="form-control"
-                    th:field="*{alunoId}">
-
-                <option value="">Selecione um aluno</option>
-
-                <option th:each="a : ${alunos}"
-                        th:value="${a.id}"
-                        th:text="${a.nome}">
-                </option>
-
-            </select>
-        </div>
-
-        <!-- BOTÕES -->
-        <button type="submit" class="btn btn-primary mt-3">
-            <span th:text="${xp.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
-        </button>
-
-        <a th:href="@{/xp}" class="btn btn-secondary mt-3">Cancelar</a>
-
-    </form>
-
-</div>
+            <div class="actions">
+                <button type="submit" class="btn btn-submit">
+                    <span th:text="${xp.id != null} ? 'Atualizar Dados' : 'Cadastrar XP'"></span>
+                </button>
+                <a th:href="@{/xp}" class="btn btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
 </body>
+
 </html>

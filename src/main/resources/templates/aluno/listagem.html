@@ -1,31 +1,161 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-    <head>
-    <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Alunos</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .btn-new {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-new:hover {
+            background-color: #218838;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Tabela Customizada */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            padding: 15px;
+            border-bottom: 2px solid #edf2f7;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #fcfdfe;
+        }
+
+        /* Ações */
+        .action-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-edit {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .icon-delete {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .icon-edit:hover,
+        .icon-delete:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-        <h2 class="text-center">Lista de Alunos</h2>
-        
-        <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
-            [[${message}]]
-            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+    <div class="container">
+        <div class="header-section">
+            <h2>Lista de Alunos</h2>
+            <a th:href="@{/aluno/formulario}" class="btn-new">+ Novo Aluno</a>
         </div>
 
-        <a th:href="@{/aluno/formulario}" class="btn btn-primary mb-3">Novo Aluno</a>
+        <div th:if="${message != null}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
 
-        <div th:if="${listaAlunos.size() > 0}">
-            <table class="table table-hover table-responsive-xl">
-                <thead class="thead-light">
+        <div class="table-container" th:if="${listaAlunos.size() > 0}">
+            <table>
+                <thead>
                     <tr>
-                        <th scope="col">RA</th>
-                        <th scope="col">Nome</th>
-                        <th scope="col">CPF</th>
-                        <th scope="col">E-mail</th>
-                        <th scope="col">Ações</th>
+                        <th>RA</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>E-mail</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,21 +164,22 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                         <td th:text="${aluno.nome}"></td>
                         <td th:text="${aluno.cpf}"></td>
                         <td th:text="${aluno.email}"></td>
-                        <td>
-                            <a th:href="@{/aluno/formulario/{id}(id=${aluno.id})}"
-                               title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
-                            &nbsp;
-                            <a th:href="@{/aluno/delete/{id}(id=${aluno.id})}"
-                               title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
-                               onclick="return confirm('Deseja realmente excluir?')"></a>
+                        <td class="action-links">
+                            <a th:href="@{/aluno/formulario/{id}(id=${aluno.id})}" class="icon-edit"
+                                title="Editar">Editar</a>
+                            <a th:href="@{/aluno/delete/{id}(id=${aluno.id})}" class="icon-delete"
+                                onclick="return confirm('Deseja realmente excluir este aluno?')"
+                                title="Excluir">Excluir</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div th:unless="${listaAlunos.size() > 0}" class="alert alert-info text-center">
-            Nenhum aluno cadastrado.
+
+        <div th:unless="${listaAlunos.size() > 0}" class="alert alert-info">
+            Nenhum aluno encontrado no sistema.
         </div>
     </div>
 </body>
+
 </html>

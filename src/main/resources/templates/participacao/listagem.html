@@ -1,49 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
-    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-        <h2 class="text-center">Lista de Participações</h2>
 
-        <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
-            [[${message}]]
-            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Participações</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .btn-new {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-new:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            padding: 15px;
+            border-bottom: 2px solid #edf2f7;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #fcfdfe;
+        }
+
+        .action-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .link-edit {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-delete {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-edit:hover,
+        .link-delete:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h2>Lista de Participações</h2>
+            <a th:href="@{/participacao/formulario}" class="btn-new">+ Nova Participação</a>
         </div>
 
-        <a th:href="@{/participacao/formulario}" class="btn btn-primary mb-3">Nova Participação</a>
+        <div th:if="${message != null}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
 
-        <div th:if="${listaParticipacoes.size() > 0}">
-            <table class="table table-hover table-responsive-xl">
-                <thead class="thead-light">
+        <div class="table-container" th:if="${listaParticipacoes.size() > 0}">
+            <table>
+                <thead>
                     <tr>
-                        <th scope="col">Aluno</th>
-                        <th scope="col">Palestra</th>
-                        <th scope="col">Horas</th>
-                        <th scope="col">Ações</th>
+                        <th>Aluno</th>
+                        <th>Palestra</th>
+                        <th>Horas</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="p : ${listaParticipacoes}">
-                        <td th:text="${p.alunoNome}"></td>
+                        <td th:text="${p.alunoNome}" style="font-weight: 500;"></td>
                         <td th:text="${p.palestinaTitulo}"></td>
                         <td th:text="${p.horas}"></td>
-                        <td>
-                            <a th:href="@{/participacao/formulario/{id}(id=${p.id})}"
-                               title="Editar" class="fa-regular fa-pen-to-square icon-dark"></a>
-                            &nbsp;
-                            <a th:href="@{/participacao/delete/{id}(id=${p.id})}"
-                               title="Excluir" class="fa-regular fa-trash-can icon-dark btn-delete"
-                               onclick="return confirm('Deseja realmente excluir?')"></a>
+                        <td class="action-links">
+                            <a th:href="@{/participacao/formulario/{id}(id=${p.id})}" class="link-edit">Editar</a>
+                            <a th:href="@{/participacao/delete/{id}(id=${p.id})}" class="link-delete"
+                                onclick="return confirm('Deseja realmente excluir esta participação?')">Excluir</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <div th:unless="${listaParticipacoes.size() > 0}" style="text-align: center; padding: 20px; color: #666;">
+            Nenhuma participação cadastrada.
+        </div>
     </div>
 </body>
+
 </html>

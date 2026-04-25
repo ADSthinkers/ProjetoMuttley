@@ -1,50 +1,172 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Participação</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @media (min-width: 480px) {
+            .actions {
+                flex-direction: row-reverse;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
 <body>
-    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-        <h2 class="text-center"
-            th:text="${participacaoDTO.id() != null} ? 'Editar Participação' : 'Nova Participação'"></h2>
- 
+    <div class="card">
+        <h2 th:text="${participacaoDTO.id() != null} ? 'Editar Participação' : 'Nova Participação'"></h2>
+
         <form th:action="@{/participacao/salvar}" th:object="${participacaoDTO}" method="post">
             <input type="hidden" th:field="*{id}" />
- 
+
             <div class="form-group">
-                <label for="alunoId">Aluno:</label>
-                <select class="form-control" th:field="*{alunoId}"
-                        th:classappend="${#fields.hasErrors('alunoId')} ? 'is-invalid'">
+                <label for="alunoId">Aluno</label>
+                <select th:field="*{alunoId}" th:classappend="${#fields.hasErrors('alunoId')} ? 'is-invalid'">
                     <option value="">-- Selecione um Aluno --</option>
-                    <option th:each="aluno : ${alunos}"
-                            th:value="${aluno.id}"
-                            th:text="${aluno.nome}"></option>
+                    <option th:each="aluno : ${alunos}" th:value="${aluno.id}" th:text="${aluno.nome}"></option>
                 </select>
-                <div th:errors="*{alunoId}" class="invalid-feedback"></div>
+                <span th:if="${#fields.hasErrors('alunoId')}" th:errors="*{alunoId}" class="error-message"></span>
             </div>
- 
+
             <div class="form-group">
-                <label for="palestraId">Palestra:</label>
-                <select class="form-control" th:field="*{palestraId}"
-                        th:classappend="${#fields.hasErrors('palestraId')} ? 'is-invalid'">
+                <label for="palestraId">Palestra</label>
+                <select th:field="*{palestraId}" th:classappend="${#fields.hasErrors('palestraId')} ? 'is-invalid'">
                     <option value="">-- Selecione uma Palestra --</option>
-                    <option th:each="palestra : ${palestras}"
-                            th:value="${palestra.id}"
-                            th:text="${palestra.titulo}"></option>
+                    <option th:each="palestra : ${palestras}" th:value="${palestra.id}" th:text="${palestra.titulo}">
+                    </option>
                 </select>
-                <div th:errors="*{palestraId}" class="invalid-feedback"></div>
+                <span th:if="${#fields.hasErrors('palestraId')}" th:errors="*{palestraId}" class="error-message"></span>
             </div>
- 
+
             <div class="form-group">
-                <label for="horas">Horas:</label>
-                <input class="form-control" type="number" step="0.5" min="0"
-                       th:field="*{horas}"
-                       th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
-                <div th:errors="*{horas}" class="invalid-feedback"></div>
+                <label for="horas">Horas</label>
+                <input type="number" step="0.5" min="0" th:field="*{horas}"
+                    th:classappend="${#fields.hasErrors('horas')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('horas')}" th:errors="*{horas}" class="error-message"></span>
             </div>
- 
-            <button type="submit" class="btn btn-primary mt-3">
-                <span th:text="${participacaoDTO.id() != null} ? 'Atualizar' : 'Cadastrar'"></span>
-            </button>
-            <a th:href="@{/participacao}" class="btn btn-secondary mt-3">Cancelar</a>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-submit">
+                    <span th:text="${participacaoDTO.id() != null} ? 'Atualizar' : 'Cadastrar'"></span>
+                </button>
+                <a th:href="@{/participacao}" class="btn btn-cancel">Cancelar</a>
+            </div>
         </form>
     </div>
 </body>
+
 </html>

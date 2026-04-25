@@ -1,115 +1,219 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Palestra</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 600px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @media (min-width: 480px) {
+            .actions {
+                flex-direction: row-reverse;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
 <body>
-<div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+    <div class="card">
+        <h2 th:text="(${palestra.id != null} ? 'Editar Palestra' : 'Nova Palestra')"></h2>
 
-    <h2 class="text-center"
-        th:text="(${palestra.id != null} ? 'Editar Palestra' : 'Nova Palestra')">
-    </h2>
-
-    <div th:if="${message != null}"
-         class="alert alert-success alert-dismissible fade show text-center">
-        [[${message}]]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-
-    <form th:action="@{/palestra/salvar}" th:object="${palestra}" method="post">
-
-        <input type="hidden" th:field="*{id}" />
-
-        <!-- TÍTULO -->
-        <div class="form-group mt-3">
-            <label>Título:</label>
-            <input class="form-control" type="text"
-                   th:field="*{titulo}"
-                   th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
-            <div th:errors="*{titulo}" class="invalid-feedback"></div>
+        <div th:if="${message != null}" class="alert">
+            <span th:text="${message}"></span>
         </div>
 
-        <!-- DESCRIÇÃO -->
-        <div class="form-group">
-            <label>Descrição:</label>
-            <textarea class="form-control"
-                th:field="*{descricao}"
-                th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'">
-            </textarea>
-            <div th:errors="*{descricao}" class="invalid-feedback"></div>
-        </div>
+        <form th:action="@{/palestra/salvar}" th:object="${palestra}" method="post">
+            <input type="hidden" th:field="*{id}" />
 
-        <!-- COMPETÊNCIAS -->
-        <div class="form-group">
-            <label>Competências:</label>
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input type="text" th:field="*{titulo}" th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
+                <span th:errors="*{titulo}" class="error-message"></span>
+            </div>
 
-            <select multiple
-                    class="form-control"
-                    th:field="*{competenciaIds}"
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea th:field="*{descricao}"
+                    th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                <span th:errors="*{descricao}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="competenciaIds">Competências (Segure Ctrl para selecionar várias)</label>
+                <select multiple th:field="*{competenciaIds}"
                     th:classappend="${#fields.hasErrors('competenciaIds')} ? 'is-invalid'">
+                    <option th:each="comp : ${competencias}" th:value="${comp.id}" th:text="${comp.nome}"></option>
+                </select>
+                <span th:errors="*{competenciaIds}" class="error-message"></span>
+            </div>
 
-                <option th:each="comp : ${competencias}"
-                        th:value="${comp.id}"
-                        th:text="${comp.nome}">
-                </option>
+            <div class="form-group">
+                <label for="palestrantesTexto">Palestrantes (separados por vírgula)</label>
+                <input type="text" name="palestrantesTexto"
+                    th:value="${palestra != null && palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}">
+            </div>
 
-            </select>
+            <div class="form-group">
+                <label for="eventoId">Evento</label>
+                <select th:field="*{eventoId}" th:classappend="${#fields.hasErrors('eventoId')} ? 'is-invalid'">
+                    <option value="">Selecione um evento</option>
+                    <option th:each="ev : ${eventos}" th:value="${ev.id}" th:text="${ev.titulo}"></option>
+                </select>
+                <span th:errors="*{eventoId}" class="error-message"></span>
+            </div>
 
-            <div th:errors="*{competenciaIds}" class="invalid-feedback"></div>
-        </div>
+            <div class="form-group">
+                <label for="inicio">Data/Hora Início</label>
+                <input type="datetime-local" th:field="*{inicio}"
+                    th:classappend="${#fields.hasErrors('inicio')} ? 'is-invalid'">
+                <span th:errors="*{inicio}" class="error-message"></span>
+            </div>
 
-        <!-- PALESTRANTES -->
-        <div class="form-group">
-            <label>Palestrantes (separados por vírgula):</label>
+            <div class="form-group">
+                <label for="fim">Data/Hora Fim</label>
+                <input type="datetime-local" th:field="*{fim}"
+                    th:classappend="${#fields.hasErrors('fim')} ? 'is-invalid'">
+                <span th:errors="*{fim}" class="error-message"></span>
+            </div>
 
-            <input class="form-control" type="text"
-                   th:value="${palestra != null && palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}"
-                   name="palestrantesTexto">
-
-        </div>
-
-        <!-- EVENTO -->
-        <div class="form-group mt-3">
-            <label>Evento:</label>
-
-            <select class="form-control"
-                    th:field="*{eventoId}"
-                    th:classappend="${#fields.hasErrors('eventoId')} ? 'is-invalid'">
-
-                <option value="">Selecione um evento</option>
-
-                <option th:each="ev : ${eventos}"
-                        th:value="${ev.id}"
-                        th:text="${ev.titulo}">
-                </option>
-
-            </select>
-            <div th:errors="*{eventoId}" class="invalid-feedback"></div>
-        </div>
-
-        <!-- DATA INÍCIO -->
-        <div class="form-group">
-            <label>Data/Hora Início:</label>
-            <input type="datetime-local" class="form-control"
-                   th:field="*{inicio}"
-                   th:classappend="${#fields.hasErrors('inicio')} ? 'is-invalid'">
-            <div th:errors="*{inicio}" class="invalid-feedback"></div>
-        </div>
-
-        <!-- DATA FIM -->
-        <div class="form-group">
-            <label>Data/Hora Fim:</label>
-            <input type="datetime-local" class="form-control"
-                   th:field="*{fim}"
-                   th:classappend="${#fields.hasErrors('fim')} ? 'is-invalid'">
-            <div th:errors="*{fim}" class="invalid-feedback"></div>
-        </div>
-
-        <button type="submit" class="btn btn-primary mt-3">
-            <span th:text="${palestra.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
-        </button>
-
-        <a th:href="@{/palestra/listagem}" class="btn btn-secondary mt-3">Cancelar</a>
-
-    </form>
-
-</div>
+            <div class="actions">
+                <button type="submit" class="btn btn-submit">
+                    <span th:text="${palestra.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
+                </button>
+                <a th:href="@{/palestra/listagem}" class="btn btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
 </body>
+
 </html>

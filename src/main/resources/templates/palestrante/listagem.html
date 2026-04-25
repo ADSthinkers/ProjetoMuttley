@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de XP</title>
+    <title>Lista de Palestrantes</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,10 +20,10 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: #fff;
-            padding: 2.5rem;
+            padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
@@ -45,8 +45,8 @@
         .btn-new {
             background-color: #28a745;
             color: white;
-            padding: 10px 22px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
@@ -55,11 +55,11 @@
 
         .btn-new:hover {
             background-color: #218838;
-            transform: translateY(-1px);
         }
 
+        /* Alertas */
         .alert {
-            padding: 14px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             text-align: center;
@@ -78,6 +78,7 @@
             border: 1px solid #bee5eb;
         }
 
+        /* Tabela Customizada */
         .table-container {
             overflow-x: auto;
         }
@@ -110,25 +111,26 @@
             background-color: #fcfdfe;
         }
 
+        /* Ações */
         .action-links {
             display: flex;
             gap: 15px;
         }
 
-        .link-edit {
+        .icon-edit {
             color: #007bff;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: bold;
         }
 
-        .link-delete {
+        .icon-delete {
             color: #dc3545;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: bold;
         }
 
-        .link-edit:hover,
-        .link-delete:hover {
+        .icon-edit:hover,
+        .icon-delete:hover {
             text-decoration: underline;
         }
     </style>
@@ -137,41 +139,43 @@
 <body>
     <div class="container">
         <div class="header-section">
-            <h2>Lista de Pontuações XP</h2>
-            <a th:href="@{/xp/formulario}" class="btn-new">+ Novo XP</a>
+            <h2>Lista de Palestrantes</h2>
+            <a th:href="@{/palestrante/formulario}" class="btn-new">+ Novo Palestrante</a>
         </div>
 
         <div th:if="${message != null}" class="alert alert-success">
             <span th:text="${message}"></span>
         </div>
 
-        <div class="table-container" th:if="${xps != null and !xps.isEmpty()}">
+        <div class="table-container" th:if="${listaPalestrantes.size() > 0}">
             <table>
                 <thead>
                     <tr>
-                        <th>Horas</th>
-                        <th>Competência</th>
-                        <th>Aluno</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>E-mail</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="xp : ${xps}">
-                        <td th:text="${xp.horas}" style="font-weight: 600;"></td>
-                        <td th:text="${xp.competencia != null ? xp.competencia.nome : '-'}"></td>
-                        <td th:text="${xp.aluno != null ? xp.aluno.nome : '-'}"></td>
+                    <tr th:each="palestrante : ${listaPalestrantes}">
+                        <td th:text="${palestrante.nome}"></td>
+                        <td th:text="${palestrante.cpf}"></td>
+                        <td th:text="${palestrante.email}"></td>
                         <td class="action-links">
-                            <a th:href="@{/xp/formulario/{id}(id=${xp.id})}" class="link-edit">Editar</a>
-                            <a th:href="@{/xp/delete/{id}(id=${xp.id})}" class="link-delete"
-                                onclick="return confirm('Deseja realmente excluir este registo de XP?')">Excluir</a>
+                            <a th:href="@{/palestrante/formulario/{id}(id=${palestrante.id})}" class="icon-edit"
+                                title="Editar">Editar</a>
+                            <a th:href="@{/palestrante/delete/{id}(id=${palestrante.id})}" class="icon-delete"
+                                onclick="return confirm('Deseja realmente excluir este palestrante?')"
+                                title="Excluir">Excluir</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div th:unless="${xps != null and !xps.isEmpty()}" class="alert alert-info">
-            Nenhum registo de XP encontrado no sistema.
+        <div th:unless="${listaPalestrantes.size() > 0}" class="alert alert-info">
+            Nenhum palestrante encontrado no sistema.
         </div>
     </div>
 </body>

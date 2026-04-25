@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Evento</title>
+    <title>Gerenciamento de Palestrante</title>
     <style>
         * {
             box-sizing: border-box;
@@ -39,7 +39,7 @@
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
         }
 
         label {
@@ -125,34 +125,39 @@
 
 <body>
     <div class="card">
-        <h2 th:text="${evento.id != null} ? 'Editar Evento' : 'Novo Evento'"></h2>
-        <form th:action="@{/evento/salvar}" th:object="${evento}" method="post">
+        <h2 th:text="(${palestrante.id != null} ? 'Editar Palestrante' : 'Novo Palestrante')"></h2>
+        <form th:action="@{/palestrante/salvar}" th:object="${palestrante}" method="post">
             <input type="hidden" th:field="*{id}" />
 
             <div class="form-group">
-                <label for="titulo">Título do Evento</label>
-                <input type="text" th:field="*{titulo}" th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
-                <span th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}" class="error-message"></span>
+                <label for="nome">Nome Completo</label>
+                <input type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="dataInicio">Data de Início</label>
-                <input type="date" th:field="*{dataInicio}"
-                    th:classappend="${#fields.hasErrors('dataInicio')} ? 'is-invalid'">
-                <span th:if="${#fields.hasErrors('dataInicio')}" th:errors="*{dataInicio}" class="error-message"></span>
+                <label for="cpf">CPF</label>
+                <input type="text" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="local">Local</label>
-                <input type="text" th:field="*{local}" th:classappend="${#fields.hasErrors('local')} ? 'is-invalid'">
-                <span th:if="${#fields.hasErrors('local')}" th:errors="*{local}" class="error-message"></span>
+                <label for="email">E-mail</label>
+                <input type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" th:field="*{senha}" th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}" class="error-message"></span>
             </div>
 
             <div class="actions">
                 <button type="submit" class="btn btn-submit">
-                    <span th:text="${evento.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
+                    <span th:text="${palestrante.id != null} ? 'Atualizar' : 'Salvar'"></span>
                 </button>
-                <a th:href="@{/evento}" class="btn btn-cancel">Cancelar</a>
+                <a th:href="@{/palestrante}" class="btn btn-cancel">Cancelar</a>
             </div>
         </form>
     </div>

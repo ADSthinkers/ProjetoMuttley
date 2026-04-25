@@ -1,47 +1,179 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Administrador</title>
+    <style>
+        /* Reset e Definições Globais */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container do Formulário */
+        .admin-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Grupos de entrada */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Estilos de Validação (Substituindo o Bootstrap) */
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* Botões */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: filter 0.2s;
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #e4e6eb;
+            color: #4b4b4b;
+        }
+
+        .btn:hover {
+            filter: brightness(0.9);
+        }
+
+        @media (min-width: 480px) {
+            .actions {
+                flex-direction: row-reverse;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
 <body>
-    <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
-        <h2 class="text-center" th:text="(${admin.id != null} ? 'Editar Administrador' : 'Novo Administrador')"></h2>
+
+    <div class="admin-card">
+        <h2 th:text="(${admin.id != null} ? 'Editar Administrador' : 'Novo Administrador')"></h2>
 
         <form th:action="@{/admin/salvar}" th:object="${admin}" method="post">
             <input type="hidden" th:field="*{id}" />
 
             <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input class="form-control" type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
-                <div th:errors="*{nome}" class="invalid-feedback"></div>
+                <label for="nome">Nome Completo</label>
+                <input type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="login">Login:</label>
-                <input class="form-control" type="text" th:field="*{login}" th:classappend="${#fields.hasErrors('login')} ? 'is-invalid'">
-                <div th:errors="*{login}" class="invalid-feedback"></div>
+                <label for="login">Login</label>
+                <input type="text" th:field="*{login}" th:classappend="${#fields.hasErrors('login')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('login')}" th:errors="*{login}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="senha">Senha:</label>
-                <input class="form-control" type="password" th:field="*{senha}" th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
-                <div th:errors="*{senha}" class="invalid-feedback"></div>
+                <label for="senha">Senha</label>
+                <input type="password" th:field="*{senha}"
+                    th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="cpf">CPF:</label>
-                <input class="form-control" type="text" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid'">
-                <div th:errors="*{cpf}" class="invalid-feedback"></div>
+                <label for="cpf">CPF</label>
+                <input type="text" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="error-message"></span>
             </div>
 
             <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input class="form-control" type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
-                <div th:errors="*{email}" class="invalid-feedback"></div>
+                <label for="email">E-mail</label>
+                <input type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary mt-3">
-                <span th:text="${admin.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
-            </button>
-            <a th:href="@{/admin}" class="btn btn-secondary mt-3">Cancelar</a>
+            <div class="actions">
+                <button type="submit" class="btn btn-submit">
+                    <span th:text="${admin.id != null} ? 'Atualizar' : 'Cadastrar'"></span>
+                </button>
+                <a th:href="@{/admin}" class="btn btn-cancel">Cancelar</a>
+            </div>
         </form>
     </div>
+
 </body>
+
 </html>
