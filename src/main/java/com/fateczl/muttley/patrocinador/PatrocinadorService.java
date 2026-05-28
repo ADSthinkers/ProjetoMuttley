@@ -16,8 +16,10 @@ public class PatrocinadorService {
     @Autowired
     private PatrocinadorMapper mapper;
 
+    @SuppressWarnings("null")
     public Patrocinador salvarOuAtualizar(PatrocinadorDTO dto) {
         if (dto.id() != null) {
+            @SuppressWarnings("null")
             Patrocinador existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Patrocinador não encontrado"));
             mapper.updateEntityFromDto(dto, existente);
@@ -32,10 +34,12 @@ public class PatrocinadorService {
         return repository.findAll(Sort.by("id").ascending());
     }
 
+    @SuppressWarnings("null")
     public Optional<Patrocinador> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }

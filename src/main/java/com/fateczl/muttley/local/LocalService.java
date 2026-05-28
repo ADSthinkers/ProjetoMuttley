@@ -18,8 +18,10 @@ public class LocalService {
     @Autowired
     private LocalMapper localMapper;
 
+    @SuppressWarnings("null")
     public Local saveOrAtualize(LocalDTO dto) {
         if (dto.id() != null) {
+            @SuppressWarnings("null")
             Local existente = localRepository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Local não encontrado com ID: " + dto.id()));
             localMapper.updateEntityFromDto(dto, existente);
@@ -34,10 +36,12 @@ public class LocalService {
         return localRepository.findAll(Sort.by("id").ascending());
     }
 
+    @SuppressWarnings("null")
     public void apagarPorId(Long id) {
         localRepository.deleteById(id);
     }
 
+    @SuppressWarnings("null")
     public Optional<Local> procurarPorId(Long id) {
         return localRepository.findById(id);
     }

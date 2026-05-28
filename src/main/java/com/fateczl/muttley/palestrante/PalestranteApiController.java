@@ -1,0 +1,55 @@
+package com.fateczl.muttley.palestrante;
+
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/palestrantes")
+public class PalestranteApiController {
+
+    private final PalestranteService service;
+    private final PalestranteMapper mapper;
+
+    public PalestranteApiController(PalestranteService service, PalestranteMapper mapper) {
+        this.service = service;
+        this.mapper = mapper;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PalestranteListagem>> listar() {
+        List<PalestranteListagem> lista = service.listarTodos()
+                .stream().map(mapper::toListagemDto).toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PalestranteDTO> buscarPorId(@PathVariable Long id) {
+        return service.buscarPorId(id)
+                .map(mapper::toAtualizacaoDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<PalestranteDTO> criar(@RequestBody @Valid PalestranteDTO dto) {
+        Palestrante salvo = service.salvarOuAtualizar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toAtualizacaoDto(salvo));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PalestranteDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PalestranteDTO dto) {
+        PalestranteDTO dtoComId = new PalestranteDTO(id, dto.nome(), dto.cpf(), dto.email(), dto.senha());
+        Palestrante salvo = service.salvarOuAtualizar(dtoComId);
+        return ResponseEntity.ok(mapper.toAtualizacaoDto(salvo));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        service.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
+}

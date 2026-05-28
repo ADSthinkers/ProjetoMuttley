@@ -5,13 +5,19 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
-
 public interface XpMapper {
-    XpDTO toXpDTO (Xp xp);
+
+    @Mapping(source = "competencia.id", target = "competenciaId")
+    @Mapping(source = "aluno.id", target = "alunoId")
+    XpDTO toXpDTO(Xp xp);
 
     @Mapping(target = "id", ignore = true)
-    Xp toEntityFromXp (XpDTO dto);
+    @Mapping(target = "competencia", ignore = true)
+    @Mapping(target = "aluno", ignore = true)
+    Xp toEntityFromXp(XpDTO dto);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "competencia", ignore = true)
+    @Mapping(target = "aluno", ignore = true)
     void updateEntityFromXp(XpDTO dto, @MappingTarget Xp xp);
 }

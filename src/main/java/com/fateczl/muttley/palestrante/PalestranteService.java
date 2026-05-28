@@ -16,8 +16,10 @@ public class PalestranteService {
         this.mapper = mapper;
     }
 
+    @SuppressWarnings("null")
     public Palestrante salvarOuAtualizar(PalestranteDTO dto) {
         if (dto.id() != null) {
+            @SuppressWarnings("null")
             Palestrante existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Palestrante não encontrado"));
 
@@ -33,10 +35,12 @@ public class PalestranteService {
         return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Optional<Palestrante> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);
     }
