@@ -10,27 +10,19 @@ import Buscar from "./pages/Buscar.jsx";
 import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
 import EventoDetalhe from "./pages/EventoDetalhe.jsx";
 import Novo from "./pages/Novo.jsx";
-import PerfilAluno from "./pages/PerfilAluno.jsx";
-import Palestrantes from "./pages/Palestrantes.jsx";
-import PerfilPalestrante from "./pages/PerfilPalestrante.jsx";
-import { useLocation } from "react-router-dom";
 
 
 
 function App() {
-  const location = useLocation();
 
   return (
+    <BrowserRouter>
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+        <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/competencias" element={<Competencias />} />
           <Route path="/alunos" element={<Aluno />} />
-          <Route path="/aluno/:id" element={<PerfilAluno />} />
-          <Route path="/perfil" element={<PerfilAluno />} />
-          <Route path="/palestrantes" element={<Palestrantes />} />
-          <Route path="/palestrante/:id" element={<PerfilPalestrante />} />
           <Route path="/evento-palestra" element={<EventoPalestra />} />
           <Route path="/palestra/:idPal" element={<PalestraDetalhe />} />
           <Route path="/evento/:idEvento" element={<EventoDetalhe />} />
@@ -38,6 +30,7 @@ function App() {
           <Route path="/novo" element={<Novo />} />
         </Routes>
       </AnimatePresence>
+    </BrowserRouter>
   )
 }
 

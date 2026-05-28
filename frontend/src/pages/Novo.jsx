@@ -1,142 +1,295 @@
 import Sidebar from "../components/Sidebar"
-import { useState } from "react"
-import { LecternIcon, CalendarStarIcon, MedalIcon, UsersIcon, PlusCircleIcon, PlusIcon } from "@phosphor-icons/react"
+import { useState, useRef } from "react"
+import { 
+    LecternIcon, 
+    CalendarStarIcon, 
+    MedalIcon, 
+    UsersIcon, 
+    PlusCircleIcon, 
+    PlusIcon,
+    MapPinIcon,
+    MicrophoneStageIcon,
+    HandshakeIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CheckCircleIcon,
+    PrinterIcon,
+    FileTextIcon
+} from "@phosphor-icons/react"
 import AlunoForm from "../components/AlunoForm"
 import PalestraForm from "../components/PalestraForm"
+import LocalForm from "../components/LocalForm"
+import PalestranteForm from "../components/PalestranteForm"
+import PatrocinadorForm from "../components/PatrocinadorForm"
+import EventoForm from "../components/EventoForm"
+import CompetenciaForm from "../components/CompetenciaForm"
+import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
+import { motion, AnimatePresence } from "framer-motion"
 
 const Novo = () => {
-    
     const [ etapa, setEtapa ] = useState(1)
     const [ tipo, setTipo ] = useState("")
-    const [ objeto, setObjeto ] = useState()
-    console.log(objeto);
-    
+    const [ objeto, setObjeto ] = useState({})
     
     const passos = [
-        { id: 1, label: "Criação" },
+        { id: 1, label: "Categoria" },
         { id: 2, label: "Dados" },
-        { id: 3, label: "Data" },
-        { id: 4, label: "Finalização" }
+        { id: 3, label: "Revisão" },
+        { id: 4, label: "Sucesso" }
     ];
-    
-    return (
-        <div className="flex">
-            <Sidebar />
-            <div className="pt-10 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
-                <h1 className="text-4xl font-primary text-primary font-bold">Novo</h1>
 
-                {/* Timeline / Stepper */}
-                <div className="w-full mx-auto py-8 relative">
-                    {/* Linha de conexão de fundo */}
-                    <div className="absolute top-15 left-[3.5%] right-[3.5%] h-0.5 bg-accent/20 z-0"></div>
-                    
-                    <div className="flex justify-between items-start relative z-10">
-                        {passos.map((passo) => (
-                            <div key={passo.id} className="flex flex-col items-center gap-3">
-                                {/* Círculo com o número */}
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-primary font-light transition-all duration-300 ${etapa >= passo.id ? "bg-accent text-primary font-medium" : "bg-accent/10 text-primary/30"}`}>
-                                    {passo.id}
+    const categorias = [
+        { id: "palestra", label: "Palestra", icon: <LecternIcon size={40} /> },
+        { id: "evento", label: "Evento", icon: <CalendarStarIcon size={40} /> },
+        { id: "aluno", label: "Aluno", icon: <UsersIcon size={40} /> },
+        { id: "local", label: "Local", icon: <MapPinIcon size={40} /> },
+        { id: "palestrante", label: "Palestrante", icon: <MicrophoneStageIcon size={40} /> },
+        { id: "patrocinador", label: "Patrocinador", icon: <HandshakeIcon size={40} /> },
+        { id: "competência", label: "Competência", icon: <MedalIcon size={40} /> },
+    ]
+
+    const handleSelectTipo = (t) => {
+        setTipo(t);
+        setEtapa(2);
+    }
+
+    const renderForm = () => {
+        const props = { setObjeto, setEtapa, objeto };
+        switch (tipo.toLowerCase()) {
+            case "aluno": return <AlunoForm {...props} />;
+            case "palestra": return <PalestraForm {...props} />;
+            case "local": return <LocalForm {...props} />;
+            case "palestrante": return <PalestranteForm {...props} />;
+            case "patrocinador": return <PatrocinadorForm {...props} />;
+            case "evento": return <EventoForm {...props} />;
+            case "competência": return <CompetenciaForm {...props} />;
+            default: return null;
+        }
+    };
+
+    const handlePrint = () => {
+        window.print();
+    }
+
+    return (
+        <PageTransition>
+            <div className="flex bg-base-100 min-h-screen print:bg-white">
+                <div className="print:hidden">
+                    <Sidebar />
+                </div>
+                <div className="pt-10 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-8 print:p-0 print:h-auto print:overflow-visible">
+                    <div className="flex items-center justify-between print:hidden">
+                        <motion.h1 variants={itemVariants} className="text-4xl font-primary text-primary font-bold">Novo Cadastro</motion.h1>
+                        {etapa > 1 && etapa < 4 && (
+                            <motion.button 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                onClick={() => setEtapa(etapa - 1)}
+                                className="flex items-center gap-2 text-primary/60 hover:text-primary transition-colors font-secondary text-sm cursor-pointer"
+                            >
+                                <ArrowLeftIcon size={20} />
+                                Voltar
+                            </motion.button>
+                        )}
+                    </div>
+
+                    {/* Stepper Moderno */}
+                    <motion.div variants={itemVariants} className="flex items-center justify-center w-full max-w-4xl mx-auto mb-4 print:hidden">
+                        {passos.map((passo, idx) => (
+                            <div key={passo.id} className="flex items-center flex-1 last:flex-none">
+                                <div 
+                                    onClick={() => etapa > passo.id && setEtapa(passo.id)}
+                                    className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${etapa === passo.id ? "scale-110" : "opacity-60 hover:opacity-100"}`}
+                                >
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-primary transition-all duration-300 ${etapa >= passo.id ? "bg-accent text-primary shadow-lg shadow-accent/20" : "bg-accent/10 text-primary/30"}`}>
+                                        {etapa > passo.id ? <CheckCircleIcon size={28} weight="fill" className="text-secondary/75"/> : passo.id}
+                                    </div>
+                                    <span className={`text-[10px] font-secondary uppercase tracking-tighter ${etapa >= passo.id ? "text-primary font-bold" : "text-primary/30"}`}>
+                                        {passo.label}
+                                    </span>
                                 </div>
-                                
-                                {/* Rótulo do passo */}
-                                <span className={`text-sm font-secondary font-light transition-colors duration-300 ${etapa >= passo.id ? "text-primary font-medium" : "text-primary/40"}`}>
-                                    {passo.label}
-                                </span>
+                                {idx < passos.length - 1 && (
+                                    <div className="flex-1 h-0.5 mx-4 bg-accent/20 relative overflow-hidden">
+                                        <motion.div 
+                                            initial={false}
+                                            animate={{ width: etapa > passo.id ? "100%" : "0%" }}
+                                            className="absolute top-0 left-0 h-full bg-accent"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         ))}
+                    </motion.div>
+                    
+                    <div className="flex-1">
+                        <AnimatePresence mode="wait">
+                            {etapa === 1 && (
+                                <motion.div 
+                                    key="step1"
+                                    variants={containerVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:hidden"
+                                >
+                                    {categorias.map((cat) => (
+                                        <motion.div 
+                                            key={cat.id}
+                                            variants={itemVariants}
+                                            whileHover={{ y: -8, scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => handleSelectTipo(cat.id)}
+                                            className="bg-accent/20 hover:bg-accent/30 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 cursor-pointer border border-accent/10 transition-colors group"
+                                        >
+                                            <div className="w-20 h-20 bg-accent/40 rounded-2xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:rotate-6 transition-all duration-300">
+                                                {cat.icon}
+                                            </div>
+                                            <div className="text-center">
+                                                <h2 className="text-xl font-primary text-primary font-bold">{cat.label}</h2>
+                                                <p className="text-xs font-secondary text-primary/40 mt-1 uppercase tracking-widest">Clique para iniciar</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            )}
+
+                            {etapa === 2 && (
+                                <motion.div 
+                                    key="step2"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="max-w-2xl mx-auto w-full bg-accent/10 p-10 rounded-[40px] border border-accent/20 print:hidden"
+                                >
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center text-primary shadow-lg shadow-accent/20">
+                                            {categorias.find(c => c.id === tipo)?.icon}
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-primary text-primary font-bold">Dados do {tipo}</h2>
+                                            <p className="text-sm font-secondary text-primary/50">Preencha todos os campos obrigatórios para continuar.</p>
+                                        </div>
+                                    </div>
+                                    {renderForm()}
+                                </motion.div>
+                            )}
+
+                            {etapa === 3 && (
+                                <motion.div 
+                                    key="step3"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="max-w-3xl mx-auto w-full flex flex-col gap-8 print:block"
+                                >
+                                    <div className="bg-accent/10 p-10 rounded-[40px] border border-accent/20 print:bg-white print:border-none print:p-0">
+                                        <div className="flex items-center justify-between mb-8 print:mb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center text-primary print:hidden">
+                                                    <FileTextIcon size={28} />
+                                                </div>
+                                                <h2 className="text-2xl font-primary text-primary font-bold">Confirmação de Dados</h2>
+                                            </div>
+                                            <button 
+                                                onClick={handlePrint}
+                                                className="flex items-center gap-2 bg-accent/30 hover:bg-accent/50 text-primary px-4 py-2 rounded-xl transition-all cursor-pointer font-secondary text-sm print:hidden"
+                                            >
+                                                <PrinterIcon size={20} />
+                                                Imprimir
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:grid-cols-1">
+                                            {Object.entries(objeto).map(([key, value]) => {
+                                                if (typeof value === 'object' && !Array.isArray(value)) return null;
+                                                
+                                                return (
+                                                    <div key={key} className="flex flex-col gap-1 border-b border-accent/20 pb-2 print:border-black/10">
+                                                        <span className="text-[10px] uppercase tracking-widest text-primary/40 font-bold">{key.replace(/([A-Z])/g, ' $1')}</span>
+                                                        <span className="text-lg font-primary text-primary font-medium">
+                                                            {Array.isArray(value) ? value.join(", ") : String(value)}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+
+                                        <div className="mt-12 flex gap-4 print:hidden">
+                                            <button 
+                                                className="flex-1 bg-primary text-secondary py-5 rounded-2xl font-primary font-bold hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-primary/20 text-lg flex items-center justify-center gap-2"
+                                                onClick={() => setEtapa(4)}
+                                            >
+                                                <span>Confirmar e Finalizar</span>
+                                                <ArrowRightIcon size={20} weight="bold" />
+                                            </button>
+                                            <button 
+                                                className="px-10 bg-accent/20 text-primary rounded-2xl font-primary font-bold hover:bg-accent/30 transition-all cursor-pointer"
+                                                onClick={() => setEtapa(2)}
+                                            >
+                                                Editar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {etapa === 4 && (
+                                <motion.div 
+                                    key="step4"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="flex flex-col items-center justify-center gap-8 py-12 text-center print:hidden"
+                                >
+                                    <div className="relative">
+                                        <motion.div 
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                                            className="w-32 h-32 bg-right/20 rounded-full flex items-center justify-center"
+                                        >
+                                            <CheckCircleIcon size={80} className="text-right text-accent" weight="fill" />
+                                        </motion.div>
+                                        <motion.div 
+                                            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                                            transition={{ duration: 2, repeat: Infinity }}
+                                            className="absolute inset-0 bg-right/30 rounded-full -z-10"
+                                        />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-4xl font-primary text-primary font-bold">Sucesso!</h2>
+                                        <p className="text-lg font-secondary text-primary/60 mt-2">O cadastro de {tipo} foi realizado com sucesso.</p>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button 
+                                            className="flex items-center gap-2 bg-accent/90 text-primary px-8 py-4 rounded-2xl font-primary font-bold hover:opacity-90 transition-all cursor-pointer" 
+                                            onClick={() => { setEtapa(1); setObjeto({}); }}
+                                        >
+                                            <PlusIcon size={20} weight="bold" />
+                                            Novo {tipo}
+                                        </button>
+                                        <button 
+                                            className="bg-accent/20 text-primary px-8 py-4 rounded-2xl font-primary font-bold hover:bg-accent/30 transition-all cursor-pointer" 
+                                            onClick={() => window.history.back()}
+                                        >
+                                            Sair
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-                
-                {etapa == 1 ? <div>
-                    {/* Botões de add*/} 
-                    <div className="flex gap-5">
-
-                        <div className="w-full bg-accent/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-6">
-                        
-                            {/* Container do Ícone */}
-                            <div className="w-24 h-24 bg-[color-mix(in_srgb,var(--color-accent),#000_25%)] rounded-xl flex items-center justify-center">
-                                <LecternIcon size={48} className="text-secondary" weight="regular" />
-                            </div>
-            
-                            {/* Título Principal */}
-                            <h2 className="text-xl font-primary text-primary font-normal tracking-tight">
-                                Palestra
-                            </h2>
-            
-                            {/* Botão de Ação */}
-                            <button className="w-full flex items-center justify-center gap-2 text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer" onClick={() => {setEtapa(etapa + 1); setTipo("palestra")}}>
-                                <PlusIcon size={24} className="text-primary" weight="thin" /> 
-                                <span>Novo</span>
-                            </button>
-
-                        </div>
-
-                        <div className="w-full bg-accent/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-6">
-                        
-                            {/* Container do Ícone */}
-                            <div className="w-24 h-24 bg-[color-mix(in_srgb,var(--color-accent),#000_25%)] rounded-xl flex items-center justify-center">
-                                <CalendarStarIcon size={48} className="text-secondary" weight="regular" />
-                            </div>
-            
-                            {/* Título Principal */}
-                            <h2 className="text-xl font-primary text-primary font-normal tracking-tight">
-                                Evento
-                            </h2>
-            
-                            {/* Botão de Ação */}
-                            <button className="w-full flex items-center justify-center gap-2 text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer" onClick={() => {setEtapa(etapa + 1); setTipo("Evento")}}>
-                                <PlusIcon size={24} className="text-primary" weight="thin" /> 
-                                <span>Novo</span>
-                            </button>
-
-                        </div>
-
-                        <div className="w-full bg-accent/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-6">
-                        
-                            {/* Container do Ícone */}
-                            <div className="w-24 h-24 bg-[color-mix(in_srgb,var(--color-accent),#000_25%)] rounded-xl flex items-center justify-center">
-                                <MedalIcon size={48} className="text-secondary" weight="regular" />
-                            </div>
-            
-                            {/* Título Principal */}
-                            <h2 className="text-xl font-primary text-primary font-normal tracking-tight">
-                                Competência
-                            </h2>
-            
-                            {/* Botão de Ação */}
-                            <button className="w-full flex items-center justify-center gap-2 text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer" onClick={() => {setEtapa(etapa + 1); setTipo("Competência")}}>
-                                <PlusIcon size={24} className="text-primary" weight="thin" /> 
-                                <span>Novo</span>
-                            </button>
-
-                        </div>
-
-                        <div className="w-full bg-accent/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-6">
-                        
-                            {/* Container do Ícone */}
-                            <div className="w-24 h-24 bg-[color-mix(in_srgb,var(--color-accent),#000_25%)] rounded-xl flex items-center justify-center">
-                                <UsersIcon size={48} className="text-secondary" weight="regular" />
-                            </div>
-            
-                            {/* Título Principal */}
-                            <h2 className="text-xl font-primary text-primary font-normal tracking-tight">
-                                Aluno
-                            </h2>
-            
-                            {/* Botão de Ação */}
-                            <button className="w-full flex items-center justify-center gap-2 text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer" onClick={() => {setEtapa(etapa + 1); setTipo("Aluno")}}>
-                                <PlusIcon size={24} className="text-primary" weight="thin" /> 
-                                <span>Novo</span>
-                            </button>
-
-                        </div>
-                    </div>
-                </div> : etapa == 2 ? tipo.toLowerCase === "aluno" ? <AlunoForm setObjeto={setObjeto} setEtapa={setEtapa} /> 
-                : tipo.toLowerCase === "palestra" ? <PalestraForm setObjeto={setObjeto} setEtapa={setEtapa} /> : <div></div> : <div></div> }
- 
             </div>
-        </div>
-    )
-}
+            
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                    body { visibility: hidden; }
+                    .print-section, .print-section * { visibility: visible; }
+                    .print-section { position: absolute; left: 0; top: 0; width: 100%; }
+                }
+            ` }} />
+        </PageTransition>
+    );
+};
 
-export default Novo
+export default Novo;

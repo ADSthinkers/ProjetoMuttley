@@ -1,28 +1,27 @@
 import { useState } from "react";
-import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react";
+import { DotsThreeIcon, CaretRightIcon, CheckIcon } from "@phosphor-icons/react";
 import AlunoAvatar from '../utils/AlunoAvatar';
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+
+
 
 // Card de aluno
 const AlunoCard = ({ aluno, check }) => {
     const [selecionado, setSelecionado] = useState(false)
+    console.log(check);
+
     const navigate = useNavigate();
 
     const navegarAluno = () => {
         navigate(`/aluno/${aluno.id}`)
     }
+    
 
     return (
-        <motion.div 
-            onClick={navegarAluno} 
-            whileHover={{ scale: 1.01, x: 4, backgroundColor: "rgba(252, 209, 96, 0.8)" }}
-            whileTap={{ scale: 0.99 }}
-            className={`flex items-center gap-4 bg-accent/60 rounded-2xl px-5 py-4 transition-all group cursor-pointer ${selecionado ? "ring-2 ring-primary/30" : ""}`}
-        >
+        <div onClick={navegarAluno} className={`flex items-center gap-4 bg-accent/60 rounded-2xl px-5 py-4 transition-all hover:bg-accent/80 group cursor-pointer ${selecionado ? "ring-2 ring-primary/30" : ""}`}>
             {/* Checkbox */}
             {check ? <div className="relative">
-                <button onClick={(e) => { e.stopPropagation(); setSelecionado(!selecionado); }} className={`w-7 h-7 rounded-lg border-2 shrink-0 transition-all cursor-pointer ${selecionado ? "bg-primary/10 border-primary/40" : "bg-accent/30 border-primary/20 hover:border-primary/40"}`}/>
+                <button onClick={() => setSelecionado(!selecionado)} className={`w-7 h-7 rounded-lg border-2 shrink-0 transition-all cursor-pointer ${selecionado ? "bg-primary/10 border-primary/40" : "bg-accent/30 border-primary/20 hover:border-primary/40"}`}/>
                 <CheckIcon size={20} weight="light" className={`absolute text-primary top-1 left-1 pointer-events-none ${selecionado ? "opacity-75" : "opacity-0"}`}/>
             </div> : null}
 
@@ -41,11 +40,11 @@ const AlunoCard = ({ aluno, check }) => {
 
             {/* Ações */}
             <div className="flex items-center gap-2 shrink-0">
-                <div className="text-primary/50 group-hover:text-primary transition-colors p-1 group-hover:translate-x-1 transition-transform">
+                <button className="text-primary/50 hover:text-primary transition-colors cursor-pointer p-1">
                     <CaretRightIcon size={18} weight="light" />
-                </div>
+                </button>
             </div>
-        </motion.div>
+        </div>
     )
 }
 

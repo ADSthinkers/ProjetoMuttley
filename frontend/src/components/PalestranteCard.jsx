@@ -4,18 +4,18 @@ import AlunoAvatar from '../utils/AlunoAvatar';
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-// Card de aluno
-const AlunoCard = ({ aluno, check }) => {
+// Card de palestrante
+const PalestranteCard = ({ palestrante, check }) => {
     const [selecionado, setSelecionado] = useState(false)
     const navigate = useNavigate();
 
-    const navegarAluno = () => {
-        navigate(`/aluno/${aluno.id}`)
+    const navegarPalestrante = () => {
+        navigate(`/palestrante/${palestrante.id}`)
     }
 
     return (
         <motion.div 
-            onClick={navegarAluno} 
+            onClick={navegarPalestrante} 
             whileHover={{ scale: 1.01, x: 4, backgroundColor: "rgba(252, 209, 96, 0.8)" }}
             whileTap={{ scale: 0.99 }}
             className={`flex items-center gap-4 bg-accent/60 rounded-2xl px-5 py-4 transition-all group cursor-pointer ${selecionado ? "ring-2 ring-primary/30" : ""}`}
@@ -27,15 +27,18 @@ const AlunoCard = ({ aluno, check }) => {
             </div> : null}
 
             {/* Avatar */}
-            <AlunoAvatar email={aluno.emailPessoal} nome={aluno.nome} />
+            <AlunoAvatar email={palestrante.email} nome={palestrante.nome} />
 
             {/* Infos */}
             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <span className="text-base font-primary font-bold text-primary truncate">{aluno.nome}</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-base font-primary font-bold text-primary truncate">{palestrante.nome}</span>
+                    <div className="badge badge-primary badge-outline text-[10px] h-4 font-secondary">Palestrante</div>
+                </div>
                 <span className="text-xs font-secondary text-primary/60 truncate">
-                    {aluno.emailPessoal}
+                    {palestrante.email}
                     <span className="mx-2 text-primary/30">|</span>
-                    {aluno.emailFatec}
+                    CPF: {palestrante.cpf}
                 </span>
             </div>
 
@@ -49,4 +52,4 @@ const AlunoCard = ({ aluno, check }) => {
     )
 }
 
-export default AlunoCard
+export default PalestranteCard;

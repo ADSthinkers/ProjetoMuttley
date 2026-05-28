@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@media (prefers-color-scheme: light) {
+      :root{
+            --color-primary: #131100;       
+            --color-secondary: #f7f7f8;      
+            --color-accent: #FCD160;   
+            --color-base-100: #FEFDF6;      
+            --color-error: #ee1518;
+            --color-right: #69d81d;
+
+      }
+}
+
+@media (prefers-color-scheme: dark) {
+      :root{
+            --color-primary: #131100;      
+            --color-secondary: #f7f7f8;      
+            --color-accent: #FCD160;   
+            --color-base-100: #FEFDF6;      
+            --color-error: #d62022;
+            --color-right: #69d81d;
+
+      }
+}
+
+@font-face {
+      font-family: 'Tomato Grotesk Regular';
+      src: url('../assets/fonts/TomatoGrotesk-Regular.otf') format('otf');
+      font-style: normal;
+      font-weight: bold;
+}
+
+@font-face {
+      font-family: 'Tomato Grotesk Bold';
+      src: url('../assets/fonts/TomatoGrotesk-Bold.otf') format('otf');
+      font-style: normal;
+      font-weight: normal;
+}
+
+@font-face {
+      font-family: 'Inter Tight';
+      src: url('../assets/fonts/InterTight-VariableFont_wght.ttf') format('ttf');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+}
+
+@theme {
+      --font-primary: "Tomato Grotesk", sans-serif;
+      --font-secondary: "Inter Tight", sans-serif; 
+}
+
+body {
+  /* For WebKit (Safari, Chrome) */
+  -webkit-font-smoothing: antialiased;
+  
+  /* For Firefox on macOS */
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -2,20 +2,20 @@ import { useState } from "react";
 import { ArrowRightIcon } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 
-const AlunoForm = ({ setObjeto, setEtapa, objeto }) => {
-    const [nome, setNome] = useState(objeto?.nomeAluno || "");
-    const [email, setEmail] = useState(objeto?.emailPessoalAluno || "");
-    const [emailFatec, setEmailFatec] = useState(objeto?.emailFatecAluno || "");
-    const [cpf, setCpf] = useState(objeto?.cpfAluno || "");
-    
+const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
+    const [nome, setNome] = useState(objeto?.nome || "");
+    const [cpf, setCpf] = useState(objeto?.cpf || "");
+    const [email, setEmail] = useState(objeto?.email || "");
+    const [senha, setSenha] = useState(objeto?.senha || "");
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setObjeto({
             ...objeto,
-            nomeAluno: nome,
-            emailPessoalAluno: email,
-            emailFatecAluno: emailFatec,
-            cpfAluno: cpf 
+            nome: nome,
+            cpf: cpf,
+            email: email,
+            senha: senha
         });
         setEtapa(3);
     };
@@ -30,7 +30,7 @@ const AlunoForm = ({ setObjeto, setEtapa, objeto }) => {
                         required 
                         type="text" 
                         className="w-full text-base p-4 bg-white/50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm" 
-                        placeholder="Ex: João Silva" 
+                        placeholder="Nome do palestrante" 
                         value={nome} 
                         onChange={(e) => setNome(e.target.value)} 
                     />
@@ -50,31 +50,32 @@ const AlunoForm = ({ setObjeto, setEtapa, objeto }) => {
                         />
                     </div>
 
-                    {/* Email Fatec */}
+                    {/* E-mail */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-primary font-bold text-primary ml-1">Email Fatec</label>
+                        <label className="text-sm font-primary font-bold text-primary ml-1">E-mail Profissional</label>
                         <input 
-                            required
+                            required 
                             type="email" 
                             className="w-full text-base p-4 bg-white/50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm" 
-                            placeholder="aluno@fatec.sp.gov.br" 
-                            value={emailFatec} 
-                            onChange={(e) => setEmailFatec(e.target.value)} 
+                            placeholder="email@exemplo.com" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)} 
                         />
                     </div>
                 </div>
 
-                {/* Email Pessoal */}
+                {/* Senha */}
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-primary font-bold text-primary ml-1">Email Pessoal</label>
+                    <label className="text-sm font-primary font-bold text-primary ml-1">Senha de Acesso</label>
                     <input 
                         required 
-                        type="email" 
+                        type="password" 
                         className="w-full text-base p-4 bg-white/50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm" 
-                        placeholder="exemplo@gmail.com" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
+                        placeholder="********" 
+                        value={senha} 
+                        onChange={(e) => setSenha(e.target.value)} 
                     />
+                    <p className="text-[10px] font-secondary text-primary/40 ml-1 italic">* Esta senha será usada pelo palestrante para acessar o sistema.</p>
                 </div>
             </div>
 
@@ -90,4 +91,4 @@ const AlunoForm = ({ setObjeto, setEtapa, objeto }) => {
     );
 };
 
-export default AlunoForm;
+export default PalestranteForm;

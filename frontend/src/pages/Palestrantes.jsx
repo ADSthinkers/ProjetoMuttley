@@ -1,48 +1,45 @@
 import Sidebar from "../components/Sidebar";
 import { useState } from "react";
 import { CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
-import AlunoCard from "../components/AlunoCard";
+import PalestranteCard from "../components/PalestranteCard";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion } from "framer-motion"
 
-const Aluno = () => {
-    const alunos = [
+const Palestrantes = () => {
+    const palestrantes = [
         {
             id: 1,
-            nome: "Manon Katseye",
-            cpf: "213.465.879-10",
-            emailPessoal: "ilikethedrama@gameboy.com",
-            emailFatec: "manon.katseye@fatec.sp.gov.br"
+            nome: "Dr. Alan Turing",
+            cpf: "111.222.333-44",
+            email: "alan.turing@bletchley.park"
         },
         {
             id: 2,
-            nome: "Rebecca Black",
-            cpf: "157.143.271-20",
-            emailPessoal: "rebecca@friday.com",
-            emailFatec: "rebecca.black@fatec.sp.gov.br"
+            nome: "Jordan Walke",
+            cpf: "555.666.777-88",
+            email: "jordan.walke@react.js"
         },
         {
             id: 3,
-            nome: "Charlingtonglaevionbeecheknavare dos Anjos Mendonça",
-            cpf: "321.654.987-00",
-            emailPessoal: "charlingtonglaevionbeecheknavare@gmail.com",
-            emailFatec: "charlingtonglaevionbeecheknavare@aluno.cps.sp.gov.br"
-        },{
+            nome: "Edward Snowden",
+            cpf: "999.000.111-22",
+            email: "edward.snowden@freedom.press"
+        },
+        {
             id: 4,
-            nome: "Miguel Victor",
-            cpf: "123.456.789-10",
-            emailPessoal: "miguel.balbo@yahoo.com.br",
-            emailFatec: "miguel.victor@fatec.sp.gov.br"
+            nome: "Grace Hopper",
+            cpf: "444.333.222-11",
+            email: "grace.hopper@navy.mil"
         }
-    ]
+    ];
 
     const [busca, setBusca] = useState("")
     const [ordenar, setOrdenar] = useState("")
 
     const ordens = ["Nome (A-Z)", "Nome (Z-A)"]
 
-    const alunosFiltrados = alunos
-        .filter(a => a.nome.toLowerCase().includes(busca.toLowerCase()) || a.emailPessoal.toLowerCase().includes(busca.toLowerCase()) || a.emailFatec.toLowerCase().includes(busca.toLowerCase()) || a.cpf.toLowerCase().includes(busca.toLowerCase()))
+    const palestrantesFiltrados = palestrantes
+        .filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()) || p.email.toLowerCase().includes(busca.toLowerCase()) || p.cpf.toLowerCase().includes(busca.toLowerCase()))
         .sort((a, b) => {
             if (ordenar === "Nome (A-Z)") return a.nome.localeCompare(b.nome)
             if (ordenar === "Nome (Z-A)") return b.nome.localeCompare(a.nome)
@@ -55,7 +52,7 @@ const Aluno = () => {
                 <Sidebar />
                 <div className="pt-10 pl-5 pr-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
 
-                    <motion.h1 variants={itemVariants} className="text-4xl font-primary text-primary font-bold">Alunos</motion.h1>
+                    <motion.h1 variants={itemVariants} className="text-4xl font-primary text-primary font-bold">Palestrantes</motion.h1>
 
                     {/* Busca + Ordenar */}
                     <motion.div variants={itemVariants} className="flex flex-col gap-2">
@@ -64,7 +61,7 @@ const Aluno = () => {
                             {/* Campo de busca */}
                             <div className="flex items-center gap-3 flex-1 bg-accent/20 rounded-2xl px-5 py-3.5 focus-within:ring-2 focus-within:ring-accent/50 transition-all">
                                 <input id="busca" type="text" value={busca} onChange={(e) => setBusca(e.target.value)}
-                                    placeholder="Digite o nome de um aluno aqui" className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/30 focus:outline-none"/>
+                                    placeholder="Digite o nome de um palestrante aqui" className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/30 focus:outline-none"/>
                                 <MagnifyingGlassIcon size={20} weight="light" className="text-primary/40 shrink-0" />
                             </div>
 
@@ -81,22 +78,22 @@ const Aluno = () => {
                         </div>
                     </motion.div>
 
-                    {/* Lista de alunos */}
+                    {/* Lista de palestrantes */}
                     <motion.div 
                         variants={containerVariants}
                         initial="initial"
                         animate="animate"
                         className="flex flex-col gap-3"
                     >
-                        {alunosFiltrados.length > 0
-                            ? alunosFiltrados.map(aluno => (
-                                <motion.div key={aluno.id} variants={itemVariants}>
-                                    <AlunoCard aluno={aluno} pageAluno={true}/>
+                        {palestrantesFiltrados.length > 0
+                            ? palestrantesFiltrados.map(palestrante => (
+                                <motion.div key={palestrante.id} variants={itemVariants}>
+                                    <PalestranteCard palestrante={palestrante} />
                                 </motion.div>
                             ))
                             : (
                                 <motion.div variants={itemVariants} className="text-sm font-secondary text-primary/40 py-8 text-center">
-                                    Nenhum aluno encontrado.
+                                    Nenhum palestrante encontrado.
                                 </motion.div>
                             )
                         }
@@ -108,4 +105,4 @@ const Aluno = () => {
     )
 }
 
-export default Aluno;
+export default Palestrantes;
