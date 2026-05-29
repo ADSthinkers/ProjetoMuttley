@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Medalha</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 540px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.4rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @media (min-width: 480px) {
+            .actions {
+                flex-direction: row-reverse;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2 th:text="${medalhaDTO.id() != null} ? 'Editar Medalha' : 'Nova Medalha'"></h2>
+
+        <form th:action="@{/medalha/salvar}" th:object="${medalhaDTO}" method="post">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="tipo">Tipo</label>
+                <select th:field="*{tipo}" th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid'">
+                    <option value="">-- Selecione o tipo --</option>
+                    <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" th:field="*{nome}" placeholder="Nome da medalha"
+                    th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea th:field="*{descricao}" placeholder="Descreva o critério de conquista"
+                    th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                <span th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="participanteId">Participante</label>
+                <select th:field="*{participanteId}" th:classappend="${#fields.hasErrors('participanteId')} ? 'is-invalid'">
+                    <option value="">-- Selecione um participante --</option>
+                    <option th:each="p : ${participantes}" th:value="${p.id}" th:text="${p.nome}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('participanteId')}" th:errors="*{participanteId}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="palestraId">Palestra</label>
+                <select th:field="*{palestraId}" th:classappend="${#fields.hasErrors('palestraId')} ? 'is-invalid'">
+                    <option value="">-- Selecione uma palestra --</option>
+                    <option th:each="palestra : ${palestras}" th:value="${palestra.id}" th:text="${palestra.titulo}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('palestraId')}" th:errors="*{palestraId}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="dataConquista">Data de Conquista</label>
+                <input type="date" th:field="*{dataConquista}"
+                    th:classappend="${#fields.hasErrors('dataConquista')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('dataConquista')}" th:errors="*{dataConquista}" class="error-message"></span>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-submit">
+                    <span th:text="${medalhaDTO.id() != null} ? 'Atualizar' : 'Cadastrar'"></span>
+                </button>
+                <a th:href="@{/medalha}" class="btn btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

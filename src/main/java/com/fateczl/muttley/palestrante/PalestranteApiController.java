@@ -21,30 +21,27 @@ public class PalestranteApiController {
 
     @GetMapping
     public ResponseEntity<List<PalestranteListagem>> listar() {
-        List<PalestranteListagem> lista = service.listarTodos()
-                .stream().map(mapper::toListagemDto).toList();
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(service.listarTodos().stream().map(mapper::toListagemDto).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PalestranteDTO> buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id)
-                .map(mapper::toAtualizacaoDto)
-                .map(ResponseEntity::ok)
+        return service.buscarPorId(id).map(mapper::toAtualizacaoDto).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<PalestranteDTO> criar(@RequestBody @Valid PalestranteDTO dto) {
-        Palestrante salvo = service.salvarOuAtualizar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toAtualizacaoDto(salvo));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(mapper.toAtualizacaoDto(service.salvarOuAtualizar(dto)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PalestranteDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PalestranteDTO dto) {
-        PalestranteDTO dtoComId = new PalestranteDTO(id, dto.nome(), dto.cpf(), dto.email(), dto.senha());
-        Palestrante salvo = service.salvarOuAtualizar(dtoComId);
-        return ResponseEntity.ok(mapper.toAtualizacaoDto(salvo));
+        PalestranteDTO dtoComId = new PalestranteDTO(id, dto.nome(), dto.cpf(), dto.email(),
+                dto.miniCurriculo(), dto.formacao(), dto.areaAtuacao(),
+                dto.instituicao(), dto.linkedin(), dto.foto());
+        return ResponseEntity.ok(mapper.toAtualizacaoDto(service.salvarOuAtualizar(dtoComId)));
     }
 
     @DeleteMapping("/{id}")

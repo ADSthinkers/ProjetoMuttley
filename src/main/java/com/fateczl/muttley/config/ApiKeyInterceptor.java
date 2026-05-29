@@ -14,8 +14,7 @@ import java.util.Set;
 public class ApiKeyInterceptor implements HandlerInterceptor {
 
     private static final Set<String> CHAVES_VALIDAS = Set.of(
-            "",
-            ""
+            "cco123"
     );
 
     @Override

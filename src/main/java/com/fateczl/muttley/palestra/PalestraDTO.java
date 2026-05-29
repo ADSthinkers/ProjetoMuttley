@@ -1,17 +1,13 @@
 package com.fateczl.muttley.palestra;
 
+import com.fateczl.muttley.tipo.Modalidade;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 public record PalestraDTO(
-    Long id, 
+    Long id,
 
     @NotBlank(message = "Título obrigatório")
     @Size(max = 50, message = "Título não pode ultrapassar de 50 caracteres")
@@ -23,9 +19,9 @@ public record PalestraDTO(
     @NotNull(message = "Selecione pelo menos uma competência")
     List<Long> competenciaIds,
 
-    @NotEmpty(message = "Palestrante(s) são obrigatórios")
-    List<@NotBlank(message = "Nome do palestrante não pode ser vazio") String> palestrantes,
-    
+    @NotEmpty(message = "Selecione pelo menos um palestrante")
+    List<Long> palestranteIds,
+
     Long eventoId,
 
     @NotNull(message = "Data/Horario inicial é obrigatório")
@@ -34,5 +30,12 @@ public record PalestraDTO(
 
     @NotNull(message = "Data/Horario final é obrigatório")
     @Future(message = "Data/hora final deve ser futura")
-    LocalDateTime fim
+    LocalDateTime fim,
+
+    String qrCodeToken,
+    TipoPalestra tipo,
+    Modalidade modalidade,
+    Float cargaHoraria,
+    Integer vagas,
+    String banner
 ) {}

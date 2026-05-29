@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presença Confirmada</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .card { background: #fff; width: 100%; max-width: 420px; padding: 3rem 2.5rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; }
+        .check-icon { font-size: 4rem; margin-bottom: 1rem; }
+        h2 { color: #28a745; font-size: 1.6rem; margin-bottom: 0.8rem; }
+        .nome { font-size: 1.1rem; color: #333; margin-bottom: 0.5rem; }
+        .palestra { font-size: 0.95rem; color: #777; margin-bottom: 2rem; }
+        .info-box { background: #d4edda; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; color: #155724; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="check-icon">✅</div>
+        <h2>Presença Confirmada!</h2>
+
+        <p class="nome" th:if="${nomeParticipante != null}">
+            Olá, <strong th:text="${nomeParticipante}">Participante</strong>!
+        </p>
+        <p class="palestra" th:if="${palestraTitulo != null}">
+            Sua presença em <strong th:text="${palestraTitulo}">Palestra</strong> foi registrada com sucesso.
+        </p>
+
+        <div class="info-box">
+            Sua participação será enviada para o LinkedIn como competência após a validação do organizador.
+        </div>
+    </div>
+</body>
+</html>

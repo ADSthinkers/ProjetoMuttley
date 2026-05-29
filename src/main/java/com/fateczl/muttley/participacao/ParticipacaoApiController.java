@@ -41,8 +41,9 @@ public class ParticipacaoApiController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParticipacaoDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ParticipacaoDTO dto) {
-        ParticipacaoDTO dtoComId = new ParticipacaoDTO(id, dto.horas(), dto.alunoId(), dto.palestraId());
+    public ResponseEntity<ParticipacaoDTO> atualizar(@PathVariable Long id,
+                                                      @RequestBody @Valid ParticipacaoDTO dto) {
+        ParticipacaoDTO dtoComId = new ParticipacaoDTO(id, dto.horas(), dto.participanteId(), dto.palestraId());
         Participacao salva = service.salvarOuAtualizar(dtoComId);
         return ResponseEntity.ok(mapper.toDTO(salva));
     }

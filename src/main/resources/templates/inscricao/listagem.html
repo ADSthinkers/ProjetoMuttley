@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Inscrições</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .btn-new {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-new:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            padding: 15px;
+            border-bottom: 2px solid #edf2f7;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #fcfdfe;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-PENDENTE { background-color: #fff3cd; color: #856404; }
+        .badge-CONFIRMADA { background-color: #d4edda; color: #155724; }
+        .badge-CANCELADA { background-color: #f8d7da; color: #721c24; }
+
+        .action-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .link-edit { color: #007bff; text-decoration: none; font-weight: 600; }
+        .link-delete { color: #dc3545; text-decoration: none; font-weight: 600; }
+        .link-edit:hover, .link-delete:hover { text-decoration: underline; }
+
+        .status-form { display: inline; }
+        .status-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+        .btn-status {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #6c757d;
+            color: white;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .btn-status:hover { background-color: #5a6268; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h2>Lista de Inscrições</h2>
+            <a th:href="@{/inscricao/formulario}" class="btn-new">+ Nova Inscrição</a>
+        </div>
+
+        <div th:if="${message != null}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error != null}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="table-container" th:if="${listaInscricoes != null and !listaInscricoes.isEmpty()}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Palestra</th>
+                        <th>Data Inscrição</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="i : ${listaInscricoes}">
+                        <td th:text="${i.participanteNome}" style="font-weight: 500;"></td>
+                        <td th:text="${i.palestraTitulo}"></td>
+                        <td th:text="${i.dataInscricao != null ? #temporals.format(i.dataInscricao, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                        <td>
+                            <span th:text="${i.status}" th:classappend="'badge badge-' + ${i.status}"></span>
+                        </td>
+                        <td class="action-links">
+                            <form th:action="@{/inscricao/{id}/status(id=${i.id})}" method="post" class="status-form">
+                                <select name="status" class="status-select">
+                                    <option th:each="s : ${T(com.fateczl.muttley.inscricao.StatusInscricao).values()}"
+                                            th:value="${s}" th:text="${s}"
+                                            th:selected="${s == i.status}"></option>
+                                </select>
+                                <button type="submit" class="btn-status">Salvar</button>
+                            </form>
+                            <a th:href="@{/inscricao/cancelar/{id}(id=${i.id})}" class="link-delete"
+                                onclick="return confirm('Deseja cancelar esta inscrição?')">Cancelar</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:unless="${listaInscricoes != null and !listaInscricoes.isEmpty()}"
+            style="text-align: center; padding: 20px; color: #666;">
+            Nenhuma inscrição cadastrada.
+        </div>
+    </div>
+</body>
+
+</html>

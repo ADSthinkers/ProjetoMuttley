@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #f0f2f5; padding: 40px 20px; color: #333; }
+        .container { max-width: 860px; margin: 0 auto; }
+        h1 { color: #dc3545; margin-bottom: 0.5rem; font-size: 1.8rem; }
+        .subtitle { color: #666; margin-bottom: 2rem; font-size: 1rem; }
+        .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; }
+        .badge { display: inline-block; background: #f8d7da; color: #721c24; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem; }
+        .message { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; font-size: 0.95rem; word-break: break-word; }
+        .trace { background: #1e1e1e; color: #d4d4d4; padding: 1.2rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; }
+        .btn { display: inline-block; margin-top: 1.5rem; padding: 0.7rem 1.5rem; background: #007bff; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ocorreu um erro</h1>
+        <p class="subtitle" th:text="${path != null ? 'Rota: ' + path : ''}"></p>
+
+        <div class="card">
+            <h2>Status</h2>
+            <div class="badge" th:text="${status}"></div>
+            <div class="message" th:text="${error + (message != null ? ': ' + message : '')}"></div>
+        </div>
+
+        <div class="card" th:if="${trace != null}">
+            <h2>Stack Trace</h2>
+            <div class="trace" th:text="${trace}"></div>
+        </div>
+
+        <a href="/" class="btn">Voltar ao início</a>
+    </div>
+</body>
+</html>

@@ -21,34 +21,27 @@ public class PalestraApiController {
 
     @GetMapping
     public ResponseEntity<List<PalestraDTO>> listar() {
-        List<PalestraDTO> lista = service.findAll()
-                .stream().map(mapper::toDto).toList();
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(service.findAll().stream().map(mapper::toDto).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PalestraDTO> buscarPorId(@PathVariable Long id) {
-        return service.findById(id)
-                .map(mapper::toDto)
-                .map(ResponseEntity::ok)
+        return service.findById(id).map(mapper::toDto).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<PalestraDTO> criar(@RequestBody @Valid PalestraDTO dto) {
-        Palestra salva = service.saveOrUpdate(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDto(salva));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDto(service.saveOrUpdate(dto)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PalestraDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PalestraDTO dto) {
         PalestraDTO dtoComId = new PalestraDTO(
-                id, dto.titulo(), dto.descricao(),
-                dto.competenciaIds(), dto.palestrantes(),
-                dto.eventoId(), dto.inicio(), dto.fim()
-        );
-        Palestra salva = service.saveOrUpdate(dtoComId);
-        return ResponseEntity.ok(mapper.toDto(salva));
+                id, dto.titulo(), dto.descricao(), dto.competenciaIds(), dto.palestranteIds(),
+                dto.eventoId(), dto.inicio(), dto.fim(), null,
+                dto.tipo(), dto.modalidade(), dto.cargaHoraria(), dto.vagas(), dto.banner());
+        return ResponseEntity.ok(mapper.toDto(service.saveOrUpdate(dtoComId)));
     }
 
     @DeleteMapping("/{id}")

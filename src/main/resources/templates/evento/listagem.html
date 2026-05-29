@@ -159,7 +159,7 @@
                     <tr th:each="evento : ${listaEventos}">
                         <td th:text="${evento.titulo}"></td>
                         <td th:text="${#temporals.format(evento.dataInicio, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${evento.local}"></td>
+                        <td th:text="${evento.localNome != null ? evento.localNome : '-'}"></td>
                         <td class="action-links">
                             <a th:href="@{/evento/formulario/{id}(id=${evento.id})}" class="link-edit">Editar</a>
                             <a th:href="@{/evento/delete/{id}(id=${evento.id})}" class="link-delete"

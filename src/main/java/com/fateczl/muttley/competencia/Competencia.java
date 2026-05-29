@@ -3,6 +3,8 @@ package com.fateczl.muttley.competencia;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,6 +32,9 @@ public class Competencia {
     
     private Long id;
     private String nome;
+
+    @Enumerated(EnumType.STRING)
+    private TipoCompetencia tipo;
 //    @JoinColumn(name = "competencia_id", referencedColumnName = "competencia_id")
 
     public Competencia(CompetenciaDTO dados) {

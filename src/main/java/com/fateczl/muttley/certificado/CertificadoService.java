@@ -1,0 +1,78 @@
+package com.fateczl.muttley.certificado;
+
+import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.palestra.PalestraRepository;
+import com.fateczl.muttley.participante.Participante;
+import com.fateczl.muttley.participante.ParticipanteRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CertificadoService {
+
+    private final CertificadoRepository repository;
+    private final ParticipanteRepository participanteRepository;
+    private final PalestraRepository palestraRepository;
+
+    public CertificadoService(CertificadoRepository repository,
+                               ParticipanteRepository participanteRepository,
+                               PalestraRepository palestraRepository) {
+        this.repository = repository;
+        this.participanteRepository = participanteRepository;
+        this.palestraRepository = palestraRepository;
+    }
+
+    @SuppressWarnings("null")
+    public Certificado emitir(CertificadoDTO dto) {
+        Participante participante = participanteRepository.findById(dto.participanteId())
+                .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
+        Palestra palestra = palestraRepository.findById(dto.palestraId())
+                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+
+        if (repository.existsByParticipanteIdAndPalestraId(dto.participanteId(), dto.palestraId())) {
+            throw new IllegalStateException("Certificado já emitido para este participante nesta palestra");
+        }
+
+        Certificado certificado = new Certificado();
+        certificado.setParticipante(participante);
+        certificado.setPalestra(palestra);
+        certificado.setDataEmissao(LocalDateTime.now());
+        certificado.setCargaHoraria(
+                dto.cargaHoraria() != null ? dto.cargaHoraria()
+                : (palestra.getCargaHoraria() != null ? palestra.getCargaHoraria() : 1f));
+        return repository.save(certificado);
+    }
+
+    @Transactional
+    public List<Certificado> listarTodos() {
+        List<Certificado> lista = repository.findAll();
+        lista.forEach(c -> {
+            if (c.getParticipante() != null) c.getParticipante().getNome();
+            if (c.getPalestra() != null) c.getPalestra().getTitulo();
+        });
+        return lista;
+    }
+
+    public Optional<Certificado> buscarPorId(Long id) {
+        return repository.findById(id);
+    }
+
+    public List<Certificado> listarPorParticipante(Long participanteId) {
+        return repository.findByParticipanteId(participanteId);
+    }
+
+    public Optional<Certificado> buscarPorCodigo(String codigo) {
+        return repository.findByCodigoValidacao(codigo);
+    }
+
+    @SuppressWarnings("null")
+    public void deletar(Long id) {
+        repository.deleteById(id);
+    }
+}

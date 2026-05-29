@@ -178,9 +178,12 @@
             </div>
 
             <div class="form-group">
-                <label for="palestrantesTexto">Palestrantes (separados por vírgula)</label>
-                <input type="text" name="palestrantesTexto"
-                    th:value="${palestra != null && palestra.palestrantes != null ? #strings.listJoin(palestra.palestrantes, ', ') : ''}">
+                <label for="palestranteIds">Palestrantes (Segure Ctrl para selecionar vários)</label>
+                <select multiple th:field="*{palestranteIds}"
+                    th:classappend="${#fields.hasErrors('palestranteIds')} ? 'is-invalid'">
+                    <option th:each="p : ${palestrantes}" th:value="${p.id}" th:text="${p.nome}"></option>
+                </select>
+                <span th:errors="*{palestranteIds}" class="error-message"></span>
             </div>
 
             <div class="form-group">

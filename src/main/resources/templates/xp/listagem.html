@@ -151,7 +151,7 @@
                     <tr>
                         <th>Horas</th>
                         <th>Competência</th>
-                        <th>Aluno</th>
+                        <th>Participante</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -159,7 +159,7 @@
                     <tr th:each="xp : ${xps}">
                         <td th:text="${xp.horas}" style="font-weight: 600;"></td>
                         <td th:text="${xp.competencia != null ? xp.competencia.nome : '-'}"></td>
-                        <td th:text="${xp.aluno != null ? xp.aluno.nome : '-'}"></td>
+                        <td th:text="${xp.participante != null ? xp.participante.nome : '-'}"></td>
                         <td class="action-links">
                             <a th:href="@{/xp/formulario/{id}(id=${xp.id})}" class="link-edit">Editar</a>
                             <a th:href="@{/xp/delete/{id}(id=${xp.id})}" class="link-delete"

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Participante</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .card { background: #fff; width: 100%; max-width: 500px; padding: 2.5rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        h2 { color: #1a1a1a; text-align: center; margin-bottom: 2rem; font-size: 1.6rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #4a4a4a; font-weight: 600; font-size: 0.9rem; }
+        .label-optional { font-weight: 400; color: #999; font-size: 0.8rem; margin-left: 4px; }
+        input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; transition: all 0.2s; }
+        input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+        .is-invalid { border-color: #dc3545 !important; }
+        .error-message { color: #dc3545; font-size: 0.8rem; margin-top: 0.3rem; display: block; }
+        .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 2rem; }
+        .btn { padding: 0.8rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; font-size: 1rem; transition: 0.2s; }
+        .btn-submit { background-color: #007bff; color: white; }
+        .btn-cancel { background-color: #f8f9fa; color: #666; border: 1px solid #ddd; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        @media (min-width: 480px) { .actions { flex-direction: row-reverse; } .btn { flex: 1; } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 th:text="${participante.id != null} ? 'Editar Participante' : 'Novo Participante'"></h2>
+        <form th:action="@{/participante/salvar}" th:object="${participante}" method="post">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label>CPF</label>
+                <input type="text" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Segundo E-mail <span class="label-optional">(opcional)</span></label>
+                <input type="email" th:field="*{email2}" th:classappend="${#fields.hasErrors('email2')} ? 'is-invalid'">
+                <span th:if="${#fields.hasErrors('email2')}" th:errors="*{email2}" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Telefone <span class="label-optional">(opcional)</span></label>
+                <input type="text" th:field="*{telefone}">
+            </div>
+
+            <div class="form-group">
+                <label>Curso <span class="label-optional">(opcional)</span></label>
+                <input type="text" th:field="*{curso}">
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-submit"
+                        th:text="${participante.id != null} ? 'Atualizar' : 'Salvar'"></button>
+                <a th:href="@{/participante}" class="btn btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

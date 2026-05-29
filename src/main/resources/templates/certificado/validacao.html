@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação de Certificado</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 560px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .codigo-box {
+            background-color: #f0f7ff;
+            border: 1px solid #b8d4f5;
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #0056b3;
+            word-break: break-all;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-valido {
+            display: inline-block;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.2s;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div th:if="${erro != null}">
+            <div class="icon">❌</div>
+            <h2>Certificado Inválido</h2>
+            <div class="alert-danger" th:text="${erro}"></div>
+            <div class="actions">
+                <a th:href="@{/certificado}" class="btn btn-secondary">Voltar</a>
+            </div>
+        </div>
+
+        <div th:if="${certificado != null}">
+            <div class="icon">✅</div>
+            <h2>Certificado Válido</h2>
+            <div class="badge-valido">Autêntico</div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Participante</div>
+                    <div class="info-value" th:text="${certificado.participante != null ? certificado.participante.nome : '-'}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Palestra</div>
+                    <div class="info-value" th:text="${certificado.palestra != null ? certificado.palestra.titulo : '-'}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Carga Horária</div>
+                    <div class="info-value" th:text="${certificado.cargaHoraria != null ? certificado.cargaHoraria + 'h' : '-'}"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Data de Emissão</div>
+                    <div class="info-value" th:text="${certificado.dataEmissao != null ? #temporals.format(certificado.dataEmissao, 'dd/MM/yyyy') : '-'}"></div>
+                </div>
+            </div>
+
+            <div class="info-label" style="margin-bottom: 0.4rem;">Código de Validação</div>
+            <div class="codigo-box" th:text="${certificado.codigoValidacao}"></div>
+
+            <div class="actions">
+                <a th:href="@{/certificado}" class="btn btn-secondary">Voltar</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

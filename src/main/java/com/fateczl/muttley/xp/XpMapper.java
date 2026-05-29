@@ -1,23 +1,21 @@
 package com.fateczl.muttley.xp;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface XpMapper {
 
     @Mapping(source = "competencia.id", target = "competenciaId")
-    @Mapping(source = "aluno.id", target = "alunoId")
+    @Mapping(source = "participante.id", target = "participanteId")
     XpDTO toXpDTO(Xp xp);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencia", ignore = true)
-    @Mapping(target = "aluno", ignore = true)
+    @Mapping(target = "participante", ignore = true)
     Xp toEntityFromXp(XpDTO dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencia", ignore = true)
-    @Mapping(target = "aluno", ignore = true)
+    @Mapping(target = "participante", ignore = true)
     void updateEntityFromXp(XpDTO dto, @MappingTarget Xp xp);
 }

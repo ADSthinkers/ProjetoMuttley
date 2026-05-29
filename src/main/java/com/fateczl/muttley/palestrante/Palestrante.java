@@ -3,10 +3,7 @@ package com.fateczl.muttley.palestrante;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
@@ -22,13 +19,21 @@ public class Palestrante {
     @NotBlank(message = "Nome é obrigatório")
     private String nome;
 
-    @NotBlank(message = "CPF é obrigatório")
     private String cpf;
 
     @Email(message = "E-mail inválido")
-    @NotBlank(message = "E-mail é obrigatório")
     private String email;
 
-    @NotBlank(message = "Senha é obrigatória")
-    private String senha;
+    @Column(length = 1000)
+    private String miniCurriculo;
+
+    private String formacao;
+
+    private String areaAtuacao;
+
+    private String instituicao;
+
+    private String linkedin;
+
+    private String foto;
 }

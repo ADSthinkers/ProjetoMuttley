@@ -147,7 +147,7 @@
             <span th:text="${message}"></span>
         </div>
 
-        <div class="table-container" th:if="${listaPalestrantes.size() > 0}">
+        <div class="table-container" th:if="${listaPalestrantes != null and !listaPalestrantes.isEmpty()}">
             <table>
                 <thead>
                     <tr>
@@ -174,7 +174,7 @@
             </table>
         </div>
 
-        <div th:unless="${listaPalestrantes.size() > 0}" class="alert alert-info">
+        <div th:unless="${listaPalestrantes != null and !listaPalestrantes.isEmpty()}" class="alert alert-info">
             Nenhum palestrante encontrado no sistema.
         </div>
     </div>

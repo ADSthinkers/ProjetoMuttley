@@ -21,30 +21,27 @@ public class EventoApiController {
 
     @GetMapping
     public ResponseEntity<List<EventoListagem>> listar() {
-        List<EventoListagem> lista = service.listarTodos()
-                .stream().map(mapper::toListagemDto).toList();
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(service.listarTodos().stream().map(mapper::toListagemDto).toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<EventoDTO> buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id)
-                .map(mapper::toAtualizacaoDto)
-                .map(ResponseEntity::ok)
+        return service.buscarPorId(id).map(mapper::toAtualizacaoDto).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<EventoDTO> criar(@RequestBody @Valid EventoDTO dto) {
-        Evento salvo = service.salvarOuAtualizar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toAtualizacaoDto(salvo));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(mapper.toAtualizacaoDto(service.salvarOuAtualizar(dto)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<EventoDTO> atualizar(@PathVariable Long id, @RequestBody @Valid EventoDTO dto) {
-        EventoDTO dtoComId = new EventoDTO(id, dto.titulo(), dto.dataInicio(), dto.local());
-        Evento salvo = service.salvarOuAtualizar(dtoComId);
-        return ResponseEntity.ok(mapper.toAtualizacaoDto(salvo));
+        EventoDTO dtoComId = new EventoDTO(id, dto.titulo(), dto.descricao(), dto.dataInicio(),
+                dto.dataFim(), dto.localId(), dto.categoria(), dto.modalidade(),
+                dto.cargaHoraria(), dto.vagas(), dto.banner(), dto.entidadeResponsavel());
+        return ResponseEntity.ok(mapper.toAtualizacaoDto(service.salvarOuAtualizar(dtoComId)));
     }
 
     @DeleteMapping("/{id}")

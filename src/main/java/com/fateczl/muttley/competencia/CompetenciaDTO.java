@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 //import jakarta.validation.constraints.Positive;
 
 public record CompetenciaDTO(
-	    Long id,
-	    @NotBlank(message = "Nome é obrigatório") 
-	    String nome
-	) {}
+        Long id,
+        @NotBlank(message = "Nome é obrigatório") String nome,
+        TipoCompetencia tipo
+) {}

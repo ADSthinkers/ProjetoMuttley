@@ -139,11 +139,11 @@
             <span th:text="${message}"></span>
         </div>
 
-        <div class="table-container" th:if="${listaParticipacoes.size() > 0}">
+        <div class="table-container" th:if="${listaParticipacoes != null and !listaParticipacoes.isEmpty()}">
             <table>
                 <thead>
                     <tr>
-                        <th>Aluno</th>
+                        <th>Participante</th>
                         <th>Palestra</th>
                         <th>Horas</th>
                         <th>Ações</th>
@@ -151,8 +151,8 @@
                 </thead>
                 <tbody>
                     <tr th:each="p : ${listaParticipacoes}">
-                        <td th:text="${p.alunoNome}" style="font-weight: 500;"></td>
-                        <td th:text="${p.palestinaTitulo}"></td>
+                        <td th:text="${p.participanteNome}" style="font-weight: 500;"></td>
+                        <td th:text="${p.palestraTitulo}"></td>
                         <td th:text="${p.horas}"></td>
                         <td class="action-links">
                             <a th:href="@{/participacao/formulario/{id}(id=${p.id})}" class="link-edit">Editar</a>
@@ -164,7 +164,7 @@
             </table>
         </div>
 
-        <div th:unless="${listaParticipacoes.size() > 0}" style="text-align: center; padding: 20px; color: #666;">
+        <div th:unless="${listaParticipacoes != null and !listaParticipacoes.isEmpty()}" style="text-align: center; padding: 20px; color: #666;">
             Nenhuma participação cadastrada.
         </div>
     </div>

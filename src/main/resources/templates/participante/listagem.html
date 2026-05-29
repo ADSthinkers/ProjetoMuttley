@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Participantes</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #f0f2f5; padding: 40px 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px; }
+        h2 { font-size: 1.5rem; color: #1a1a1a; }
+        .btn-new { background-color: #28a745; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
+        .btn-new:hover { background-color: #218838; }
+        .alert { padding: 12px 20px; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-size: 0.95rem; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; background-color: #f8f9fa; color: #666; font-weight: 600; padding: 15px; border-bottom: 2px solid #edf2f7; text-transform: uppercase; font-size: 0.75rem; }
+        td { padding: 15px; border-bottom: 1px solid #edf2f7; font-size: 0.95rem; }
+        tr:hover { background-color: #fcfdfe; }
+        .action-links { display: flex; gap: 15px; }
+        .icon-edit { color: #007bff; text-decoration: none; font-weight: bold; }
+        .icon-delete { color: #dc3545; text-decoration: none; font-weight: bold; }
+        .icon-edit:hover, .icon-delete:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h2>Lista de Participantes</h2>
+            <a th:href="@{/participante/formulario}" class="btn-new">+ Novo Participante</a>
+        </div>
+
+        <div th:if="${message != null}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+
+        <div class="table-container" th:if="${listaParticipantes != null and !listaParticipantes.isEmpty()}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>E-mail</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${listaParticipantes}">
+                        <td th:text="${p.nome}"></td>
+                        <td th:text="${p.cpf}"></td>
+                        <td th:text="${p.email}"></td>
+                        <td class="action-links">
+                            <a th:href="@{/participante/formulario/{id}(id=${p.id})}" class="icon-edit">Editar</a>
+                            <a th:href="@{/participante/delete/{id}(id=${p.id})}" class="icon-delete"
+                               onclick="return confirm('Deseja realmente excluir este participante?')">Excluir</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:unless="${listaParticipantes != null and !listaParticipantes.isEmpty()}" class="alert alert-info">
+            Nenhum participante encontrado no sistema.
+        </div>
+    </div>
+</body>
+</html>

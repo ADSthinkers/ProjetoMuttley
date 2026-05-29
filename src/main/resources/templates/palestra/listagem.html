@@ -140,10 +140,8 @@
             font-weight: 600;
         }
 
-        .link-edit:hover,
-        .link-delete:hover {
-            text-decoration: underline;
-        }
+        .link-qr { color: #6f42c1; text-decoration: none; font-weight: 600; }
+        .link-edit:hover, .link-delete:hover, .link-qr:hover { text-decoration: underline; }
     </style>
 </head>
 
@@ -166,7 +164,7 @@
                 <thead>
                     <tr>
                         <th>Título</th>
-                        <th>Descrição</th>
+                        <th>Palestrantes</th>
                         <th>Competências</th>
                         <th>Início</th>
                         <th>Fim</th>
@@ -176,7 +174,14 @@
                 <tbody>
                     <tr th:each="palestra : ${palestras}">
                         <td th:text="${palestra.titulo}" style="font-weight: 600;"></td>
-                        <td th:text="${palestra.descricao}"></td>
+                        <td>
+                            <span th:if="${palestra.palestrantes != null and !palestra.palestrantes.isEmpty()}">
+                                <span th:each="nome, stat : ${palestra.palestrantes}">
+                                    <span th:text="${nome}"></span><span th:if="${!stat.last}">, </span>
+                                </span>
+                            </span>
+                            <span th:unless="${palestra.palestrantes != null and !palestra.palestrantes.isEmpty()}">-</span>
+                        </td>
                         <td>
                             <div th:if="${palestra.competencias != null and !palestra.competencias.isEmpty()}">
                                 <span th:each="comp : ${palestra.competencias}" class="badge"
@@ -185,15 +190,12 @@
                             <span
                                 th:unless="${palestra.competencias != null and !palestra.competencias.isEmpty()}">-</span>
                         </td>
-                        <td
-                            th:text="${palestra.inicio != null ? #temporals.format(palestra.inicio, 'dd/MM/yyyy HH:mm') : '-'}">
-                        </td>
-                        <td
-                            th:text="${palestra.fim != null ? #temporals.format(palestra.fim, 'dd/MM/yyyy HH:mm') : '-'}">
-                        </td>
+                        <td th:text="${palestra.inicio != null ? palestra.inicio.toString() : '-'}"></td>
+                        <td th:text="${palestra.fim != null ? palestra.fim.toString() : '-'}"></td>
                         <td class="action-links">
-                            <a th:href="@{'/palestra/formulario/' + ${palestra.id}}" class="link-edit">Editar</a>
-                            <a th:href="@{'/palestra/delete/' + ${palestra.id}}" class="link-delete"
+                            <a th:href="@{/palestra/formulario/{id}(id=${palestra.id})}" class="link-edit">Editar</a>
+                            <a th:href="@{/palestra/{id}/qrcode(id=${palestra.id})}" class="link-qr" target="_blank">QR Code</a>
+                            <a th:href="@{/palestra/delete/{id}(id=${palestra.id})}" class="link-delete"
                                 onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">Excluir</a>
                         </td>
                     </tr>

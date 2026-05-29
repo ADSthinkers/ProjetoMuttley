@@ -152,12 +152,12 @@
             </div>
 
             <div class="form-group">
-                <label for="alunoId">Aluno</label>
-                <select th:field="*{alunoId}" th:classappend="${#fields.hasErrors('alunoId')} ? 'is-invalid'">
-                    <option value="">Selecione um aluno</option>
-                    <option th:each="a : ${alunos}" th:value="${a.id}" th:text="${a.nome}"></option>
+                <label for="participanteId">Participante</label>
+                <select th:field="*{participanteId}" th:classappend="${#fields.hasErrors('participanteId')} ? 'is-invalid'">
+                    <option value="">Selecione um participante</option>
+                    <option th:each="p : ${participantes}" th:value="${p.id}" th:text="${p.nome}"></option>
                 </select>
-                <span th:if="${#fields.hasErrors('alunoId')}" th:errors="*{alunoId}" class="error-message"></span>
+                <span th:if="${#fields.hasErrors('participanteId')}" th:errors="*{participanteId}" class="error-message"></span>
             </div>
 
             <div class="actions">

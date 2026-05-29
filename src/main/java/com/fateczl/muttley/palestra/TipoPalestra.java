@@ -1,0 +1,7 @@
+package com.fateczl.muttley.palestra;
+
+public enum TipoPalestra {
+    PALESTRA, WORKSHOP, CURSO, SEMINARIO, CONGRESSO,
+    SEMANA_ACADEMICA, TREINAMENTO, EXTENSAO, HACKATHON,
+    PROJETO, MONITORIA, ORGANIZACAO
+}

@@ -42,7 +42,7 @@ public class CompetenciaApiController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CompetenciaDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CompetenciaDTO dto) {
-        CompetenciaDTO dtoComId = new CompetenciaDTO(id, dto.nome());
+        CompetenciaDTO dtoComId = new CompetenciaDTO(id, dto.nome(), dto.tipo());
         Competencia salva = service.saveOrAtualize(dtoComId);
         return ResponseEntity.ok(mapper.toCompetenciaDTO(salva));
     }

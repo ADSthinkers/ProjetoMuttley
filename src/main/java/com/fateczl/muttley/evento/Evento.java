@@ -1,14 +1,16 @@
 package com.fateczl.muttley.evento;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.tipo.Modalidade;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,12 +26,30 @@ public class Evento {
     @NotBlank(message = "Título é obrigatório")
     private String titulo;
 
+    @Column(length = 1000)
+    private String descricao;
+
     @NotNull(message = "Data de início é obrigatória")
-    @Temporal(TemporalType.DATE)
     private LocalDate dataInicio;
 
-    @NotBlank(message = "Local é obrigatório")
-    private String local;
+    private LocalDate dataFim;
+
+    @ManyToOne
+    @JoinColumn(name = "local_id")
+    private Local local;
+
+    private String categoria;
+
+    @Enumerated(EnumType.STRING)
+    private Modalidade modalidade;
+
+    private Integer cargaHoraria;
+
+    private Integer vagas;
+
+    private String banner;
+
+    private String entidadeResponsavel;
 
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Palestra> palestras;

@@ -1,12 +1,13 @@
 package com.fateczl.muttley.palestrante;
 
-import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import jakarta.validation.Valid;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/palestrante")
@@ -23,9 +24,7 @@ public class PalestranteController {
     @GetMapping
     public String listar(Model model) {
         List<PalestranteListagem> lista = service.listarTodos()
-                .stream()
-                .map(mapper::toListagemDto)
-                .toList();
+                .stream().map(mapper::toListagemDto).toList();
         model.addAttribute("listaPalestrantes", lista);
         return "palestrante/listagem";
     }
@@ -38,27 +37,16 @@ public class PalestranteController {
 
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        service.buscarPorId(id).ifPresent(palestrante -> model.addAttribute("palestrante", palestrante));
-        if (!model.containsAttribute("palestrante")) {
-            return "redirect:/palestrante";
-        }
+        service.buscarPorId(id).ifPresent(p -> model.addAttribute("palestrante", p));
+        if (!model.containsAttribute("palestrante")) return "redirect:/palestrante";
         return "palestrante/formulario";
     }
 
     @PostMapping("/salvar")
-    public String salvar(@Valid @ModelAttribute("palestrante") Palestrante palestrante, BindingResult result, RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "palestrante/formulario";
-        }
-
-        PalestranteDTO dto = new PalestranteDTO(
-            palestrante.getId(),
-            palestrante.getNome(),
-            palestrante.getCpf(),
-            palestrante.getEmail(),
-            palestrante.getSenha()
-        );
-        service.salvarOuAtualizar(dto);
+    public String salvar(@Valid @ModelAttribute("palestrante") Palestrante palestrante,
+                         BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) return "palestrante/formulario";
+        service.salvarOuAtualizar(mapper.toAtualizacaoDto(palestrante));
         redirectAttributes.addFlashAttribute("message", "Palestrante salvo com sucesso!");
         return "redirect:/palestrante";
     }

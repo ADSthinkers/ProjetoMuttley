@@ -1,26 +1,25 @@
 package com.fateczl.muttley.palestra;
 
+import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.evento.EventoService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.fateczl.muttley.palestrante.Palestrante;
+import com.fateczl.muttley.palestrante.PalestranteService;
+import com.fateczl.muttley.qrcode.QrCodeUtil;
+import com.fateczl.muttley.tipo.Modalidade;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fateczl.muttley.competencia.CompetenciaService;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/palestra")
@@ -38,114 +37,118 @@ public class PalestraController {
     @Autowired
     private EventoService eventoService;
 
+    @Autowired
+    private PalestranteService palestranteService;
+
     @GetMapping("/listagem")
     public String loadListingPage(Model model) {
-        model.addAttribute("palestras", palestraService.findAll());
+        List<ListagemPalestra> palestras = palestraService.findAll()
+                .stream()
+                .map(p -> new ListagemPalestra(
+                        p.getId(),
+                        p.getTitulo(),
+                        p.getDescricao(),
+                        p.getCompetencias(),
+                        p.getPalestrantes() != null
+                                ? p.getPalestrantes().stream().map(Palestrante::getNome).toList()
+                                : java.util.List.of(),
+                        p.getInicio(),
+                        p.getFim()
+                ))
+                .toList();
+        model.addAttribute("palestras", palestras);
         return "palestra/listagem";
     }
 
     @GetMapping("/formulario")
     public String showForm(@RequestParam(required = false) Long id, Model model) {
         PalestraDTO dto;
-        if(id != null){
+        if (id != null) {
             Palestra palestra = palestraService.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+                    .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             dto = palestraMapper.toDto(palestra);
         } else {
-            dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(), null, null, null);
+            dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(),
+                    null, null, null, null, null, null, null, null, null);
         }
-        model.addAttribute("palestra", dto);
-        model.addAttribute("competencias", competenciaService.findAllCompetencias());
-        model.addAttribute("eventos", eventoService.listarTodos());
+        popularModel(model, dto);
         return "palestra/formulario";
     }
 
     @GetMapping("/formulario/{id}")
-    public String loadPageForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        PalestraDTO dto;
-        try{
-            if (id != null) {
-                Palestra palestra = palestraService.findById(id)
+    public String loadPageForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Palestra palestra = palestraService.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
-                    model.addAttribute("competencias", competenciaService.findAllCompetencias());
-                    model.addAttribute("eventos", eventoService.listarTodos());
-                    dto = palestraMapper.toDto(palestra);
-                    model.addAttribute("palestra", dto);
-            }
+            popularModel(model, palestraMapper.toDto(palestra));
             return "palestra/formulario";
-        } catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/palestra/listagem";
         }
     }
-    
-@PostMapping("/salvar")
-public String save(@ModelAttribute("palestra") PalestraDTO dto,
-                   BindingResult result,
-                   @RequestParam(name = "palestrantesTexto", required = false) String palestrantesTexto,
-                   RedirectAttributes redirectAttributes,
-                   Model model) {
 
-    List<String> listaPalestrantes = new ArrayList<>();
-
-    if (palestrantesTexto != null && !palestrantesTexto.isBlank()) {
-        listaPalestrantes = Arrays.stream(palestrantesTexto.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .toList();
+    @PostMapping("/salvar")
+    public String save(@ModelAttribute("palestra") PalestraDTO dto,
+                       RedirectAttributes redirectAttributes,
+                       Model model) {
+        if (dto.titulo() == null || dto.titulo().isBlank()) {
+            model.addAttribute("error", "Título é obrigatório");
+            popularModel(model, dto);
+            return "palestra/formulario";
+        }
+        if (dto.palestranteIds() == null || dto.palestranteIds().isEmpty()) {
+            model.addAttribute("error", "Selecione pelo menos um palestrante");
+            popularModel(model, dto);
+            return "palestra/formulario";
+        }
+        try {
+            Palestra saved = palestraService.saveOrUpdate(dto);
+            String msg = dto.id() != null
+                    ? "Palestra '" + saved.getTitulo() + "' atualizada com sucesso!"
+                    : "Palestra '" + saved.getTitulo() + "' criada com sucesso!";
+            redirectAttributes.addFlashAttribute("message", msg);
+            return "redirect:/palestra/listagem";
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/palestra/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
+        }
     }
-
-    if (listaPalestrantes.isEmpty()) {
-        model.addAttribute("competencias", competenciaService.findAllCompetencias());
-        model.addAttribute("eventos", eventoService.listarTodos());
-        model.addAttribute("error", "Palestrantes são obrigatórios");
-        return "palestra/formulario";
-    }
-
-    dto = new PalestraDTO(
-        dto.id(),
-        dto.titulo(),
-        dto.descricao(),
-        dto.competenciaIds(),
-        listaPalestrantes,
-        dto.eventoId(),
-        dto.inicio(),
-        dto.fim()
-    );
-
-    if (dto.titulo() == null || dto.titulo().isBlank()) {
-        model.addAttribute("competencias", competenciaService.findAllCompetencias());
-        model.addAttribute("eventos", eventoService.listarTodos());
-        model.addAttribute("error", "Título é obrigatório");
-        return "palestra/formulario";
-    }
-
-    try {
-        Palestra savedP = palestraService.saveOrUpdate(dto);
-
-        String message = dto.id() != null
-            ? "Palestra '" + savedP.getTitulo() + "' atualizada com sucesso!"
-            : "Palestra '" + savedP.getTitulo() + "' criada com sucesso!";
-
-        redirectAttributes.addFlashAttribute("message", message);
-
-        return "redirect:/palestra/listagem";
-
-    } catch (EntityNotFoundException e) {
-        redirectAttributes.addFlashAttribute("error", e.getMessage());
-        return "redirect:/palestra/formulario" + (dto.id() != null ? "?id=" + dto.id() : "");
-    }
-}
 
     @GetMapping("/delete/{id}")
-	@Transactional
-	public String deletePalestra(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		try {
-			palestraService.deleteById(id);
-			redirectAttributes.addFlashAttribute("message", "A palestra " + id + " foi apagada!");
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
-		}
-		return "redirect:/palestra/listagem";
-	}
+    @Transactional
+    public String deletePalestra(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            palestraService.deleteById(id);
+            redirectAttributes.addFlashAttribute("message", "A palestra " + id + " foi apagada!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/palestra/listagem";
+    }
+
+    @GetMapping("/{id}/qrcode")
+    @ResponseBody
+    public ResponseEntity<byte[]> qrCode(@PathVariable Long id, HttpServletRequest request) {
+        Palestra palestra = palestraService.garantirToken(id);
+        int port = request.getServerPort();
+        String baseUrl = request.getScheme() + "://" + request.getServerName()
+                + (port != 80 && port != 443 ? ":" + port : "");
+        String url = baseUrl + "/participar/" + palestra.getQrCodeToken();
+        try {
+            byte[] imagem = QrCodeUtil.gerar(url, 300, 300);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imagem);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private void popularModel(Model model, PalestraDTO dto) {
+        model.addAttribute("palestra", dto);
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
+        model.addAttribute("palestrantes", palestranteService.listarTodos());
+        model.addAttribute("eventos", eventoService.listarTodos());
+        model.addAttribute("tipos", TipoPalestra.values());
+        model.addAttribute("modalidades", Modalidade.values());
+    }
 }

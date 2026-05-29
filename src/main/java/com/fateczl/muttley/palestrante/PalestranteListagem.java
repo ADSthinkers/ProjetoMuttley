@@ -4,5 +4,8 @@ public record PalestranteListagem(
     Long id,
     String nome,
     String cpf,
-    String email
+    String email,
+    String areaAtuacao,
+    String instituicao,
+    String linkedin
 ) {}

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Alunos</title>
+    <title>Lista de Medalhas</title>
     <style>
         * {
             box-sizing: border-box;
@@ -23,7 +23,7 @@
             max-width: 1000px;
             margin: 0 auto;
             background: #fff;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
@@ -45,8 +45,8 @@
         .btn-new {
             background-color: #28a745;
             color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 10px 22px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
@@ -55,11 +55,11 @@
 
         .btn-new:hover {
             background-color: #218838;
+            transform: translateY(-1px);
         }
 
-        /* Alertas */
         .alert {
-            padding: 12px 20px;
+            padding: 14px 20px;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             text-align: center;
@@ -72,13 +72,12 @@
             border: 1px solid #c3e6cb;
         }
 
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        /* Tabela Customizada */
         .table-container {
             overflow-x: auto;
         }
@@ -111,26 +110,37 @@
             background-color: #fcfdfe;
         }
 
-        /* Ações */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-OURO { background-color: #fff3cd; color: #856404; }
+        .badge-PRATA { background-color: #e2e3e5; color: #383d41; }
+        .badge-BRONZE { background-color: #fde8d8; color: #7d3c0a; }
+
         .action-links {
             display: flex;
             gap: 15px;
         }
 
-        .icon-edit {
+        .link-edit {
             color: #007bff;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
         }
 
-        .icon-delete {
+        .link-delete {
             color: #dc3545;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
         }
 
-        .icon-edit:hover,
-        .icon-delete:hover {
+        .link-edit:hover,
+        .link-delete:hover {
             text-decoration: underline;
         }
     </style>
@@ -139,45 +149,51 @@
 <body>
     <div class="container">
         <div class="header-section">
-            <h2>Lista de Alunos</h2>
-            <a th:href="@{/aluno/formulario}" class="btn-new">+ Novo Aluno</a>
+            <h2>Lista de Medalhas</h2>
+            <a th:href="@{/medalha/formulario}" class="btn-new">+ Nova Medalha</a>
         </div>
 
         <div th:if="${message != null}" class="alert alert-success">
             <span th:text="${message}"></span>
         </div>
+        <div th:if="${error != null}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
 
-        <div class="table-container" th:if="${listaAlunos.size() > 0}">
+        <div class="table-container" th:if="${listaMedalhas != null and !listaMedalhas.isEmpty()}">
             <table>
                 <thead>
                     <tr>
-                        <th>RA</th>
+                        <th>Tipo</th>
                         <th>Nome</th>
-                        <th>CPF</th>
-                        <th>E-mail</th>
+                        <th>Participante</th>
+                        <th>Palestra</th>
+                        <th>Data Conquista</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="aluno : ${listaAlunos}">
-                        <td th:text="${aluno.ra}"></td>
-                        <td th:text="${aluno.nome}"></td>
-                        <td th:text="${aluno.cpf}"></td>
-                        <td th:text="${aluno.email}"></td>
+                    <tr th:each="m : ${listaMedalhas}">
+                        <td>
+                            <span th:text="${m.tipo}" th:classappend="'badge badge-' + ${m.tipo}"></span>
+                        </td>
+                        <td th:text="${m.nome}" style="font-weight: 500;"></td>
+                        <td th:text="${m.participanteNome}"></td>
+                        <td th:text="${m.palestraTitulo}"></td>
+                        <td th:text="${m.dataConquista != null ? #temporals.format(m.dataConquista, 'dd/MM/yyyy') : '-'}"></td>
                         <td class="action-links">
-                            <a th:href="@{/aluno/formulario/{id}(id=${aluno.id})}" class="icon-edit"
-                                title="Editar">Editar</a>
-                            <a th:href="@{/aluno/delete/{id}(id=${aluno.id})}" class="icon-delete"
-                                onclick="return confirm('Deseja realmente excluir este aluno?')"
-                                title="Excluir">Excluir</a>
+                            <a th:href="@{/medalha/formulario/{id}(id=${m.id})}" class="link-edit">Editar</a>
+                            <a th:href="@{/medalha/delete/{id}(id=${m.id})}" class="link-delete"
+                                onclick="return confirm('Deseja realmente excluir esta medalha?')">Excluir</a>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div th:unless="${listaAlunos.size() > 0}" class="alert alert-info">
-            Nenhum aluno encontrado no sistema.
+        <div th:unless="${listaMedalhas != null and !listaMedalhas.isEmpty()}"
+            style="text-align: center; padding: 20px; color: #666;">
+            Nenhuma medalha cadastrada.
         </div>
     </div>
 </body>
