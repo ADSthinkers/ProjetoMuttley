@@ -67,6 +67,33 @@ public class CertificadoService {
         return repository.findByParticipanteId(participanteId);
     }
 
+    public Certificado emitirOuBuscar(Long participanteId, Long palestraId) {
+        return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
+                .orElseGet(() -> emitir(new CertificadoDTO(null, participanteId, palestraId, null, null, null)));
+    }
+
+    @Transactional
+    public Optional<Certificado> buscarPorIdComDetalhes(Long id) {
+        return repository.findById(id).map(c -> {
+            if (c.getPalestra() != null) {
+                c.getPalestra().getPalestrantes().size();
+                c.getPalestra().getCompetencias().size();
+            }
+            return c;
+        });
+    }
+
+    @Transactional
+    public Optional<Certificado> buscarPorCodigoComDetalhes(String codigo) {
+        return repository.findByCodigoValidacao(codigo).map(c -> {
+            if (c.getPalestra() != null) {
+                c.getPalestra().getPalestrantes().size();
+                c.getPalestra().getCompetencias().size();
+            }
+            return c;
+        });
+    }
+
     public Optional<Certificado> buscarPorCodigo(String codigo) {
         return repository.findByCodigoValidacao(codigo);
     }

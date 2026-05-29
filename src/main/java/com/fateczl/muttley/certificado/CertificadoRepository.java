@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface CertificadoRepository extends JpaRepository<Certificado, Long> {
     List<Certificado> findByParticipanteId(Long participanteId);
     Optional<Certificado> findByCodigoValidacao(String codigoValidacao);
+    Optional<Certificado> findByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
     boolean existsByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
 }

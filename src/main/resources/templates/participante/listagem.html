@@ -42,6 +42,7 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
+                        <th>RA</th>
                         <th>CPF</th>
                         <th>E-mail</th>
                         <th>Ações</th>
@@ -50,6 +51,7 @@
                 <tbody>
                     <tr th:each="p : ${listaParticipantes}">
                         <td th:text="${p.nome}"></td>
+                        <td th:text="${p.ra != null ? p.ra : '-'}"></td>
                         <td th:text="${p.cpf}"></td>
                         <td th:text="${p.email}"></td>
                         <td class="action-links">

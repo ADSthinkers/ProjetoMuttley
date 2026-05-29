@@ -1,5 +1,6 @@
 package com.fateczl.muttley.medalha;
 
+import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.palestra.PalestraRepository;
 import com.fateczl.muttley.participante.ParticipanteRepository;
 
@@ -17,13 +18,16 @@ public class MedalhaController {
     private final MedalhaService service;
     private final ParticipanteRepository participanteRepository;
     private final PalestraRepository palestraRepository;
+    private final CompetenciaService competenciaService;
 
     public MedalhaController(MedalhaService service,
                               ParticipanteRepository participanteRepository,
-                              PalestraRepository palestraRepository) {
+                              PalestraRepository palestraRepository,
+                              CompetenciaService competenciaService) {
         this.service = service;
         this.participanteRepository = participanteRepository;
         this.palestraRepository = palestraRepository;
+        this.competenciaService = competenciaService;
     }
 
     @GetMapping
@@ -48,6 +52,7 @@ public class MedalhaController {
         model.addAttribute("tipos", TipoMedalha.values());
         model.addAttribute("participantes", participanteRepository.findAll());
         model.addAttribute("palestras", palestraRepository.findAll());
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
         return "medalha/formulario";
     }
 
@@ -64,6 +69,7 @@ public class MedalhaController {
         model.addAttribute("tipos", TipoMedalha.values());
         model.addAttribute("participantes", participanteRepository.findAll());
         model.addAttribute("palestras", palestraRepository.findAll());
+        model.addAttribute("competencias", competenciaService.findAllCompetencias());
         return "medalha/formulario";
     }
 

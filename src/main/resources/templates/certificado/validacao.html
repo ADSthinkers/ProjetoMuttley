@@ -173,6 +173,7 @@
             <div class="codigo-box" th:text="${certificado.codigoValidacao}"></div>
 
             <div class="actions">
+                <a th:href="@{/certificado/{id}/pdf(id=${certificado.id})}" class="btn">⬇ Baixar PDF</a>
                 <a th:href="@{/certificado}" class="btn btn-secondary">Voltar</a>
             </div>
         </div>

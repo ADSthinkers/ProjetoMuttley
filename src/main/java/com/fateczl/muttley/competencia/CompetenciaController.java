@@ -2,6 +2,7 @@ package com.fateczl.muttley.competencia;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import com.fateczl.muttley.competencia.TipoCompetencia;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,34 +31,31 @@ public class CompetenciaController {
     public String formularioCompetencia(@RequestParam(required = false) Long id, Model model) {
         CompetenciaDTO dto;
         if (id != null) {
-            //edição: Carrega dados existentes
             Competencia competencia = competenciaService.procurarPorId(id)
-            .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
-        dto = competenciaMapper.toCompetenciaDTO(competencia);
+                .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
+            dto = competenciaMapper.toCompetenciaDTO(competencia);
         } else {
             dto = new CompetenciaDTO(null, "", null);
         }
         model.addAttribute("competencia", dto);
+        model.addAttribute("tipos", TipoCompetencia.values());
         return "competencia/formulario";
     }
 
-    @GetMapping ("/formulario/{id}")
-    public String loadPageFormulario (@PathVariable("id") Long id, Model model,
+    @GetMapping("/formulario/{id}")
+    public String loadPageFormulario(@PathVariable("id") Long id, Model model,
         RedirectAttributes redirectAttributes) {
-            CompetenciaDTO dto;
-            try {
-                if (id != null) {
-                    Competencia competencia = competenciaService.procurarPorId(id)
-                        .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
-                    dto = competenciaMapper.toCompetenciaDTO(competencia);
-                    model.addAttribute("competencia", dto);
-                }
-                return "competencia/formulario";
-            } catch (EntityNotFoundException e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-                return "redirect:/competencia";
-            }
+        try {
+            Competencia competencia = competenciaService.procurarPorId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
+            model.addAttribute("competencia", competenciaMapper.toCompetenciaDTO(competencia));
+            model.addAttribute("tipos", TipoCompetencia.values());
+            return "competencia/formulario";
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/competencia";
         }
+    }
         
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("competencia") @Valid CompetenciaDTO dto,

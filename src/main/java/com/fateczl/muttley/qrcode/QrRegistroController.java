@@ -1,5 +1,10 @@
 package com.fateczl.muttley.qrcode;
 
+import com.fateczl.muttley.auditoria.AcaoAuditoria;
+import com.fateczl.muttley.auditoria.AuditoriaService;
+import com.fateczl.muttley.certificado.Certificado;
+import com.fateczl.muttley.certificado.CertificadoService;
+import com.fateczl.muttley.medalha.MedalhaService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
 import com.fateczl.muttley.participacao.ParticipacaoDTO;
@@ -24,15 +29,24 @@ public class QrRegistroController {
     private final ParticipanteService participanteService;
     private final ParticipacaoService participacaoService;
     private final ParticipacaoRepository participacaoRepository;
+    private final CertificadoService certificadoService;
+    private final MedalhaService medalhaService;
+    private final AuditoriaService auditoriaService;
 
     public QrRegistroController(PalestraService palestraService,
                                   ParticipanteService participanteService,
                                   ParticipacaoService participacaoService,
-                                  ParticipacaoRepository participacaoRepository) {
+                                  ParticipacaoRepository participacaoRepository,
+                                  CertificadoService certificadoService,
+                                  MedalhaService medalhaService,
+                                  AuditoriaService auditoriaService) {
         this.palestraService = palestraService;
         this.participanteService = participanteService;
         this.participacaoService = participacaoService;
         this.participacaoRepository = participacaoRepository;
+        this.certificadoService = certificadoService;
+        this.medalhaService = medalhaService;
+        this.auditoriaService = auditoriaService;
     }
 
     @GetMapping("/{token}")
@@ -78,8 +92,24 @@ public class QrRegistroController {
         participacaoService.salvarOuAtualizar(
                 new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
 
+        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
+                "Check-in de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
+                participante.getNome());
+
+        Certificado cert = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
+        auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
+                "Certificado emitido para " + participante.getNome() + " — " + palestra.getTitulo(),
+                "sistema");
+
+        medalhaService.concederSeNaoExistir(participante.getId(), palestra.getId());
+        auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestra.getId(),
+                "Medalha de participação concedida a " + participante.getNome(),
+                "sistema");
+
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
         redirectAttributes.addFlashAttribute("palestraTitulo", palestra.getTitulo());
+        redirectAttributes.addFlashAttribute("codigoCertificado", cert.getCodigoValidacao());
+        redirectAttributes.addFlashAttribute("certificadoId", cert.getId());
         return "redirect:/participar/" + token + "/sucesso";
     }
 
@@ -122,8 +152,24 @@ public class QrRegistroController {
                     new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
         }
 
+        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
+                "Check-in (novo cadastro) de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
+                participante.getNome());
+
+        Certificado cert = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
+        auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
+                "Certificado emitido para " + participante.getNome() + " — " + palestra.getTitulo(),
+                "sistema");
+
+        medalhaService.concederSeNaoExistir(participante.getId(), palestra.getId());
+        auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestra.getId(),
+                "Medalha de participação concedida a " + participante.getNome(),
+                "sistema");
+
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
         redirectAttributes.addFlashAttribute("palestraTitulo", palestra.getTitulo());
+        redirectAttributes.addFlashAttribute("codigoCertificado", cert.getCodigoValidacao());
+        redirectAttributes.addFlashAttribute("certificadoId", cert.getId());
         return "redirect:/participar/" + token + "/sucesso";
     }
 

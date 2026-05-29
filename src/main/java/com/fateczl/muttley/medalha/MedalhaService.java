@@ -91,6 +91,13 @@ public class MedalhaService {
         return medalhas;
     }
 
+    public void concederSeNaoExistir(Long participanteId, Long palestraId) {
+        if (repository.existsByParticipanteIdAndPalestraId(participanteId, palestraId)) return;
+        MedalhaDTO dto = new MedalhaDTO(null, TipoMedalha.PARTICIPACAO, null, null,
+                participanteId, palestraId, null, null);
+        salvarOuAtualizar(dto);
+    }
+
     @SuppressWarnings("null")
     public void deletar(Long id) {
         repository.deleteById(id);

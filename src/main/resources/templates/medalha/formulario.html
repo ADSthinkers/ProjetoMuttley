@@ -188,6 +188,13 @@
                 <span th:if="${#fields.hasErrors('dataConquista')}" th:errors="*{dataConquista}" class="error-message"></span>
             </div>
 
+            <div class="form-group">
+                <label for="competenciaIds">Competências (Ctrl para selecionar várias)</label>
+                <select multiple th:field="*{competenciaIds}" style="min-height:100px;">
+                    <option th:each="c : ${competencias}" th:value="${c.id}" th:text="${c.nome}"></option>
+                </select>
+            </div>
+
             <div class="actions">
                 <button type="submit" class="btn btn-submit">
                     <span th:text="${medalhaDTO.id() != null} ? 'Atualizar' : 'Cadastrar'"></span>

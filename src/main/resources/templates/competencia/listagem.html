@@ -144,17 +144,25 @@
             <span th:text="${message}"></span>
         </div>
 
-        <div class="table-container" th:if="${competencias.size() > 0}">
+        <div class="table-container" th:if="${competencias != null and !competencias.isEmpty()}">
             <table>
                 <thead>
                     <tr>
                         <th>Nome da Competência</th>
+                        <th>Tipo</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="competencia : ${competencias}">
                         <td th:text="${competencia.nome}"></td>
+                        <td>
+                            <span th:if="${competencia.tipo != null}"
+                                  th:text="${competencia.tipo.label}"
+                                  th:style="${competencia.tipo.name() == 'SOFT_SKILL'} ? 'color:#6f42c1;font-weight:600' : 'color:#0056b3;font-weight:600'">
+                            </span>
+                            <span th:unless="${competencia.tipo != null}" style="color:#aaa;">—</span>
+                        </td>
                         <td class="action-links">
                             <a th:href="@{/competencia/formulario/{id}(id=${competencia.id})}"
                                 class="icon-edit">Editar</a>
@@ -166,7 +174,7 @@
             </table>
         </div>
 
-        <div th:unless="${competencias.size() > 0}" class="alert alert-info">
+        <div th:unless="${competencias != null and !competencias.isEmpty()}" class="alert alert-info">
             Nenhuma competência cadastrada no sistema.
         </div>
     </div>
