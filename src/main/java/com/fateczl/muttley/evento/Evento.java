@@ -2,6 +2,7 @@ package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
 
 import jakarta.persistence.*;
@@ -43,13 +44,13 @@ public class Evento {
     @Enumerated(EnumType.STRING)
     private Modalidade modalidade;
 
-    private Integer cargaHoraria;
-
     private Integer vagas;
 
     private String banner;
 
-    private String entidadeResponsavel;
+    @ManyToOne
+    @JoinColumn(name = "patrocinador_id")
+    private Patrocinador patrocinador;
 
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Palestra> palestras;

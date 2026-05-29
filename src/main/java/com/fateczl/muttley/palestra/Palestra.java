@@ -3,6 +3,7 @@ package com.fateczl.muttley.palestra;
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.evento.Evento;
 import com.fateczl.muttley.palestrante.Palestrante;
+import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
 
 import jakarta.persistence.*;
@@ -62,4 +63,11 @@ public class Palestra {
 
     @Column(unique = true)
     private String qrCodeToken;
+
+    @ManyToOne
+    @JoinColumn(name = "patrocinador_id")
+    private Patrocinador patrocinador;
+
+    @Enumerated(EnumType.STRING)
+    private StatusPalestra status;
 }

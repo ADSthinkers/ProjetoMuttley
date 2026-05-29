@@ -40,7 +40,10 @@ public class AdminController {
 
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        service.buscarPorId(id).ifPresent(admin -> model.addAttribute("admin", admin));
+        service.buscarPorId(id).ifPresent(admin -> {
+            admin.setSenha(null); // não expõe o hash no formulário
+            model.addAttribute("admin", admin);
+        });
         if (!model.containsAttribute("admin")) {
             return "redirect:/admin";
         }

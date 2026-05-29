@@ -51,6 +51,37 @@ public class InscricaoService {
         return repository.save(inscricao);
     }
 
+    public Inscricao confirmarPresenca(Long participanteId, Long palestraId) {
+        return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
+                .map(i -> {
+                    i.setStatus(StatusInscricao.CONFIRMADA);
+                    return repository.save(i);
+                })
+                .orElseGet(() -> {
+                    Participante p = participanteRepository.findById(participanteId)
+                            .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
+                    Palestra palestra = palestraRepository.findById(palestraId)
+                            .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+                    Inscricao nova = new Inscricao();
+                    nova.setParticipante(p);
+                    nova.setPalestra(palestra);
+                    nova.setStatus(StatusInscricao.CONFIRMADA);
+                    return repository.save(nova);
+                });
+    }
+
+    public List<Inscricao> listarPorPalestra(Long palestraId) {
+        return repository.findByPalestraId(palestraId);
+    }
+
+    public Inscricao marcarPresente(Long id) {
+        return atualizarStatus(id, StatusInscricao.CONFIRMADA);
+    }
+
+    public Inscricao marcarAusente(Long id) {
+        return atualizarStatus(id, StatusInscricao.CANCELADA);
+    }
+
     @Transactional
     public List<Inscricao> listarTodos() {
         List<Inscricao> lista = repository.findAll();

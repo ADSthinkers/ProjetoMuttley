@@ -67,4 +67,11 @@ public class Patrocinador {
 
     // Social
     private String linkedin;
+
+    public String getNomeExibicao() {
+        if (tipo == TipoPatrocinador.PJ) {
+            return nomeFantasia != null ? nomeFantasia : razaoSocial;
+        }
+        return nomeCompleto;
+    }
 }

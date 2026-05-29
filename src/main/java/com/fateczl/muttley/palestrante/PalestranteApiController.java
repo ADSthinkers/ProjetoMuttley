@@ -40,7 +40,7 @@ public class PalestranteApiController {
     public ResponseEntity<PalestranteDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PalestranteDTO dto) {
         PalestranteDTO dtoComId = new PalestranteDTO(id, dto.nome(), dto.cpf(), dto.email(),
                 dto.miniCurriculo(), dto.formacao(), dto.areaAtuacao(),
-                dto.instituicao(), dto.linkedin(), dto.foto());
+                dto.instituicao(), dto.linkedin(), dto.foto(), dto.senha());
         return ResponseEntity.ok(mapper.toAtualizacaoDto(service.salvarOuAtualizar(dtoComId)));
     }
 

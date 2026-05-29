@@ -10,4 +10,6 @@ public interface CertificadoRepository extends JpaRepository<Certificado, Long> 
     Optional<Certificado> findByCodigoValidacao(String codigoValidacao);
     Optional<Certificado> findByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
     boolean existsByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
+    Optional<Certificado> findByPalestranteIdAndPalestraId(Long palestranteId, Long palestraId);
+    boolean existsByPalestranteIdAndPalestraId(Long palestranteId, Long palestraId);
 }

@@ -3,7 +3,7 @@ package com.fateczl.muttley.admin;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -11,15 +11,14 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class AdminService {
 
-    @Autowired
-    private AdminRepository repository;
-  
-    @Autowired
-    private AdminMapper mapper;
+    private final AdminRepository repository;
+    private final AdminMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdminService(AdminRepository repository, AdminMapper mapper) {
+    public AdminService(AdminRepository repository, AdminMapper mapper, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @SuppressWarnings("null")
@@ -29,10 +28,18 @@ public class AdminService {
             Admin existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Admin não encontrado"));
 
+            String senhaAtual = existente.getSenha();
             mapper.updateEntity(dto, existente);
+
+            if (dto.senha() == null || dto.senha().isBlank()) {
+                existente.setSenha(senhaAtual);
+            } else {
+                existente.setSenha(passwordEncoder.encode(dto.senha()));
+            }
             return repository.save(existente);
         } else {
             Admin novo = mapper.toEntity(dto);
+            novo.setSenha(passwordEncoder.encode(dto.senha()));
             return repository.save(novo);
         }
     }

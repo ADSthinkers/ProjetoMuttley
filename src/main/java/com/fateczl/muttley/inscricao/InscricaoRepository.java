@@ -9,5 +9,6 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     List<Inscricao> findByParticipanteId(Long participanteId);
     List<Inscricao> findByPalestraId(Long palestraId);
     boolean existsByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
+    Optional<Inscricao> findByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
     Optional<Inscricao> findByQrCodeToken(String qrCodeToken);
 }

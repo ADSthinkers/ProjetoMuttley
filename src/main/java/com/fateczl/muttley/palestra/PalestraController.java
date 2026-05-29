@@ -4,6 +4,7 @@ import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.evento.EventoService;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteService;
+import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.qrcode.QrCodeUtil;
 import com.fateczl.muttley.tipo.Modalidade;
 
@@ -40,6 +41,9 @@ public class PalestraController {
     @Autowired
     private PalestranteService palestranteService;
 
+    @Autowired
+    private PatrocinadorRepository patrocinadorRepository;
+
     @GetMapping("/listagem")
     public String loadListingPage(Model model) {
         List<ListagemPalestra> palestras = palestraService.findAll()
@@ -53,7 +57,9 @@ public class PalestraController {
                                 ? p.getPalestrantes().stream().map(Palestrante::getNome).toList()
                                 : java.util.List.of(),
                         p.getInicio(),
-                        p.getFim()
+                        p.getFim(),
+                        p.getStatus(),
+                        p.getPatrocinador() != null ? p.getPatrocinador().getNomeExibicao() : null
                 ))
                 .toList();
         model.addAttribute("palestras", palestras);
@@ -69,7 +75,7 @@ public class PalestraController {
             dto = palestraMapper.toDto(palestra);
         } else {
             dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(),
-                    null, null, null, null, null, null, null, null, null);
+                    null, null, null, null, null, null, null, null, null, null, null);
         }
         popularModel(model, dto);
         return "palestra/formulario";
@@ -150,5 +156,7 @@ public class PalestraController {
         model.addAttribute("eventos", eventoService.listarTodos());
         model.addAttribute("tipos", TipoPalestra.values());
         model.addAttribute("modalidades", Modalidade.values());
+        model.addAttribute("patrocinadores", patrocinadorRepository.findAll());
+        model.addAttribute("statuses", StatusPalestra.values());
     }
 }

@@ -32,6 +32,5 @@ public class Admin {
     @NotBlank(message = "E-mail é obrigatório")
     private String email;
     
-    @NotBlank(message = "Senha é obrigatória")
     private String senha;
 }

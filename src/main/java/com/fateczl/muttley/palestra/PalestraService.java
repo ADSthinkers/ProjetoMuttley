@@ -6,6 +6,8 @@ import com.fateczl.muttley.evento.Evento;
 import com.fateczl.muttley.evento.EventoService;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteRepository;
+import com.fateczl.muttley.patrocinador.Patrocinador;
+import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -34,6 +36,9 @@ public class PalestraService {
 
     @Autowired
     private PalestranteRepository palestranteRepository;
+
+    @Autowired
+    private PatrocinadorRepository patrocinadorRepository;
 
     @Transactional
     public List<Palestra> findAll() {
@@ -70,6 +75,21 @@ public class PalestraService {
         return palestra;
     }
 
+    @Transactional
+    public Optional<Palestra> findByIdComPalestrantes(Long id) {
+        return palestraRepository.findById(id).map(p -> {
+            p.getPalestrantes().size();
+            return p;
+        });
+    }
+
+    public void atualizarStatus(Long palestraId, StatusPalestra status) {
+        Palestra palestra = palestraRepository.findById(palestraId)
+                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+        palestra.setStatus(status);
+        palestraRepository.save(palestra);
+    }
+
     public Palestra saveOrUpdate(PalestraDTO dto) {
         List<Long> competenciaIds = dto.competenciaIds();
         List<Competencia> competencias = competenciaService.findAllbyIdCompetencias(competenciaIds);
@@ -86,6 +106,12 @@ public class PalestraService {
         Evento evento = eventoService.buscarPorId(dto.eventoId())
                 .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
 
+        Patrocinador patrocinador = null;
+        if (dto.patrocinadorId() != null) {
+            patrocinador = patrocinadorRepository.findById(dto.patrocinadorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Patrocinador não encontrado"));
+        }
+
         if (dto.id() != null) {
             @SuppressWarnings("null")
             Palestra existente = palestraRepository.findById(dto.id())
@@ -94,13 +120,17 @@ public class PalestraService {
             existente.setCompetencias(competencias);
             existente.setPalestrantes(palestrantes);
             existente.setEvento(evento);
+            existente.setPatrocinador(patrocinador);
+            if (dto.status() != null) existente.setStatus(dto.status());
             return palestraRepository.save(existente);
         } else {
             Palestra nova = palestraMapper.toEntity(dto);
             nova.setCompetencias(competencias);
             nova.setPalestrantes(palestrantes);
             nova.setEvento(evento);
+            nova.setPatrocinador(patrocinador);
             nova.setQrCodeToken(UUID.randomUUID().toString());
+            nova.setStatus(StatusPalestra.PENDENTE);
             return palestraRepository.save(nova);
         }
     }

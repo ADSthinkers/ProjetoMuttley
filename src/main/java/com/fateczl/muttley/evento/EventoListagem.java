@@ -13,8 +13,7 @@ public record EventoListagem(
     String localNome,
     String categoria,
     Modalidade modalidade,
-    Integer cargaHoraria,
     Integer vagas,
     String banner,
-    String entidadeResponsavel
+    String patrocinadorNome
 ) {}

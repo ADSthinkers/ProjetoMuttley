@@ -37,5 +37,7 @@ public record PalestraDTO(
     Modalidade modalidade,
     Float cargaHoraria,
     Integer vagas,
-    String banner
+    String banner,
+    Long patrocinadorId,
+    StatusPalestra status
 ) {}

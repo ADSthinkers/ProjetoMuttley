@@ -1,6 +1,7 @@
 package com.fateczl.muttley.certificado;
 
 import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.participante.Participante;
 
 import jakarta.persistence.*;
@@ -25,6 +26,10 @@ public class Certificado {
     private Participante participante;
 
     @ManyToOne
+    @JoinColumn(name = "palestrante_id")
+    private Palestrante palestrante;
+
+    @ManyToOne
     @JoinColumn(name = "palestra_id")
     private Palestra palestra;
 
@@ -35,9 +40,25 @@ public class Certificado {
     @Column(unique = true)
     private String codigoValidacao;
 
+    @Enumerated(EnumType.STRING)
+    private TipoCertificado tipo;
+
     @PrePersist
     private void prePersist() {
         if (codigoValidacao == null) codigoValidacao = UUID.randomUUID().toString();
         if (dataEmissao == null) dataEmissao = LocalDateTime.now();
+        if (tipo == null) tipo = TipoCertificado.PARTICIPACAO;
+    }
+
+    public String getNomeTitular() {
+        if (palestrante != null) return palestrante.getNome();
+        if (participante != null) return participante.getNome();
+        return "Titular";
+    }
+
+    public String getEmailTitular() {
+        if (palestrante != null) return palestrante.getEmail();
+        if (participante != null) return participante.getEmail();
+        return null;
     }
 }

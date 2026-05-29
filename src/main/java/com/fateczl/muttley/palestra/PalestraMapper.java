@@ -12,6 +12,7 @@ public interface PalestraMapper {
     @Mapping(target = "competenciaIds", source = "competencias", qualifiedByName = "competenciasToIds")
     @Mapping(target = "palestranteIds", source = "palestrantes", qualifiedByName = "palestrantesToIds")
     @Mapping(target = "eventoId", source = "evento.id")
+    @Mapping(target = "patrocinadorId", source = "patrocinador.id")
     PalestraDTO toDto(Palestra palestra);
 
     @Mapping(target = "id", ignore = true)
@@ -19,6 +20,7 @@ public interface PalestraMapper {
     @Mapping(target = "palestrantes", ignore = true)
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "qrCodeToken", ignore = true)
+    @Mapping(target = "patrocinador", ignore = true)
     Palestra toEntity(PalestraDTO dto);
 
     @Mapping(target = "id", ignore = true)
@@ -26,6 +28,7 @@ public interface PalestraMapper {
     @Mapping(target = "palestrantes", ignore = true)
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "qrCodeToken", ignore = true)
+    @Mapping(target = "patrocinador", ignore = true)
     void updateEntityFromDto(PalestraDTO dto, @MappingTarget Palestra palestra);
 
     @Named("competenciasToIds")

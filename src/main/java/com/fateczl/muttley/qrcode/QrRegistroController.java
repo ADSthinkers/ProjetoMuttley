@@ -2,9 +2,7 @@ package com.fateczl.muttley.qrcode;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
-import com.fateczl.muttley.certificado.Certificado;
-import com.fateczl.muttley.certificado.CertificadoService;
-import com.fateczl.muttley.medalha.MedalhaService;
+import com.fateczl.muttley.inscricao.InscricaoService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
 import com.fateczl.muttley.participacao.ParticipacaoDTO;
@@ -29,23 +27,20 @@ public class QrRegistroController {
     private final ParticipanteService participanteService;
     private final ParticipacaoService participacaoService;
     private final ParticipacaoRepository participacaoRepository;
-    private final CertificadoService certificadoService;
-    private final MedalhaService medalhaService;
+    private final InscricaoService inscricaoService;
     private final AuditoriaService auditoriaService;
 
     public QrRegistroController(PalestraService palestraService,
                                   ParticipanteService participanteService,
                                   ParticipacaoService participacaoService,
                                   ParticipacaoRepository participacaoRepository,
-                                  CertificadoService certificadoService,
-                                  MedalhaService medalhaService,
+                                  InscricaoService inscricaoService,
                                   AuditoriaService auditoriaService) {
         this.palestraService = palestraService;
         this.participanteService = participanteService;
         this.participacaoService = participacaoService;
         this.participacaoRepository = participacaoRepository;
-        this.certificadoService = certificadoService;
-        this.medalhaService = medalhaService;
+        this.inscricaoService = inscricaoService;
         this.auditoriaService = auditoriaService;
     }
 
@@ -84,32 +79,14 @@ public class QrRegistroController {
         if (participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
             model.addAttribute("palestra", palestra);
             model.addAttribute("token", token);
-            model.addAttribute("aviso", "Você já está registrado nesta palestra, " + participante.getNome() + "!");
+            model.addAttribute("aviso", "Presença já registrada nesta palestra, " + participante.getNome() + "!");
             return "qrcode/identificacao";
         }
 
-        float horas = calcularHoras(palestra);
-        participacaoService.salvarOuAtualizar(
-                new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
-
-        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
-                "Check-in de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
-                participante.getNome());
-
-        Certificado cert = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
-        auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
-                "Certificado emitido para " + participante.getNome() + " — " + palestra.getTitulo(),
-                "sistema");
-
-        medalhaService.concederSeNaoExistir(participante.getId(), palestra.getId());
-        auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestra.getId(),
-                "Medalha de participação concedida a " + participante.getNome(),
-                "sistema");
+        registrarPresenca(participante, palestra);
 
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
         redirectAttributes.addFlashAttribute("palestraTitulo", palestra.getTitulo());
-        redirectAttributes.addFlashAttribute("codigoCertificado", cert.getCodigoValidacao());
-        redirectAttributes.addFlashAttribute("certificadoId", cert.getId());
         return "redirect:/participar/" + token + "/sucesso";
     }
 
@@ -147,35 +124,29 @@ public class QrRegistroController {
         }
 
         if (!participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
-            float horas = calcularHoras(palestra);
-            participacaoService.salvarOuAtualizar(
-                    new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
+            registrarPresenca(participante, palestra);
         }
-
-        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
-                "Check-in (novo cadastro) de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
-                participante.getNome());
-
-        Certificado cert = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
-        auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
-                "Certificado emitido para " + participante.getNome() + " — " + palestra.getTitulo(),
-                "sistema");
-
-        medalhaService.concederSeNaoExistir(participante.getId(), palestra.getId());
-        auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestra.getId(),
-                "Medalha de participação concedida a " + participante.getNome(),
-                "sistema");
 
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
         redirectAttributes.addFlashAttribute("palestraTitulo", palestra.getTitulo());
-        redirectAttributes.addFlashAttribute("codigoCertificado", cert.getCodigoValidacao());
-        redirectAttributes.addFlashAttribute("certificadoId", cert.getId());
         return "redirect:/participar/" + token + "/sucesso";
     }
 
     @GetMapping("/{token}/sucesso")
     public String sucesso(@PathVariable String token, Model model) {
         return "qrcode/sucesso";
+    }
+
+    private void registrarPresenca(Participante participante, Palestra palestra) {
+        float horas = calcularHoras(palestra);
+        participacaoService.salvarOuAtualizar(
+                new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
+
+        inscricaoService.confirmarPresenca(participante.getId(), palestra.getId());
+
+        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
+                "Check-in de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
+                participante.getNome());
     }
 
     private float calcularHoras(Palestra palestra) {

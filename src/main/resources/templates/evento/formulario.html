@@ -152,8 +152,11 @@
             </div>
 
             <div class="form-group">
-                <label for="entidadeResponsavel">Entidade Responsável</label>
-                <input type="text" th:field="*{entidadeResponsavel}" placeholder="Ex: FATEC Zona Leste">
+                <label for="patrocinadorId">Patrocinador <span style="font-weight:400;color:#999;font-size:0.8rem;">(opcional)</span></label>
+                <select th:field="*{patrocinadorId}">
+                    <option value="">-- Nenhum --</option>
+                    <option th:each="p : ${patrocinadores}" th:value="${p.id}" th:text="${p.nomeExibicao}"></option>
+                </select>
             </div>
 
             <div class="row-2">
@@ -190,15 +193,9 @@
                 </select>
             </div>
 
-            <div class="row-2">
-                <div class="form-group">
-                    <label for="cargaHoraria">Carga Horária (h)</label>
-                    <input type="number" min="1" th:field="*{cargaHoraria}">
-                </div>
-                <div class="form-group">
-                    <label for="vagas">Vagas</label>
-                    <input type="number" min="1" th:field="*{vagas}">
-                </div>
+            <div class="form-group">
+                <label for="vagas">Vagas</label>
+                <input type="number" min="1" th:field="*{vagas}">
             </div>
 
             <div class="form-group">

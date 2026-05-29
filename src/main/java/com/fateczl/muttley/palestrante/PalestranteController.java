@@ -37,7 +37,10 @@ public class PalestranteController {
 
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        service.buscarPorId(id).ifPresent(p -> model.addAttribute("palestrante", p));
+        service.buscarPorId(id).ifPresent(p -> {
+            p.setSenha(null); // não expõe o hash no formulário
+            model.addAttribute("palestrante", p);
+        });
         if (!model.containsAttribute("palestrante")) return "redirect:/palestrante";
         return "palestrante/formulario";
     }

@@ -2,6 +2,8 @@ package com.fateczl.muttley.certificado;
 
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraRepository;
+import com.fateczl.muttley.palestrante.Palestrante;
+import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteRepository;
 
@@ -19,13 +21,16 @@ public class CertificadoService {
     private final CertificadoRepository repository;
     private final ParticipanteRepository participanteRepository;
     private final PalestraRepository palestraRepository;
+    private final PalestranteRepository palestranteRepository;
 
     public CertificadoService(CertificadoRepository repository,
                                ParticipanteRepository participanteRepository,
-                               PalestraRepository palestraRepository) {
+                               PalestraRepository palestraRepository,
+                               PalestranteRepository palestranteRepository) {
         this.repository = repository;
         this.participanteRepository = participanteRepository;
         this.palestraRepository = palestraRepository;
+        this.palestranteRepository = palestranteRepository;
     }
 
     @SuppressWarnings("null")
@@ -70,6 +75,23 @@ public class CertificadoService {
     public Certificado emitirOuBuscar(Long participanteId, Long palestraId) {
         return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
                 .orElseGet(() -> emitir(new CertificadoDTO(null, participanteId, palestraId, null, null, null)));
+    }
+
+    public Certificado emitirOuBuscarPalestrante(Long palestranteId, Long palestraId) {
+        return repository.findByPalestranteIdAndPalestraId(palestranteId, palestraId)
+                .orElseGet(() -> {
+                    Palestrante palestrante = palestranteRepository.findById(palestranteId)
+                            .orElseThrow(() -> new EntityNotFoundException("Palestrante não encontrado"));
+                    Palestra palestra = palestraRepository.findById(palestraId)
+                            .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+
+                    Certificado cert = new Certificado();
+                    cert.setPalestrante(palestrante);
+                    cert.setPalestra(palestra);
+                    cert.setTipo(TipoCertificado.APRESENTACAO);
+                    cert.setCargaHoraria(palestra.getCargaHoraria() != null ? palestra.getCargaHoraria() : 1f);
+                    return repository.save(cert);
+                });
     }
 
     @Transactional

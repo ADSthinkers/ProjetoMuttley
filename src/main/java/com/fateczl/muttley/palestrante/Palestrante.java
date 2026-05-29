@@ -36,4 +36,6 @@ public class Palestrante {
     private String linkedin;
 
     private String foto;
+
+    private String senha;
 }

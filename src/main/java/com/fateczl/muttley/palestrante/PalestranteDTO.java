@@ -12,5 +12,6 @@ public record PalestranteDTO(
     String areaAtuacao,
     String instituicao,
     String linkedin,
-    String foto
+    String foto,
+    String senha
 ) {}

@@ -12,5 +12,7 @@ public record ListagemPalestra(
     List<Competencia> competencias,
     List<String> palestrantes,
     LocalDateTime inicio,
-    LocalDateTime fim
+    LocalDateTime fim,
+    StatusPalestra status,
+    String patrocinadorNome
 ) {}

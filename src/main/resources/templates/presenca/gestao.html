@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Presenças</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body { background-color: #f0f2f5; padding: 40px 20px; color: #333; }
+
+        .container { max-width: 960px; margin: 0 auto; background: #fff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .back-link { display: inline-block; margin-bottom: 1.5rem; color: #007bff; text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { text-decoration: underline; }
+
+        h2 { font-size: 1.4rem; color: #1a1a1a; margin-bottom: 0.3rem; }
+        .subtitle { color: #777; font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .stats { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .stat-card { padding: 0.8rem 1.4rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; }
+        .stat-present { background: #d4edda; color: #155724; }
+        .stat-absent { background: #f8d7da; color: #721c24; }
+        .stat-total { background: #e2e3e5; color: #383d41; }
+
+        .alert { padding: 14px 20px; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.95rem; text-align: center; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        .table-container { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; background: #f8f9fa; color: #666; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #edf2f7; text-transform: uppercase; font-size: 0.73rem; letter-spacing: 0.05em; }
+        td { padding: 13px 15px; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; vertical-align: middle; }
+        tr:hover { background: #fcfdfe; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+        .badge-presente { background: #d4edda; color: #155724; }
+        .badge-ausente { background: #f8d7da; color: #721c24; }
+        .badge-pendente { background: #e2e3e5; color: #383d41; }
+
+        .btn-toggle-presente { background: none; border: 1px solid #dc3545; color: #dc3545; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; }
+        .btn-toggle-presente:hover { background: #dc3545; color: white; }
+        .btn-toggle-ausente { background: none; border: 1px solid #28a745; color: #28a745; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; }
+        .btn-toggle-ausente:hover { background: #28a745; color: white; }
+        .btn-toggle-pendente { background: none; border: 1px solid #28a745; color: #28a745; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; }
+        .btn-toggle-pendente:hover { background: #28a745; color: white; }
+
+        .footer-actions { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-hint { font-size: 0.85rem; color: #888; }
+
+        .btn-confirmar { background: #007bff; color: white; border: none; padding: 0.75rem 1.8rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-confirmar:hover { background: #0069d9; transform: translateY(-1px); }
+        .btn-confirmar:disabled { background: #b0c4de; cursor: not-allowed; transform: none; }
+
+        .empty { text-align: center; padding: 3rem; color: #999; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a th:href="@{/palestra}" class="back-link">← Voltar para Palestras</a>
+
+        <h2>Gestão de Presenças</h2>
+        <p class="subtitle" th:text="${palestra.titulo}"></p>
+
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+        <div class="stats">
+            <div class="stat-card stat-present">✔ <span th:text="${totalPresentes}"></span> presentes</div>
+            <div class="stat-card stat-absent">✘ <span th:text="${totalAusentes}"></span> ausentes/pendentes</div>
+            <div class="stat-card stat-total">Total: <span th:text="${inscricoes.size()}"></span></div>
+        </div>
+
+        <div class="table-container" th:if="${inscricoes != null and !inscricoes.isEmpty()}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inscricao : ${inscricoes}">
+                        <td style="font-weight:600;" th:text="${inscricao.participante.nome}"></td>
+                        <td th:text="${inscricao.participante.cpf ?: '-'}"></td>
+                        <td th:text="${inscricao.participante.email ?: '-'}"></td>
+                        <td>
+                            <span th:if="${inscricao.status.name() == 'CONFIRMADA'}" class="badge badge-presente">Presente</span>
+                            <span th:if="${inscricao.status.name() == 'CANCELADA'}" class="badge badge-ausente">Ausente</span>
+                            <span th:if="${inscricao.status.name() == 'PENDENTE'}" class="badge badge-pendente">Pendente</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/presencas/{pid}/toggle/{iid}(pid=${palestra.id},iid=${inscricao.id})}"
+                                  method="post" style="display:inline;">
+                                <button th:if="${inscricao.status.name() == 'CONFIRMADA'}"
+                                        type="submit" class="btn-toggle-presente">
+                                    Marcar Ausente
+                                </button>
+                                <button th:if="${inscricao.status.name() != 'CONFIRMADA'}"
+                                        type="submit" class="btn-toggle-ausente">
+                                    Marcar Presente
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty" th:if="${inscricoes == null or inscricoes.isEmpty()}">
+            Nenhum participante registrado nesta palestra ainda.
+        </div>
+
+        <div class="footer-actions">
+            <p class="footer-hint">
+                Após confirmar, serão emitidos certificados e medalhas para todos os participantes marcados como <strong>Presente</strong>.
+            </p>
+            <form th:action="@{/presencas/{pid}/confirmar(pid=${palestra.id})}" method="post">
+                <button type="submit" class="btn-confirmar"
+                        th:disabled="${totalPresentes == 0}"
+                        onclick="return confirm('Confirmar presenças e emitir certificados para todos os presentes?')">
+                    ✔ Confirmar Presenças e Emitir Certificados
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

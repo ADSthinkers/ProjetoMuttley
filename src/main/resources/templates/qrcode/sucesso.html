@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presença Confirmada</title>
+    <title>Presença Registrada</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -12,21 +12,14 @@
         h2 { color: #28a745; font-size: 1.6rem; margin-bottom: 0.8rem; }
         .nome { font-size: 1.1rem; color: #333; margin-bottom: 0.5rem; }
         .palestra { font-size: 0.95rem; color: #777; margin-bottom: 2rem; }
-        .info-box { background: #d4edda; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; color: #155724; font-size: 0.9rem; }
-        .cert-box { background: #f0f7ff; border: 1px solid #b8d4f5; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; }
-        .cert-label { font-size: 0.75rem; color: #888; text-transform: uppercase; font-weight: 600; margin-bottom: 0.4rem; }
-        .cert-code { font-family: monospace; font-size: 0.8rem; color: #0056b3; word-break: break-all; margin-bottom: 0.8rem; }
-        .btn { display: inline-block; padding: 0.7rem 1.6rem; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.95rem; transition: 0.2s; }
-        .btn-primary { background-color: #007bff; color: white; margin-right: 8px; }
-        .btn-secondary { background-color: #f8f9fa; color: #555; border: 1px solid #ddd; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .actions { margin-top: 0.5rem; }
+        .info-box { background: #d4edda; border-radius: 10px; padding: 1.2rem 1rem; color: #155724; font-size: 0.92rem; line-height: 1.6; }
+        .info-box strong { display: block; margin-bottom: 0.3rem; font-size: 1rem; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="check-icon">✅</div>
-        <h2>Presença Confirmada!</h2>
+        <h2>Presença Registrada!</h2>
 
         <p class="nome" th:if="${nomeParticipante != null}">
             Olá, <strong th:text="${nomeParticipante}">Participante</strong>!
@@ -36,20 +29,8 @@
         </p>
 
         <div class="info-box">
-            🏅 Medalha de participação e certificado emitidos automaticamente!
-        </div>
-
-        <div class="cert-box" th:if="${codigoCertificado != null}">
-            <div class="cert-label">Código do Certificado</div>
-            <div class="cert-code" th:text="${codigoCertificado}"></div>
-            <div class="actions">
-                <a th:href="@{/certificado/{id}/pdf(id=${certificadoId})}" class="btn btn-primary">
-                    ⬇ Baixar PDF
-                </a>
-                <a th:href="@{/certificado/validar/{codigo}(codigo=${codigoCertificado})}" class="btn btn-secondary">
-                    Validar
-                </a>
-            </div>
+            <strong>Tudo certo por aqui!</strong>
+            Seu certificado e medalha serão emitidos pelo palestrante ao encerramento da palestra.
         </div>
     </div>
 </body>

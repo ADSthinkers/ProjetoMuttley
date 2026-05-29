@@ -2,6 +2,7 @@ package com.fateczl.muttley.palestrante;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -10,23 +11,35 @@ public class PalestranteService {
 
     private final PalestranteRepository repository;
     private final PalestranteMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public PalestranteService(PalestranteRepository repository, PalestranteMapper mapper) {
+    public PalestranteService(PalestranteRepository repository, PalestranteMapper mapper,
+                               PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @SuppressWarnings("null")
     public Palestrante salvarOuAtualizar(PalestranteDTO dto) {
         if (dto.id() != null) {
-            @SuppressWarnings("null")
             Palestrante existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Palestrante não encontrado"));
 
+            String senhaAtual = existente.getSenha();
             mapper.updateEntity(dto, existente);
+
+            if (dto.senha() == null || dto.senha().isBlank()) {
+                existente.setSenha(senhaAtual);
+            } else {
+                existente.setSenha(passwordEncoder.encode(dto.senha()));
+            }
             return repository.save(existente);
         } else {
             Palestrante novo = mapper.toEntity(dto);
+            if (dto.senha() != null && !dto.senha().isBlank()) {
+                novo.setSenha(passwordEncoder.encode(dto.senha()));
+            }
             return repository.save(novo);
         }
     }

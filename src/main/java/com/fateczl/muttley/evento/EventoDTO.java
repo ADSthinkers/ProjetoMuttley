@@ -15,8 +15,7 @@ public record EventoDTO(
     Long localId,
     String categoria,
     Modalidade modalidade,
-    Integer cargaHoraria,
     Integer vagas,
     String banner,
-    String entidadeResponsavel
+    Long patrocinadorId
 ) {}

@@ -42,23 +42,25 @@ public class CertificadoPdfService {
             addDivider(doc);
 
             // --- Título ---
-            Paragraph title = new Paragraph("CERTIFICADO DE PARTICIPAÇÃO", titleFont);
+            boolean isApresentacao = certificado.getTipo() == TipoCertificado.APRESENTACAO;
+            String tituloDoc = isApresentacao ? "CERTIFICADO DE APRESENTAÇÃO" : "CERTIFICADO DE PARTICIPAÇÃO";
+            Paragraph title = new Paragraph(tituloDoc, titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingBefore(20);
             title.setSpacingAfter(24);
             doc.add(title);
 
             // --- Corpo ---
-            String nomePart = certificado.getParticipante() != null
-                    ? certificado.getParticipante().getNome().toUpperCase() : "PARTICIPANTE";
+            String nomePart = certificado.getNomeTitular().toUpperCase();
             String tituloPalestra = certificado.getPalestra() != null
                     ? certificado.getPalestra().getTitulo() : "PALESTRA";
+            String verbo = isApresentacao ? " ministrou a seguinte atividade:" : " participou da seguinte atividade:";
 
             Paragraph corpo = new Paragraph();
             corpo.setAlignment(Element.ALIGN_CENTER);
             corpo.add(new Chunk("Certificamos que ", bodyFont));
             corpo.add(new Chunk(nomePart, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13)));
-            corpo.add(new Chunk(" participou da seguinte atividade:", bodyFont));
+            corpo.add(new Chunk(verbo, bodyFont));
             corpo.setSpacingAfter(10);
             doc.add(corpo);
 

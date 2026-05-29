@@ -141,7 +141,8 @@
         }
 
         .link-qr { color: #6f42c1; text-decoration: none; font-weight: 600; }
-        .link-edit:hover, .link-delete:hover, .link-qr:hover { text-decoration: underline; }
+        .link-presencas { color: #fd7e14; text-decoration: none; font-weight: 600; }
+        .link-edit:hover, .link-delete:hover, .link-qr:hover, .link-presencas:hover { text-decoration: underline; }
     </style>
 </head>
 
@@ -164,6 +165,8 @@
                 <thead>
                     <tr>
                         <th>Título</th>
+                        <th>Status</th>
+                        <th>Patrocinador</th>
                         <th>Palestrantes</th>
                         <th>Competências</th>
                         <th>Início</th>
@@ -174,6 +177,16 @@
                 <tbody>
                     <tr th:each="palestra : ${palestras}">
                         <td th:text="${palestra.titulo}" style="font-weight: 600;"></td>
+                        <td>
+                            <span th:if="${palestra.status != null}"
+                                  th:text="${palestra.status}"
+                                  th:classappend="${palestra.status.name() == 'CERTIFICADOS_EMITIDOS'} ? 'badge' : (${palestra.status.name() == 'CONCLUIDA'} ? 'badge' : 'badge')"
+                                  th:style="${palestra.status.name() == 'CERTIFICADOS_EMITIDOS'} ? 'background:#d4edda;color:#155724' : (${palestra.status.name() == 'CONCLUIDA'} ? 'background:#fff3cd;color:#856404' : 'background:#e2e3e5;color:#383d41')"
+                                  style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">
+                            </span>
+                            <span th:unless="${palestra.status != null}">-</span>
+                        </td>
+                        <td th:text="${palestra.patrocinadorNome != null ? palestra.patrocinadorNome : '-'}"></td>
                         <td>
                             <span th:if="${palestra.palestrantes != null and !palestra.palestrantes.isEmpty()}">
                                 <span th:each="nome, stat : ${palestra.palestrantes}">
@@ -195,6 +208,7 @@
                         <td class="action-links">
                             <a th:href="@{/palestra/formulario/{id}(id=${palestra.id})}" class="link-edit">Editar</a>
                             <a th:href="@{/palestra/{id}/qrcode(id=${palestra.id})}" class="link-qr" target="_blank">QR Code</a>
+                            <a th:href="@{/presencas/{id}(id=${palestra.id})}" class="link-presencas">Presenças</a>
                             <a th:href="@{/palestra/delete/{id}(id=${palestra.id})}" class="link-delete"
                                 onclick="return confirm('Tem certeza que deseja excluir esta palestra?')">Excluir</a>
                         </td>
