@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 //import ch.qos.logback.core.net.SyslogOutputStream;
 import jakarta.persistence.EntityNotFoundException;
 
+// serviço responsável pelas operações de criação, atualização, busca e remoção de competências
 @Service
 public class CompetenciaService {
 
@@ -21,7 +22,8 @@ public class CompetenciaService {
     @Autowired
     private CompetenciaMapper competenciaMapper;
 
-    @SuppressWarnings("null")
+    // cria uma nova competência ou atualiza uma existente com base no id do DTO
+     
     public Competencia saveOrAtualize(CompetenciaDTO dto) {
         
     if (dto.id() != null) {    
@@ -37,13 +39,15 @@ public class CompetenciaService {
 
     }   
 
+    // lista todas as competências cadastradas ordenadas pelo id
     public List<Competencia> findAllCompetencias(){
         return competenciaRepository.findAll(Sort.by("id").ascending());
     }
 
+    // busca e valida uma lista de competências pelos ids, lançando erro se algum não existir
     public List<Competencia> findAllbyIdCompetencias(List<Long> ids) {
         
-        @SuppressWarnings("null")
+         
         List<Competencia> competencias = competenciaRepository.findAllById(ids);
     
         if (ids == null || ids.isEmpty()) {
@@ -57,12 +61,14 @@ public class CompetenciaService {
         return competencias;
     }
 
-    @SuppressWarnings("null")
+    // remove uma competência pelo seu identificador
+     
     public void apagarPorId (Long id) {
         competenciaRepository.deleteById(id);
     }
     
-    @SuppressWarnings("null")
+    // busca uma competência pelo seu identificador
+     
     public Optional<Competencia> procurarPorId(Long id){
         return competenciaRepository.findById(id);
     }

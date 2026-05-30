@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição, exclusão e QR Code de palestras
 @Controller
 @RequestMapping("/palestra")
 public class PalestraController {
@@ -44,6 +45,7 @@ public class PalestraController {
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
 
+    // exibe a listagem de todas as palestras cadastradas
     @GetMapping("/listagem")
     public String loadListingPage(Model model) {
         List<ListagemPalestra> palestras = palestraService.findAll()
@@ -66,6 +68,7 @@ public class PalestraController {
         return "palestra/listagem";
     }
 
+    // exibe o formulário de criação ou edição de palestra com as opções de competências e palestrantes
     @GetMapping("/formulario")
     public String showForm(@RequestParam(required = false) Long id, Model model) {
         PalestraDTO dto;
@@ -81,6 +84,7 @@ public class PalestraController {
         return "palestra/formulario";
     }
 
+    // carrega o formulário de edição com os dados da palestra informada pelo id
     @GetMapping("/formulario/{id}")
     public String loadPageForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -94,6 +98,7 @@ public class PalestraController {
         }
     }
 
+    // processa o formulário e salva ou atualiza a palestra com validação de campos obrigatórios
     @PostMapping("/salvar")
     public String save(@ModelAttribute("palestra") PalestraDTO dto,
                        RedirectAttributes redirectAttributes,
@@ -121,6 +126,7 @@ public class PalestraController {
         }
     }
 
+    // remove a palestra e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     @Transactional
     public String deletePalestra(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -133,6 +139,7 @@ public class PalestraController {
         return "redirect:/palestra/listagem";
     }
 
+    // gera e retorna a imagem PNG do QR Code da palestra apontando para a URL de check-in
     @GetMapping("/{id}/qrcode")
     @ResponseBody
     public ResponseEntity<byte[]> qrCode(@PathVariable Long id, HttpServletRequest request) {
@@ -149,6 +156,7 @@ public class PalestraController {
         }
     }
 
+    // preenche o modelo com as listas de competências, palestrantes, eventos e opções de formulário
     private void popularModel(Model model, PalestraDTO dto) {
         model.addAttribute("palestra", dto);
         model.addAttribute("competencias", competenciaService.findAllCompetencias());

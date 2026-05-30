@@ -2,6 +2,7 @@ package com.fateczl.muttley.admin;
 
 import org.mapstruct.*;
 
+// mapper responsável por converter entre a entidade Admin e seus DTOs de atualização e listagem
 @Mapper(componentModel = "spring")
 public interface AdminMapper {
 

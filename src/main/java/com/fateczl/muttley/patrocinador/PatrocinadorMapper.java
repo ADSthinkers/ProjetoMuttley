@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+// mapper responsável por converter entre a entidade Patrocinador e seus DTOs
 @Mapper(componentModel = "spring")
 public interface PatrocinadorMapper {
 

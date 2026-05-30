@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+// entidade que representa um palestrante com dados de perfil e acesso ao sistema
 @Entity
 @Getter
 @Setter

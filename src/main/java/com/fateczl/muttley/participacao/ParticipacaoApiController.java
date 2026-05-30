@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe os endpoints de CRUD para participações em palestras
 @RestController
 @RequestMapping("/api/participacoes")
 public class ParticipacaoApiController {
@@ -19,6 +20,7 @@ public class ParticipacaoApiController {
         this.mapper = mapper;
     }
 
+    // lista todas as participações cadastradas
     @GetMapping
     public ResponseEntity<List<ParticipacaoListagem>> listar() {
         List<ParticipacaoListagem> lista = service.listarTodos()
@@ -26,6 +28,7 @@ public class ParticipacaoApiController {
         return ResponseEntity.ok(lista);
     }
 
+    // busca uma participação pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<ParticipacaoDTO> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -34,12 +37,14 @@ public class ParticipacaoApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria um novo registro de participação com os dados fornecidos
     @PostMapping
     public ResponseEntity<ParticipacaoDTO> criar(@RequestBody @Valid ParticipacaoDTO dto) {
         Participacao salva = service.salvarOuAtualizar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(salva));
     }
 
+    // atualiza os dados de uma participação existente pelo id
     @PutMapping("/{id}")
     public ResponseEntity<ParticipacaoDTO> atualizar(@PathVariable Long id,
                                                       @RequestBody @Valid ParticipacaoDTO dto) {
@@ -48,6 +53,7 @@ public class ParticipacaoApiController {
         return ResponseEntity.ok(mapper.toDTO(salva));
     }
 
+    // remove uma participação pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);

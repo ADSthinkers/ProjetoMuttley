@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+// entidade que representa um participante com dados pessoais e de contato para inscrições
 @Entity
 @Getter
 @Setter

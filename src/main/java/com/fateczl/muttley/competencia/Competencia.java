@@ -24,6 +24,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @EqualsAndHashCode(of ="id")
 
+// entidade que representa uma competência técnica ou comportamental associada a palestras
 public class Competencia {
 
     @Id
@@ -37,10 +38,12 @@ public class Competencia {
     private TipoCompetencia tipo;
 //    @JoinColumn(name = "competencia_id", referencedColumnName = "competencia_id")
 
+    // cria uma competência a partir dos dados do DTO recebido
     public Competencia(CompetenciaDTO dados) {
         this.nome = dados.nome();
     }
     
+    // atualiza o nome da competência com os dados fornecidos no DTO
     public void atualizarInformacoes(CompetenciaDTO dados) {
         if (dados.nome() != null )
             this.nome = dados.nome();

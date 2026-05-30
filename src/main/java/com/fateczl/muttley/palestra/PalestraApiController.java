@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe os endpoints de CRUD para palestras com registro de auditoria
 @RestController
 @RequestMapping("/api/palestras")
 public class PalestraApiController {
@@ -25,17 +26,20 @@ public class PalestraApiController {
         this.auditoriaService = auditoriaService;
     }
 
+    // lista todas as palestras cadastradas
     @GetMapping
     public ResponseEntity<List<PalestraDTO>> listar() {
         return ResponseEntity.ok(service.findAll().stream().map(mapper::toDto).toList());
     }
 
+    // busca uma palestra pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<PalestraDTO> buscarPorId(@PathVariable Long id) {
         return service.findById(id).map(mapper::toDto).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria uma nova palestra e registra a ação no log de auditoria
     @PostMapping
     public ResponseEntity<PalestraDTO> criar(@RequestBody @Valid PalestraDTO dto,
                                               HttpServletRequest request) {
@@ -45,6 +49,7 @@ public class PalestraApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDto(salva));
     }
 
+    // atualiza os dados de uma palestra existente e registra a alteração na auditoria
     @PutMapping("/{id}")
     public ResponseEntity<PalestraDTO> atualizar(@PathVariable Long id,
                                                   @RequestBody @Valid PalestraDTO dto,
@@ -60,6 +65,7 @@ public class PalestraApiController {
         return ResponseEntity.ok(mapper.toDto(salva));
     }
 
+    // remove uma palestra pelo id após registrar a exclusão no log de auditoria
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id, HttpServletRequest request) {
         auditoriaService.registrar(AcaoAuditoria.DELETADO, "Palestra", id,
@@ -68,6 +74,7 @@ public class PalestraApiController {
         return ResponseEntity.noContent().build();
     }
 
+    // extrai o identificador do autor da ação a partir da chave de API da requisição
     private String ator(HttpServletRequest request) {
         String key = request.getHeader("X-API-KEY");
         return key != null ? "api:" + key : "sistema";

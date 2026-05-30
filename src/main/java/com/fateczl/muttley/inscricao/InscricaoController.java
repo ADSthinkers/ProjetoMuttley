@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, inscrição, status e cancelamento
 @Controller
 @RequestMapping("/inscricao")
 public class InscricaoController {
@@ -26,6 +27,7 @@ public class InscricaoController {
         this.palestraRepository = palestraRepository;
     }
 
+    // exibe a listagem de todas as inscrições realizadas
     @GetMapping
     public String listar(Model model) {
         List<InscricaoListagem> lista = service.listarTodos().stream()
@@ -39,6 +41,7 @@ public class InscricaoController {
         return "inscricao/listagem";
     }
 
+    // exibe o formulário de nova inscrição com as listas de participantes e palestras
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("inscricaoDTO", new InscricaoDTO(null, null, null, null, null, null));
@@ -47,6 +50,7 @@ public class InscricaoController {
         return "inscricao/formulario";
     }
 
+    // processa o formulário e realiza a inscrição do participante na palestra
     @PostMapping("/inscrever")
     public String inscrever(@ModelAttribute("inscricaoDTO") InscricaoDTO dto,
                              RedirectAttributes redirectAttributes) {
@@ -59,6 +63,7 @@ public class InscricaoController {
         return "redirect:/inscricao";
     }
 
+    // atualiza o status de uma inscrição específica via formulário
     @PostMapping("/{id}/status")
     public String atualizarStatus(@PathVariable Long id,
                                    @RequestParam StatusInscricao status,
@@ -72,6 +77,7 @@ public class InscricaoController {
         return "redirect:/inscricao";
     }
 
+    // cancela a inscrição e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/cancelar/{id}")
     public String cancelar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.cancelar(id);

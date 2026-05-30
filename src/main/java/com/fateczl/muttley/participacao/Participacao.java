@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// entidade que registra a participação de um participante em uma palestra com a carga horária cursada
 @Entity
 @Getter
 @Setter

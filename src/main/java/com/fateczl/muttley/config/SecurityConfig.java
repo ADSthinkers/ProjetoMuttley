@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+// configura as regras de segurança, autenticação e autorização da aplicação
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -20,11 +21,13 @@ public class SecurityConfig {
         this.usuarioDetailsService = usuarioDetailsService;
     }
 
+    // define o encoder de senhas BCrypt para ser utilizado na autenticação
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // configura o provedor de autenticação ligando o serviço de usuários ao encoder de senha
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -33,6 +36,7 @@ public class SecurityConfig {
         return provider;
     }
 
+    // define as permissões de acesso por rota, login form e configurações de logout
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -46,7 +50,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/admin/**", "/evento/**", "/local/**", "/patrocinador/**",
                     "/competencia/**", "/medalha/**", "/xp/**",
-                    "/participante/**", "/participacao/**"
+                    "/participante/**", "/participacao/**", "/auditoria/**"
                 ).hasRole("ADMIN")
                 // qualquer usuário autenticado (ADMIN ou PALESTRANTE)
                 .anyRequest().authenticated()

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe os endpoints de CRUD para registros de XP
 @RestController
 @RequestMapping("/api/xps")
 public class XpApiController {
@@ -19,6 +20,7 @@ public class XpApiController {
         this.mapper = mapper;
     }
 
+    // lista todos os registros de XP cadastrados
     @GetMapping
     public ResponseEntity<List<XpDTO>> listar() {
         List<XpDTO> lista = service.findAllXps()
@@ -26,6 +28,7 @@ public class XpApiController {
         return ResponseEntity.ok(lista);
     }
 
+    // busca um registro de XP pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<XpDTO> buscarPorId(@PathVariable Long id) {
         return service.procurarPorId(id)
@@ -34,12 +37,14 @@ public class XpApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria um novo registro de XP com os dados fornecidos
     @PostMapping
     public ResponseEntity<XpDTO> criar(@RequestBody @Valid XpDTO dto) {
         Xp salvo = service.saveOrAtualizeXp(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toXpDTO(salvo));
     }
 
+    // atualiza os dados de um registro de XP existente pelo id
     @PutMapping("/{id}")
     public ResponseEntity<XpDTO> atualizar(@PathVariable Long id, @RequestBody @Valid XpDTO dto) {
         XpDTO dtoComId = new XpDTO(id, dto.horas(), dto.competenciaId(), dto.participanteId());
@@ -47,6 +52,7 @@ public class XpApiController {
         return ResponseEntity.ok(mapper.toXpDTO(salvo));
     }
 
+    // remove um registro de XP pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.apagarPorId(id);

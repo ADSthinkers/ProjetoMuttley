@@ -2,6 +2,7 @@ package com.fateczl.muttley.evento;
 
 import org.mapstruct.*;
 
+// mapper responsável por converter entre a entidade Evento e seus DTOs de listagem e atualização
 @Mapper(componentModel = "spring")
 public interface EventoMapper {
 

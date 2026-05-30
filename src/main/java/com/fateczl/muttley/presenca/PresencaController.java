@@ -11,12 +11,13 @@ import com.fateczl.muttley.inscricao.InscricaoService;
 import com.fateczl.muttley.inscricao.StatusInscricao;
 import com.fateczl.muttley.medalha.MedalhaService;
 import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.participacao.ParticipacaoService;
+import com.fateczl.muttley.xp.XpService;
 import com.fateczl.muttley.palestra.PalestraService;
 import com.fateczl.muttley.palestra.StatusPalestra;
 import com.fateczl.muttley.palestrante.Palestrante;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,8 @@ public class PresencaController {
     private final CertificadoService certificadoService;
     private final CertificadoPdfService certificadoPdfService;
     private final MedalhaService medalhaService;
+    private final XpService xpService;
+    private final ParticipacaoService participacaoService;
     private final AuditoriaService auditoriaService;
     private final EmailService emailService;
 
@@ -46,6 +49,8 @@ public class PresencaController {
                                CertificadoService certificadoService,
                                CertificadoPdfService certificadoPdfService,
                                MedalhaService medalhaService,
+                               XpService xpService,
+                               ParticipacaoService participacaoService,
                                AuditoriaService auditoriaService,
                                EmailService emailService) {
         this.inscricaoService = inscricaoService;
@@ -53,6 +58,8 @@ public class PresencaController {
         this.certificadoService = certificadoService;
         this.certificadoPdfService = certificadoPdfService;
         this.medalhaService = medalhaService;
+        this.xpService = xpService;
+        this.participacaoService = participacaoService;
         this.auditoriaService = auditoriaService;
         this.emailService = emailService;
     }
@@ -113,9 +120,12 @@ public class PresencaController {
             auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
                     "Certificado emitido para " + inscricao.getParticipante().getNome(), realizadoPor);
 
-            medalhaService.concederSeNaoExistir(participanteId, palestraId);
+            participacaoService.registrarOuAtualizar(inscricao.getParticipante(), palestra);
+            medalhaService.concederSeNaoExistir(participanteId, palestra);
             auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
                     "Medalha concedida a " + inscricao.getParticipante().getNome(), realizadoPor);
+
+            xpService.registrarParaPalestra(participanteId, palestra);
 
             // Gera PDF e envia e-mail
             certificadoService.buscarPorIdComDetalhes(cert.getId()).ifPresent(certCompleto -> {
@@ -136,6 +146,10 @@ public class PresencaController {
                         certPalestrante.getId(),
                         "Certificado de apresentação emitido para " + palestrante.getNome(),
                         realizadoPor);
+
+                medalhaService.concederPalestranteSeNaoExistir(palestrante.getId(), palestra);
+                auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
+                        "Medalha de apresentação concedida a " + palestrante.getNome(), realizadoPor);
 
                 certificadoService.buscarPorIdComDetalhes(certPalestrante.getId()).ifPresent(certCompleto -> {
                     byte[] pdf = certificadoPdfService.gerar(certCompleto, baseUrl);

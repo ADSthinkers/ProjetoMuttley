@@ -3,6 +3,7 @@ package com.fateczl.muttley.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
 
+// configura o interceptor de API Key e as permissões de CORS para rotas /api/**
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -12,15 +13,17 @@ public class WebConfig implements WebMvcConfigurer {
         this.apiKeyInterceptor = apiKeyInterceptor;
     }
 
-    @SuppressWarnings("null")
+    // registra o ApiKeyInterceptor para atuar em todos os endpoints da API
+     
     @Override
-    public void addInterceptors(@SuppressWarnings("null") InterceptorRegistry registry) {
+    public void addInterceptors(  @SuppressWarnings("null") InterceptorRegistry registry) {
         registry.addInterceptor(apiKeyInterceptor)
                 .addPathPatterns("/api/**");
     }
 
+    // libera CORS para todos os métodos e origens nos endpoints da API
     @Override
-    public void addCorsMappings(@SuppressWarnings("null") CorsRegistry registry) {
+    public void addCorsMappings(  @SuppressWarnings("null") CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

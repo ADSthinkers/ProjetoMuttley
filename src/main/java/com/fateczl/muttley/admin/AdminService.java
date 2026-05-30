@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 
+// serviço responsável pelas operações de cadastro, listagem e remoção de administradores com criptografia de senha
 @Service
 public class AdminService {
 
@@ -21,7 +22,8 @@ public class AdminService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @SuppressWarnings("null")
+    // cria ou atualiza um admin, preservando a senha atual se não for informada nova
+     
     public Admin salvarOuAtualizar(AdminDTO dto) {
 
         if (dto.id() != null) {
@@ -44,16 +46,19 @@ public class AdminService {
         }
     }
 
+    // lista todos os administradores cadastrados
     public List<Admin> listarTodos() {
         return repository.findAll();
     }
 
-    @SuppressWarnings("null")
+    // busca um administrador pelo seu identificador
+     
     public Optional<Admin> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
-    @SuppressWarnings("null")
+    // remove um administrador pelo seu identificador
+     
     public void deletar(Long id) {
         repository.deleteById(id);
     }

@@ -10,11 +10,13 @@ import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
+// serviço responsável por gerar o PDF de um certificado com layout formatado e QR Code
 @Service
 public class CertificadoPdfService {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // gera o conteúdo binário do PDF do certificado incluindo dados da palestra e QR Code de validação
     public byte[] gerar(Certificado certificado, String baseUrl) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -130,6 +132,7 @@ public class CertificadoPdfService {
         }
     }
 
+    // adiciona uma linha de detalhe centralizada com rótulo em negrito e valor ao documento PDF
     private void addDetalhe(Document doc, String label, String value, Font labelFont, Font bodyFont)
             throws DocumentException {
         Paragraph p = new Paragraph();
@@ -140,6 +143,7 @@ public class CertificadoPdfService {
         doc.add(p);
     }
 
+    // insere uma linha divisória decorativa no documento PDF
     private void addDivider(Document doc) throws DocumentException {
         Paragraph div = new Paragraph(
                 "─────────────────────────────────────────────────────────",

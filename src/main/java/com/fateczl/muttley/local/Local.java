@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+// entidade que representa um local onde eventos ou palestras podem ser realizados
 public class Local {
 
     @Id
@@ -26,11 +27,13 @@ public class Local {
     @Positive(message = "Capacidade deve ser positiva")
     private Integer capacidade;
 
+    // cria um local a partir dos dados fornecidos no DTO
     public Local(LocalDTO dados) {
         this.nome = dados.nome();
         this.capacidade = dados.capacidade();
     }
 
+    // atualiza nome e capacidade do local com os dados do DTO quando não nulos
     public void atualizarInformacoes(LocalDTO dados) {
         if (dados.nome() != null) {
             this.nome = dados.nome();

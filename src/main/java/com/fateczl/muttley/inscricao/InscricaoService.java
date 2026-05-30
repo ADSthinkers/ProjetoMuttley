@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+// serviço responsável pelas operações de inscrição, confirmação de presença e controle de status
 @Service
 public class InscricaoService {
 
@@ -27,7 +28,8 @@ public class InscricaoService {
         this.palestraRepository = palestraRepository;
     }
 
-    @SuppressWarnings("null")
+    // inscreve um participante em uma palestra impedindo inscrições duplicadas
+     
     public Inscricao inscrever(InscricaoDTO dto) {
         Participante participante = participanteRepository.findById(dto.participanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
@@ -44,6 +46,7 @@ public class InscricaoService {
         return repository.save(inscricao);
     }
 
+    // altera o status de uma inscrição pelo seu identificador
     public Inscricao atualizarStatus(Long id, StatusInscricao novoStatus) {
         Inscricao inscricao = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
@@ -51,6 +54,7 @@ public class InscricaoService {
         return repository.save(inscricao);
     }
 
+    // confirma a presença do participante na palestra, criando inscrição se ainda não existir
     public Inscricao confirmarPresenca(Long participanteId, Long palestraId) {
         return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
                 .map(i -> {
@@ -70,18 +74,22 @@ public class InscricaoService {
                 });
     }
 
+    // lista todas as inscrições de uma palestra específica
     public List<Inscricao> listarPorPalestra(Long palestraId) {
         return repository.findByPalestraId(palestraId);
     }
 
+    // atualiza o status da inscrição para CONFIRMADA marcando presença do participante
     public Inscricao marcarPresente(Long id) {
         return atualizarStatus(id, StatusInscricao.CONFIRMADA);
     }
 
+    // atualiza o status da inscrição para CANCELADA marcando ausência do participante
     public Inscricao marcarAusente(Long id) {
         return atualizarStatus(id, StatusInscricao.CANCELADA);
     }
 
+    // lista todas as inscrições com carregamento forçado das associações de participante e palestra
     @Transactional
     public List<Inscricao> listarTodos() {
         List<Inscricao> lista = repository.findAll();
@@ -92,15 +100,18 @@ public class InscricaoService {
         return lista;
     }
 
+    // busca uma inscrição pelo seu identificador
     public Optional<Inscricao> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    // busca uma inscrição pelo token QR Code gerado no momento da inscrição
     public Optional<Inscricao> buscarPorToken(String token) {
         return repository.findByQrCodeToken(token);
     }
 
-    @SuppressWarnings("null")
+    // cancela a inscrição alterando seu status para CANCELADA
+     
     public void cancelar(Long id) {
         Inscricao inscricao = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 
+// serviço responsável pelas operações de criação, atualização, listagem e remoção de locais
 @Service
 public class LocalService {
 
@@ -18,10 +19,11 @@ public class LocalService {
     @Autowired
     private LocalMapper localMapper;
 
-    @SuppressWarnings("null")
+    // cria ou atualiza um local com base no id do DTO
+     
     public Local saveOrAtualize(LocalDTO dto) {
         if (dto.id() != null) {
-            @SuppressWarnings("null")
+             
             Local existente = localRepository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Local não encontrado com ID: " + dto.id()));
             localMapper.updateEntityFromDto(dto, existente);
@@ -32,16 +34,19 @@ public class LocalService {
         }
     }
 
+    // lista todos os locais cadastrados ordenados pelo id
     public List<Local> findAllLocais() {
         return localRepository.findAll(Sort.by("id").ascending());
     }
 
-    @SuppressWarnings("null")
+    // remove um local pelo seu identificador
+     
     public void apagarPorId(Long id) {
         localRepository.deleteById(id);
     }
 
-    @SuppressWarnings("null")
+    // busca um local pelo seu identificador
+     
     public Optional<Local> procurarPorId(Long id) {
         return localRepository.findById(id);
     }

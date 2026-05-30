@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de medalhas
 @Controller
 @RequestMapping("/medalha")
 public class MedalhaController {
@@ -30,6 +31,7 @@ public class MedalhaController {
         this.competenciaService = competenciaService;
     }
 
+    // exibe a listagem de todas as medalhas concedidas
     @GetMapping
     public String listar(Model model) {
         List<MedalhaListagem> lista = service.listarTodos().stream()
@@ -46,6 +48,7 @@ public class MedalhaController {
         return "medalha/listagem";
     }
 
+    // exibe o formulário de cadastro de nova medalha com as opções de participantes e palestras
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("medalhaDTO", new MedalhaDTO(null, null, "", "", null, null, null, null));
@@ -56,6 +59,7 @@ public class MedalhaController {
         return "medalha/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados da medalha informada pelo id
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
         service.buscarPorId(id).ifPresent(m -> {
@@ -73,6 +77,7 @@ public class MedalhaController {
         return "medalha/formulario";
     }
 
+    // processa o formulário e salva ou atualiza a medalha
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("medalhaDTO") MedalhaDTO dto, RedirectAttributes redirectAttributes) {
         try {
@@ -84,6 +89,7 @@ public class MedalhaController {
         return "redirect:/medalha";
     }
 
+    // remove a medalha e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     public String deletar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.deletar(id);

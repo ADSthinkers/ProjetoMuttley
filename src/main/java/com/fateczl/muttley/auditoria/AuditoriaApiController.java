@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe endpoints de consulta aos registros de auditoria
 @RestController
 @RequestMapping("/api/auditorias")
 public class AuditoriaApiController {
@@ -15,6 +16,7 @@ public class AuditoriaApiController {
         this.service = service;
     }
 
+    // lista auditorias com filtros opcionais por entidade, id, ação ou ator
     @GetMapping
     public ResponseEntity<List<AuditoriaListagem>> listar(
             @RequestParam(required = false) String entidade,
@@ -39,6 +41,7 @@ public class AuditoriaApiController {
         return ResponseEntity.ok(lista.stream().map(this::toListagem).toList());
     }
 
+    // converte a entidade Auditoria para o DTO de listagem
     private AuditoriaListagem toListagem(Auditoria a) {
         return new AuditoriaListagem(a.getId(), a.getAcao(), a.getEntidade(),
                 a.getEntidadeId(), a.getDescricao(), a.getDataHora(), a.getRealizadoPor());

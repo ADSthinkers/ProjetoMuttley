@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+// cria o usuário admin padrão na inicialização da aplicação caso ainda não exista nenhum
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -17,6 +18,7 @@ public class DataInitializer implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // executa ao subir a aplicação e insere o admin padrão se o banco estiver vazio
     @Override
     public void run(String... args) {
         if (adminRepository.count() == 0) {

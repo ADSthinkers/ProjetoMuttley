@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe endpoints para emissão, validação e download de certificados
 @RestController
 @RequestMapping("/api/certificados")
 public class CertificadoApiController {
@@ -24,6 +25,7 @@ public class CertificadoApiController {
         this.pdfService = pdfService;
     }
 
+    // lista todos os certificados emitidos no sistema
     @GetMapping
     public ResponseEntity<List<CertificadoListagem>> listar() {
         return ResponseEntity.ok(service.listarTodos().stream()
@@ -34,6 +36,7 @@ public class CertificadoApiController {
                 .toList());
     }
 
+    // emite um novo certificado a partir dos dados enviados no corpo da requisição
     @PostMapping("/emitir")
     public ResponseEntity<CertificadoDTO> emitir(@RequestBody @Valid CertificadoDTO dto) {
         Certificado c = service.emitir(dto);
@@ -43,6 +46,7 @@ public class CertificadoApiController {
                         c.getDataEmissao(), c.getCargaHoraria(), c.getCodigoValidacao()));
     }
 
+    // valida a autenticidade de um certificado pelo código único sem exigir autenticação
     @GetMapping("/validar/{codigo}")
     @PublicRoute
     public ResponseEntity<CertificadoListagem> validar(@PathVariable String codigo) {
@@ -55,6 +59,7 @@ public class CertificadoApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // gera e retorna o PDF do certificado para download pelo id
     @GetMapping("/{id}/pdf")
     @PublicRoute
     public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id, HttpServletRequest request) {
@@ -68,12 +73,14 @@ public class CertificadoApiController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // remove um certificado pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
+    // monta a URL base da aplicação a partir da requisição HTTP recebida
     private String baseUrl(HttpServletRequest request) {
         int port = request.getServerPort();
         return request.getScheme() + "://" + request.getServerName()

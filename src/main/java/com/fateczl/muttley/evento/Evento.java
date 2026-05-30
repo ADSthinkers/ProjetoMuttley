@@ -13,6 +13,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
 
+// entidade que representa um evento que agrupa palestras, com local, patrocinador e modalidade
 @Entity
 @Getter
 @Setter

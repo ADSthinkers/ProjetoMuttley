@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de participantes
 @Controller
 @RequestMapping("/participante")
 public class ParticipanteController {
@@ -21,6 +22,7 @@ public class ParticipanteController {
         this.mapper = mapper;
     }
 
+    // exibe a listagem de todos os participantes cadastrados
     @GetMapping
     public String listar(Model model) {
         List<ParticipanteListagem> lista = service.listarTodos()
@@ -29,12 +31,14 @@ public class ParticipanteController {
         return "participante/listagem";
     }
 
+    // exibe o formulário de cadastro de um novo participante
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("participante", new Participante());
         return "participante/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados do participante
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
         service.buscarPorId(id).ifPresent(p -> model.addAttribute("participante", p));
@@ -44,6 +48,7 @@ public class ParticipanteController {
         return "participante/formulario";
     }
 
+    // processa o formulário e salva ou atualiza o participante
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("participante") Participante participante,
                          BindingResult result, RedirectAttributes redirectAttributes) {
@@ -56,6 +61,7 @@ public class ParticipanteController {
         return "redirect:/participante";
     }
 
+    // remove o participante e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     public String deletar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.deletar(id);

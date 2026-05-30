@@ -2,6 +2,7 @@ package com.fateczl.muttley.palestrante;
 
 import org.mapstruct.*;
 
+// mapper responsável por converter entre a entidade Palestrante e seus DTOs de atualização e listagem
 @Mapper(componentModel = "spring")
 public interface PalestranteMapper {
 

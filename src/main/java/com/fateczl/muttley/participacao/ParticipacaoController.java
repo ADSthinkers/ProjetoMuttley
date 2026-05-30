@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de participações
 @Controller
 @RequestMapping("/participacao")
 public class ParticipacaoController {
@@ -29,6 +30,7 @@ public class ParticipacaoController {
         this.palestraRepository = palestraRepository;
     }
 
+    // exibe a listagem de todas as participações registradas
     @GetMapping
     public String listar(Model model) {
         List<ParticipacaoListagem> lista = service.listarTodos()
@@ -44,6 +46,7 @@ public class ParticipacaoController {
         return "participacao/listagem";
     }
 
+    // exibe o formulário de novo registro de participação com as listas de participantes e palestras
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("participacaoDTO", new ParticipacaoDTO(null, null, null, null));
@@ -52,6 +55,7 @@ public class ParticipacaoController {
         return "participacao/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados da participação informada pelo id
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
         service.buscarPorId(id).ifPresent(p -> model.addAttribute("participacaoDTO", mapper.toDTO(p)));
@@ -63,6 +67,7 @@ public class ParticipacaoController {
         return "participacao/formulario";
     }
 
+    // processa o formulário e salva ou atualiza a participação
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("participacaoDTO") ParticipacaoDTO dto,
                          BindingResult result, Model model, RedirectAttributes redirectAttributes) {
@@ -76,6 +81,7 @@ public class ParticipacaoController {
         return "redirect:/participacao";
     }
 
+    // remove a participação e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     public String deletar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.deletar(id);

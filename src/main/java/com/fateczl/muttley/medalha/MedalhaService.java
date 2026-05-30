@@ -4,8 +4,11 @@ import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.competencia.CompetenciaRepository;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraRepository;
+import com.fateczl.muttley.palestrante.Palestrante;
+import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteRepository;
+
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -15,25 +18,30 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+// serviço responsável pelas operações de concessão, listagem e remoção de medalhas
 @Service
 public class MedalhaService {
 
     private final MedalhaRepository repository;
     private final ParticipanteRepository participanteRepository;
+    private final PalestranteRepository palestranteRepository;
     private final PalestraRepository palestraRepository;
     private final CompetenciaRepository competenciaRepository;
 
     public MedalhaService(MedalhaRepository repository,
                            ParticipanteRepository participanteRepository,
+                           PalestranteRepository palestranteRepository,
                            PalestraRepository palestraRepository,
                            CompetenciaRepository competenciaRepository) {
         this.repository = repository;
         this.participanteRepository = participanteRepository;
+        this.palestranteRepository = palestranteRepository;
         this.palestraRepository = palestraRepository;
         this.competenciaRepository = competenciaRepository;
     }
 
-    @SuppressWarnings("null")
+    // cria ou atualiza uma medalha associando participante, palestra e competências
+     
     public Medalha salvarOuAtualizar(MedalhaDTO dto) {
         Participante participante = participanteRepository.findById(dto.participanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
@@ -67,6 +75,7 @@ public class MedalhaService {
         }
     }
 
+    // lista todas as medalhas com carregamento forçado das associações
     @Transactional
     public List<Medalha> listarTodos() {
         List<Medalha> medalhas = repository.findAll();
@@ -78,10 +87,12 @@ public class MedalhaService {
         return medalhas;
     }
 
+    // busca uma medalha pelo seu identificador
     public Optional<Medalha> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    // lista as medalhas de um participante específico com suas competências carregadas
     @Transactional
     public List<Medalha> listarPorParticipante(Long participanteId) {
         List<Medalha> medalhas = repository.findByParticipanteId(participanteId);
@@ -91,14 +102,40 @@ public class MedalhaService {
         return medalhas;
     }
 
-    public void concederSeNaoExistir(Long participanteId, Long palestraId) {
-        if (repository.existsByParticipanteIdAndPalestraId(participanteId, palestraId)) return;
-        MedalhaDTO dto = new MedalhaDTO(null, TipoMedalha.PARTICIPACAO, null, null,
-                participanteId, palestraId, null, null);
+    // concede uma medalha de participação ao participante preenchendo nome, descrição e competências da palestra
+    public void concederSeNaoExistir(Long participanteId, Palestra palestra) {
+        if (repository.existsByParticipanteIdAndPalestraId(participanteId, palestra.getId())) return;
+        List<Long> competenciaIds = palestra.getCompetencias() != null
+                ? palestra.getCompetencias().stream().map(Competencia::getId).toList()
+                : List.of();
+        MedalhaDTO dto = new MedalhaDTO(null, TipoMedalha.PARTICIPACAO,
+                palestra.getTitulo(), palestra.getDescricao(),
+                participanteId, palestra.getId(), null, competenciaIds);
         salvarOuAtualizar(dto);
     }
 
-    @SuppressWarnings("null")
+    // concede uma medalha de apresentação ao palestrante preenchendo nome, descrição e competências da palestra
+    public void concederPalestranteSeNaoExistir(Long palestranteId, Palestra palestra) {
+        if (repository.existsByPalestranteIdAndPalestraId(palestranteId, palestra.getId())) return;
+        Palestrante palestrante = palestranteRepository.findById(palestranteId)
+                .orElseThrow(() -> new EntityNotFoundException("Palestrante não encontrado"));
+        List<Competencia> competencias = palestra.getCompetencias() != null
+                ? competenciaRepository.findAllById(
+                        palestra.getCompetencias().stream().map(Competencia::getId).toList())
+                : List.of();
+        Medalha medalha = new Medalha();
+        medalha.setTipo(TipoMedalha.APRESENTACAO);
+        medalha.setNome(palestra.getTitulo());
+        medalha.setDescricao(palestra.getDescricao());
+        medalha.setPalestrante(palestrante);
+        medalha.setPalestra(palestra);
+        medalha.setCompetencias(competencias);
+        medalha.setDataConquista(LocalDate.now());
+        repository.save(medalha);
+    }
+
+    // remove uma medalha pelo seu identificador
+
     public void deletar(Long id) {
         repository.deleteById(id);
     }

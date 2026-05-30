@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+// entidade que registra o acúmulo de horas de experiência de um participante em uma competência
 public class Xp {
 
     @Id

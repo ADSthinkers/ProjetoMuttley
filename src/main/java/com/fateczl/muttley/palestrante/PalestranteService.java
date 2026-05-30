@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
+// serviço responsável pelas operações de cadastro, listagem e remoção de palestrantes com criptografia de senha
 @Service
 public class PalestranteService {
 
@@ -20,7 +21,8 @@ public class PalestranteService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @SuppressWarnings("null")
+    // cria ou atualiza um palestrante, preservando a senha atual se não for informada uma nova
+     
     public Palestrante salvarOuAtualizar(PalestranteDTO dto) {
         if (dto.id() != null) {
             Palestrante existente = repository.findById(dto.id())
@@ -44,16 +46,19 @@ public class PalestranteService {
         }
     }
 
+    // lista todos os palestrantes cadastrados
     public List<Palestrante> listarTodos() {
         return repository.findAll();
     }
 
-    @SuppressWarnings("null")
+    // busca um palestrante pelo seu identificador
+     
     public Optional<Palestrante> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
-    @SuppressWarnings("null")
+    // remove um palestrante pelo seu identificador
+     
     public void deletar(Long id) {
         repository.deleteById(id);
     }

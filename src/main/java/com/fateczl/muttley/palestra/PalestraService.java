@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+// serviço responsável pelas operações de criação, atualização, busca e remoção de palestras
 @Service
 public class PalestraService {
 
@@ -40,6 +41,7 @@ public class PalestraService {
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
 
+    // lista todas as palestras ordenadas pelo título com carregamento forçado de palestrantes e competências
     @Transactional
     public List<Palestra> findAll() {
         List<Palestra> palestras = palestraRepository.findAll(Sort.by("titulo").ascending());
@@ -50,21 +52,25 @@ public class PalestraService {
         return palestras;
     }
 
-    @SuppressWarnings("null")
+    // remove uma palestra pelo seu identificador
+     
     public void deleteById(Long id) {
         palestraRepository.deleteById(id);
     }
 
-    @SuppressWarnings("null")
+    // busca uma palestra pelo seu identificador
+     
     public Optional<Palestra> findById(Long id) {
         return palestraRepository.findById(id);
     }
 
+    // busca uma palestra pelo seu token QR Code para identificação no check-in
     public Optional<Palestra> findByQrCodeToken(String token) {
         return palestraRepository.findByQrCodeToken(token);
     }
 
-    @SuppressWarnings("null")
+    // garante que a palestra possua um token QR Code, gerando um novo caso não tenha
+     
     public Palestra garantirToken(Long id) {
         Palestra palestra = palestraRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
@@ -75,14 +81,17 @@ public class PalestraService {
         return palestra;
     }
 
+    // busca uma palestra pelo id carregando explicitamente palestrantes e competências
     @Transactional
     public Optional<Palestra> findByIdComPalestrantes(Long id) {
         return palestraRepository.findById(id).map(p -> {
             p.getPalestrantes().size();
+            p.getCompetencias().size();
             return p;
         });
     }
 
+    // atualiza o status de uma palestra pelo seu identificador
     public void atualizarStatus(Long palestraId, StatusPalestra status) {
         Palestra palestra = palestraRepository.findById(palestraId)
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
@@ -90,6 +99,7 @@ public class PalestraService {
         palestraRepository.save(palestra);
     }
 
+    // cria ou atualiza uma palestra resolvendo todas as associações de competências, palestrantes e evento
     public Palestra saveOrUpdate(PalestraDTO dto) {
         List<Long> competenciaIds = dto.competenciaIds();
         List<Competencia> competencias = competenciaService.findAllbyIdCompetencias(competenciaIds);
@@ -97,7 +107,7 @@ public class PalestraService {
             throw new EntityNotFoundException("Uma ou mais competências não existem");
         }
 
-        @SuppressWarnings("null")
+         
         List<Palestrante> palestrantes = palestranteRepository.findAllById(dto.palestranteIds());
         if (palestrantes.size() != dto.palestranteIds().size()) {
             throw new EntityNotFoundException("Um ou mais palestrantes não encontrados");
@@ -113,7 +123,7 @@ public class PalestraService {
         }
 
         if (dto.id() != null) {
-            @SuppressWarnings("null")
+             
             Palestra existente = palestraRepository.findById(dto.id())
                     .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             palestraMapper.updateEntityFromDto(dto, existente);

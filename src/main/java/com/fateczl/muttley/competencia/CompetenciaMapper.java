@@ -4,17 +4,18 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+// mapper responsável por converter entre a entidade Competencia e seus DTOs
 @Mapper(componentModel = "spring")
 public interface CompetenciaMapper {
-    
-    // Converte Entity para DTO (para preencher formulário de edição)
+
+    // converte a entidade para DTO para preencher formulário de edição
     CompetenciaDTO toCompetenciaDTO (Competencia competencia);
-    
-    // Converte DTO para Entity (para criação NOVA - ignora ID)
+
+    // converte o DTO para entidade para criação nova, ignorando o id
     @Mapping(target = "id", ignore = true)
     Competencia toEntityFromDTO (CompetenciaDTO dto);
 
-    // Atualiza Entity existente com dados do DTO
+    // atualiza a entidade existente com os dados do DTO, preservando o id
     @Mapping(target = "id", ignore = true)
     void updateEntityFromDto(CompetenciaDTO dto, @MappingTarget Competencia competencia);
 

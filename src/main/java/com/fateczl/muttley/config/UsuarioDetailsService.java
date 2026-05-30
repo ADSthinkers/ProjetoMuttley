@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+// serviço de autenticação que carrega admin ou palestrante pelo login para o Spring Security
 @Service
 public class UsuarioDetailsService implements UserDetailsService {
 
@@ -20,6 +21,7 @@ public class UsuarioDetailsService implements UserDetailsService {
         this.palestranteRepository = palestranteRepository;
     }
 
+    // busca o usuário pelo login verificando admins e palestrantes, e atribui o papel correspondente
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var admin = adminRepository.findByLogin(username);

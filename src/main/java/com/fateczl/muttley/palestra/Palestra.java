@@ -12,6 +12,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// entidade que representa uma palestra associada a um evento com palestrantes, competências e token QR Code
 @Entity
 @Table(name = "palestra")
 @Getter

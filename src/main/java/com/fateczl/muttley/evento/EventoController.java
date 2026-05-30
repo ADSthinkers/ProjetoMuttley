@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de eventos
 @Controller
 @RequestMapping("/evento")
 public class EventoController {
@@ -32,6 +33,7 @@ public class EventoController {
         this.patrocinadorRepository = patrocinadorRepository;
     }
 
+    // exibe a listagem de todos os eventos cadastrados
     @GetMapping
     public String listar(Model model) {
         List<EventoListagem> lista = service.listarTodos()
@@ -40,6 +42,7 @@ public class EventoController {
         return "evento/listagem";
     }
 
+    // exibe o formulário de criação de um novo evento
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null, null, null));
@@ -47,6 +50,7 @@ public class EventoController {
         return "evento/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados do evento informado pelo id
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -61,6 +65,7 @@ public class EventoController {
         }
     }
 
+    // processa a submissão do formulário e salva ou atualiza o evento
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("evento") EventoDTO dto,
                          BindingResult result, Model model, RedirectAttributes redirectAttributes) {
@@ -77,6 +82,7 @@ public class EventoController {
         return "redirect:/evento";
     }
 
+    // remove o evento e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     public String deletar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -88,6 +94,7 @@ public class EventoController {
         return "redirect:/evento";
     }
 
+    // preenche o modelo com as listas de locais, modalidades e patrocinadores para o formulário
     private void popularModel(Model model) {
         model.addAttribute("locais", localService.findAllLocais());
         model.addAttribute("modalidades", Modalidade.values());

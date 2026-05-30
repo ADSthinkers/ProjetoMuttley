@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.temporal.ChronoUnit;
 
+// controlador responsável pelo fluxo de check-in via QR Code, identificação e cadastro de participantes
 @Controller
 @RequestMapping("/participar")
 public class QrRegistroController {
@@ -44,6 +45,7 @@ public class QrRegistroController {
         this.auditoriaService = auditoriaService;
     }
 
+    // exibe a página de identificação do participante ao escanear o QR Code da palestra
     @GetMapping("/{token}")
     public String mostrarIdentificacao(@PathVariable String token, Model model) {
         Palestra palestra = palestraService.findByQrCodeToken(token).orElse(null);
@@ -56,6 +58,7 @@ public class QrRegistroController {
         return "qrcode/identificacao";
     }
 
+    // verifica a identidade pelo CPF e e-mail e registra a presença ou redireciona para o cadastro
     @PostMapping("/{token}")
     public String verificarIdentidade(@PathVariable String token,
                                        @RequestParam String cpf,
@@ -90,6 +93,7 @@ public class QrRegistroController {
         return "redirect:/participar/" + token + "/sucesso";
     }
 
+    // exibe o formulário de cadastro para participantes que ainda não estão registrados no sistema
     @GetMapping("/{token}/cadastro")
     public String mostrarCadastro(@PathVariable String token, Model model) {
         Palestra palestra = palestraService.findByQrCodeToken(token).orElse(null);
@@ -102,6 +106,7 @@ public class QrRegistroController {
         return "qrcode/cadastro";
     }
 
+    // cadastra um novo participante via QR Code e registra a presença na palestra
     @PostMapping("/{token}/cadastro")
     public String cadastrar(@PathVariable String token,
                              @RequestParam String nome,
@@ -132,11 +137,13 @@ public class QrRegistroController {
         return "redirect:/participar/" + token + "/sucesso";
     }
 
+    // exibe a página de sucesso após o check-in ser realizado com êxito
     @GetMapping("/{token}/sucesso")
     public String sucesso(@PathVariable String token, Model model) {
         return "qrcode/sucesso";
     }
 
+    // registra a participação, confirma a inscrição e gera entrada de auditoria de check-in
     private void registrarPresenca(Participante participante, Palestra palestra) {
         float horas = calcularHoras(palestra);
         participacaoService.salvarOuAtualizar(
@@ -149,6 +156,7 @@ public class QrRegistroController {
                 participante.getNome());
     }
 
+    // calcula a duração da palestra em horas com mínimo de 1 hora
     private float calcularHoras(Palestra palestra) {
         if (palestra.getInicio() == null || palestra.getFim() == null) return 1f;
         long horas = ChronoUnit.HOURS.between(palestra.getInicio(), palestra.getFim());

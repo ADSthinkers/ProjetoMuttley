@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+// serviço responsável pelas operações de criação, atualização, listagem e remoção de eventos
 @Service
 public class EventoService {
 
@@ -28,6 +29,7 @@ public class EventoService {
         this.patrocinadorRepository = patrocinadorRepository;
     }
 
+    // cria ou atualiza um evento resolvendo as associações de local e patrocinador pelo id
     public Evento salvarOuAtualizar(EventoDTO dto) {
         Local local = null;
         if (dto.localId() != null) {
@@ -56,14 +58,17 @@ public class EventoService {
         }
     }
 
+    // lista todos os eventos cadastrados
     public List<Evento> listarTodos() {
         return repository.findAll();
     }
 
+    // busca um evento pelo seu identificador
     public Optional<Evento> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
+    // remove um evento pelo seu identificador
     public void deletar(Long id) {
         repository.deleteById(id);
     }

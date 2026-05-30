@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// entidade que representa um administrador do sistema com credenciais de acesso
 @Entity
 @Getter
 @Setter

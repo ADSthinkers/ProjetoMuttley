@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+// entidade que representa um patrocinador PJ ou PF com dados de contato, endereço e redes sociais
 public class Patrocinador {
 
     @Id
@@ -68,6 +69,7 @@ public class Patrocinador {
     // Social
     private String linkedin;
 
+    // retorna o nome de exibição conforme o tipo, priorizando nome fantasia para PJ
     public String getNomeExibicao() {
         if (tipo == TipoPatrocinador.PJ) {
             return nomeFantasia != null ? nomeFantasia : razaoSocial;

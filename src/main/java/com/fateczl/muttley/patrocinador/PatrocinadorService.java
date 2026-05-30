@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
+// serviço responsável pelas operações de criação, atualização, listagem e remoção de patrocinadores
 @Service
 public class PatrocinadorService {
 
@@ -16,10 +17,11 @@ public class PatrocinadorService {
     @Autowired
     private PatrocinadorMapper mapper;
 
-    @SuppressWarnings("null")
+    // cria ou atualiza um patrocinador com base no id do DTO
+     
     public Patrocinador salvarOuAtualizar(PatrocinadorDTO dto) {
         if (dto.id() != null) {
-            @SuppressWarnings("null")
+             
             Patrocinador existente = repository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Patrocinador não encontrado"));
             mapper.updateEntityFromDto(dto, existente);
@@ -30,16 +32,19 @@ public class PatrocinadorService {
         }
     }
 
+    // lista todos os patrocinadores cadastrados ordenados pelo id
     public List<Patrocinador> listarTodos() {
         return repository.findAll(Sort.by("id").ascending());
     }
 
-    @SuppressWarnings("null")
+    // busca um patrocinador pelo seu identificador
+     
     public Optional<Patrocinador> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
-    @SuppressWarnings("null")
+    // remove um patrocinador pelo seu identificador
+     
     public void deletar(Long id) {
         repository.deleteById(id);
     }

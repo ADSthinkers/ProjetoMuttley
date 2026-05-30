@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+// controlador REST que expõe endpoints para inscrição, atualização de status e cancelamento com auditoria
 @RestController
 @RequestMapping("/api/inscricoes")
 public class InscricaoApiController {
@@ -23,6 +24,7 @@ public class InscricaoApiController {
         this.auditoriaService = auditoriaService;
     }
 
+    // lista todas as inscrições cadastradas
     @GetMapping
     public ResponseEntity<List<InscricaoListagem>> listar() {
         return ResponseEntity.ok(service.listarTodos().stream()
@@ -33,6 +35,7 @@ public class InscricaoApiController {
                 .toList());
     }
 
+    // inscreve um participante em uma palestra e registra a ação no log de auditoria
     @PostMapping
     public ResponseEntity<InscricaoDTO> inscrever(@RequestBody @Valid InscricaoDTO dto,
                                                    HttpServletRequest request) {
@@ -46,6 +49,7 @@ public class InscricaoApiController {
                         i.getStatus(), i.getQrCodeToken()));
     }
 
+    // atualiza parcialmente o status de uma inscrição e registra a mudança na auditoria
     @PatchMapping("/{id}/status")
     public ResponseEntity<Map<String, String>> atualizarStatus(@PathVariable Long id,
                                                                 @RequestBody Map<String, String> body,
@@ -58,6 +62,7 @@ public class InscricaoApiController {
         return ResponseEntity.ok(Map.of("status", status.name()));
     }
 
+    // cancela a inscrição e registra a ação no log de auditoria antes de remover
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelar(@PathVariable Long id, HttpServletRequest request) {
         auditoriaService.registrar(AcaoAuditoria.INSCRICAO_CANCELADA, "Inscricao", id,
@@ -66,6 +71,7 @@ public class InscricaoApiController {
         return ResponseEntity.noContent().build();
     }
 
+    // extrai o identificador do autor da ação a partir da chave de API da requisição
     private String ator(HttpServletRequest request) {
         String key = request.getHeader("X-API-KEY");
         return key != null ? "api:" + key : "sistema";

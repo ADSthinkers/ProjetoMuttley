@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe os endpoints de CRUD para locais
 @RestController
 @RequestMapping("/api/locais")
 public class LocalApiController {
@@ -19,6 +20,7 @@ public class LocalApiController {
         this.mapper = mapper;
     }
 
+    // lista todos os locais cadastrados
     @GetMapping
     public ResponseEntity<List<LocalDTO>> listar() {
         List<LocalDTO> lista = service.findAllLocais()
@@ -26,6 +28,7 @@ public class LocalApiController {
         return ResponseEntity.ok(lista);
     }
 
+    // busca um local pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<LocalDTO> buscarPorId(@PathVariable Long id) {
         return service.procurarPorId(id)
@@ -34,12 +37,14 @@ public class LocalApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria um novo local com os dados fornecidos
     @PostMapping
     public ResponseEntity<LocalDTO> criar(@RequestBody @Valid LocalDTO dto) {
         Local salvo = service.saveOrAtualize(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toLocalDTO(salvo));
     }
 
+    // atualiza os dados de um local existente pelo id
     @PutMapping("/{id}")
     public ResponseEntity<LocalDTO> atualizar(@PathVariable Long id, @RequestBody @Valid LocalDTO dto) {
         LocalDTO dtoComId = new LocalDTO(id, dto.nome(), dto.capacidade());
@@ -47,6 +52,7 @@ public class LocalApiController {
         return ResponseEntity.ok(mapper.toLocalDTO(salvo));
     }
 
+    // remove um local pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.apagarPorId(id);

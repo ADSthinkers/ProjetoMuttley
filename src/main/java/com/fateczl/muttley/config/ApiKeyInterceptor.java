@@ -10,6 +10,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Set;
 
+// interceptor que valida a chave de API (X-API-KEY) em todas as requisições aos endpoints /api/**
 @Component
 public class ApiKeyInterceptor implements HandlerInterceptor {
 
@@ -17,6 +18,7 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
             "cco123"
     );
 
+    // verifica se a requisição possui chave de API válida antes de prosseguir, permitindo rotas públicas
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request,
                              @NonNull HttpServletResponse response,

@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+// controlador REST que expõe os endpoints de CRUD para medalhas
 @RestController
 @RequestMapping("/api/medalhas")
 public class MedalhaApiController {
@@ -18,6 +18,7 @@ public class MedalhaApiController {
         this.service = service;
     }
 
+    // lista todas as medalhas cadastradas
     @GetMapping
     public ResponseEntity<List<MedalhaListagem>> listar() {
         return ResponseEntity.ok(service.listarTodos().stream()
@@ -25,6 +26,7 @@ public class MedalhaApiController {
                 .toList());
     }
 
+    // busca uma medalha pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<MedalhaDTO> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -33,11 +35,13 @@ public class MedalhaApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria uma nova medalha com os dados fornecidos
     @PostMapping
     public ResponseEntity<MedalhaDTO> criar(@RequestBody @Valid MedalhaDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(service.salvarOuAtualizar(dto)));
     }
 
+    // atualiza os dados de uma medalha existente pelo id
     @PutMapping("/{id}")
     public ResponseEntity<MedalhaDTO> atualizar(@PathVariable Long id, @RequestBody @Valid MedalhaDTO dto) {
         MedalhaDTO dtoComId = new MedalhaDTO(id, dto.tipo(), dto.nome(), dto.descricao(),
@@ -45,6 +49,7 @@ public class MedalhaApiController {
         return ResponseEntity.ok(toDto(service.salvarOuAtualizar(dtoComId)));
     }
 
+    // converte a entidade Medalha para o DTO de listagem com nomes das associações
     private MedalhaListagem toListagem(Medalha m) {
         return new MedalhaListagem(
                 m.getId(), m.getTipo(), m.getNome(),
@@ -56,6 +61,7 @@ public class MedalhaApiController {
                         : List.of());
     }
 
+    // converte a entidade Medalha para o DTO com ids das associações
     private MedalhaDTO toDto(Medalha m) {
         return new MedalhaDTO(
                 m.getId(), m.getTipo(), m.getNome(), m.getDescricao(),
@@ -67,6 +73,7 @@ public class MedalhaApiController {
                         : List.of());
     }
 
+    // remove uma medalha pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);

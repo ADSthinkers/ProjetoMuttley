@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de registros de XP
 @Controller
 @RequestMapping("/xp")
 public class XpController {
@@ -29,6 +30,7 @@ public class XpController {
     @Autowired
     private XpMapper xpMapper;
 
+    // exibe o formulário de criação ou edição de um registro de XP
     @GetMapping("/formulario")
     public String formularioXp(@RequestParam(required = false) Long id, Model model) {
         XpDTO dto;
@@ -45,6 +47,7 @@ public class XpController {
         return "xp/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados do XP informado pelo id
     @GetMapping("/formulario/{id}")
     public String loadPageFormulario(@PathVariable Long id, Model model,
                                      RedirectAttributes redirectAttributes) {
@@ -61,6 +64,7 @@ public class XpController {
         }
     }
 
+    // processa o formulário e salva ou atualiza o registro de XP
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("xp") @Valid XpDTO dto,
                          BindingResult result,
@@ -79,12 +83,14 @@ public class XpController {
         }
     }
 
+    // lista todos os registros de XP e exibe na página de listagem
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("xps", xpService.findAllXps());
         return "xp/listagem";
     }
 
+    // remove o registro de XP e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteXp(@PathVariable Long id, RedirectAttributes redirectAttributes) {

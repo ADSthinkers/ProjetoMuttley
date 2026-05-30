@@ -9,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+// entidade que representa a inscrição de um participante em uma palestra com token QR Code
 @Entity
 @Getter
 @Setter
@@ -36,6 +37,7 @@ public class Inscricao {
     @Column(unique = true)
     private String qrCodeToken;
 
+    // preenche data de inscrição, status inicial PENDENTE e token QR Code únicos antes de persistir
     @PrePersist
     private void prePersist() {
         if (dataInscricao == null) dataInscricao = LocalDateTime.now();

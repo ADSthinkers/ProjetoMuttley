@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+// entidade que registra ações realizadas no sistema para fins de rastreabilidade
 @Entity
 @Getter
 @Setter
@@ -29,6 +30,7 @@ public class Auditoria {
 
     private String realizadoPor;
 
+    // preenche automaticamente a data e hora caso não informada antes de persistir
     @PrePersist
     private void prePersist() {
         if (dataHora == null) dataHora = LocalDateTime.now();

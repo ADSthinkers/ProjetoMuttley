@@ -2,7 +2,6 @@ package com.fateczl.muttley.competencia;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import com.fateczl.muttley.competencia.TipoCompetencia;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+// controlador MVC responsável pelas telas de cadastro, edição, listagem e exclusão de competências
 @Controller
 @RequestMapping("/competencia")
 public class CompetenciaController {
@@ -27,6 +27,7 @@ public class CompetenciaController {
     @Autowired
     private CompetenciaMapper competenciaMapper;  
 
+    // exibe o formulário de criação ou edição de uma competência
     @GetMapping("/formulario")
     public String formularioCompetencia(@RequestParam(required = false) Long id, Model model) {
         CompetenciaDTO dto;
@@ -42,6 +43,7 @@ public class CompetenciaController {
         return "competencia/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados da competência informada pelo id
     @GetMapping("/formulario/{id}")
     public String loadPageFormulario(@PathVariable("id") Long id, Model model,
         RedirectAttributes redirectAttributes) {
@@ -57,6 +59,7 @@ public class CompetenciaController {
         }
     }
         
+    // processa o formulário e salva ou atualiza a competência
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("competencia") @Valid CompetenciaDTO dto,
                         BindingResult result,
@@ -75,6 +78,7 @@ public class CompetenciaController {
         }
     }
 
+    // remove a competência pelo id e redireciona para a listagem
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteCompetencia(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
@@ -87,6 +91,7 @@ public class CompetenciaController {
         return "redirect:/competencia";
     }
 
+    // lista todas as competências cadastradas e exibe na página de listagem
     // esse getmapping aqui embaixo foi excluido (rever)
     @GetMapping
     public String listar(Model model) {

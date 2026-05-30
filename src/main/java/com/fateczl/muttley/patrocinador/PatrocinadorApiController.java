@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// controlador REST que expõe os endpoints de CRUD para patrocinadores
 @RestController
 @RequestMapping("/api/patrocinadores")
 public class PatrocinadorApiController {
@@ -19,6 +20,7 @@ public class PatrocinadorApiController {
         this.mapper = mapper;
     }
 
+    // lista todos os patrocinadores cadastrados
     @GetMapping
     public ResponseEntity<List<PatrocinadorDTO>> listar() {
         List<PatrocinadorDTO> lista = service.listarTodos()
@@ -26,6 +28,7 @@ public class PatrocinadorApiController {
         return ResponseEntity.ok(lista);
     }
 
+    // busca um patrocinador pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<PatrocinadorDTO> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -34,12 +37,14 @@ public class PatrocinadorApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // cria um novo patrocinador com os dados fornecidos
     @PostMapping
     public ResponseEntity<PatrocinadorDTO> criar(@RequestBody @Valid PatrocinadorDTO dto) {
         Patrocinador salvo = service.salvarOuAtualizar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toDTO(salvo));
     }
 
+    // atualiza os dados de um patrocinador existente pelo id
     @PutMapping("/{id}")
     public ResponseEntity<PatrocinadorDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PatrocinadorDTO dto) {
         PatrocinadorDTO dtoComId = new PatrocinadorDTO(
@@ -55,6 +60,7 @@ public class PatrocinadorApiController {
         return ResponseEntity.ok(mapper.toDTO(salvo));
     }
 
+    // remove um patrocinador pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);

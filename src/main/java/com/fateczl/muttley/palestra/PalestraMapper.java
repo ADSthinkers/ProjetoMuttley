@@ -6,6 +6,7 @@ import org.mapstruct.*;
 
 import java.util.List;
 
+// mapper responsável por converter entre a entidade Palestra e seus DTOs
 @Mapper(componentModel = "spring")
 public interface PalestraMapper {
 

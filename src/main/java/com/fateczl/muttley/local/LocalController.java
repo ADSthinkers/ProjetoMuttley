@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de locais
 @Controller
 @RequestMapping("/local")
 public class LocalController {
@@ -26,6 +27,7 @@ public class LocalController {
     @Autowired
     private LocalMapper localMapper;
 
+    // exibe o formulário de criação ou edição de um local
     @GetMapping("/formulario")
     public String formularioLocal(@RequestParam(required = false) Long id, Model model) {
         LocalDTO dto;
@@ -40,6 +42,7 @@ public class LocalController {
         return "local/formulario";
     }
 
+    // carrega o formulário de edição preenchido com os dados do local informado pelo id
     @GetMapping("/formulario/{id}")
     public String loadPageFormulario(@PathVariable("id") Long id, Model model,
                                    RedirectAttributes redirectAttributes) {
@@ -57,6 +60,7 @@ public class LocalController {
         }
     }
 
+    // processa o formulário e salva ou atualiza o local
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("local") @Valid LocalDTO dto,
                         BindingResult result,
@@ -78,6 +82,7 @@ public class LocalController {
         }
     }
 
+    // remove o local e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteLocal(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
@@ -90,6 +95,7 @@ public class LocalController {
         return "redirect:/local";
     }
 
+    // lista todos os locais cadastrados e exibe na página de listagem
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("locais", localService.findAllLocais());

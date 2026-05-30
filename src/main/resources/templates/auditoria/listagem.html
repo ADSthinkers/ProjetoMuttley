@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log de Auditoria</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .btn-filter {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-filter:hover { background-color: #0056b3; }
+
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-clear:hover { background-color: #545b62; }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .table-container { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 2px solid #edf2f7;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.9rem;
+            vertical-align: top;
+        }
+
+        tr:hover { background-color: #fcfdfe; }
+
+        .descricao { max-width: 320px; word-break: break-word; color: #555; font-size: 0.85rem; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-CRIADO            { background: #d4edda; color: #155724; }
+        .badge-ALTERADO          { background: #fff3cd; color: #856404; }
+        .badge-DELETADO          { background: #f8d7da; color: #721c24; }
+        .badge-CHECK_IN          { background: #cce5ff; color: #004085; }
+        .badge-PRESENCA_VALIDADA { background: #d0e8ff; color: #003875; }
+        .badge-CERTIFICADO_EMITIDO { background: #e2d9f3; color: #3d1a78; }
+        .badge-MEDALHA_CONCEDIDA { background: #ffeeba; color: #7d4e00; }
+        .badge-INSCRICAO_CRIADA  { background: #d1ecf1; color: #0c5460; }
+        .badge-INSCRICAO_CANCELADA { background: #f8d7da; color: #721c24; }
+        .badge-STATUS_ATUALIZADO { background: #e2e3e5; color: #383d41; }
+
+        .total {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h2>Log de Auditoria</h2>
+        </div>
+
+        <form method="get" th:action="@{/auditoria}" class="filters">
+            <input type="text" name="entidade" placeholder="Entidade (ex: Evento)"
+                   th:value="${filtroEntidade}" />
+            <select name="acao">
+                <option value="">Todas as ações</option>
+                <option th:each="a : ${acoes}"
+                        th:value="${a}"
+                        th:text="${a}"
+                        th:selected="${a == filtroAcao}"></option>
+            </select>
+            <input type="text" name="realizadoPor" placeholder="Realizado por"
+                   th:value="${filtroRealizadoPor}" />
+            <button type="submit" class="btn-filter">Filtrar</button>
+            <a th:href="@{/auditoria}" class="btn-clear">Limpar</a>
+        </form>
+
+        <div th:if="${listaAuditorias != null and !listaAuditorias.isEmpty()}">
+            <p class="total" th:text="'Total: ' + ${listaAuditorias.size()} + ' registro(s)'"></p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data / Hora</th>
+                            <th>Ação</th>
+                            <th>Entidade</th>
+                            <th>ID</th>
+                            <th>Descrição</th>
+                            <th>Realizado Por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${listaAuditorias}">
+                            <td th:text="${a.dataHora != null ? #temporals.format(a.dataHora, 'dd/MM/yyyy HH:mm') : '-'}"
+                                style="white-space:nowrap;"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="'badge-' + ${a.acao}"
+                                      th:text="${a.acao}"></span>
+                            </td>
+                            <td th:text="${a.entidade}"></td>
+                            <td th:text="${a.entidadeId != null ? a.entidadeId : '-'}"></td>
+                            <td class="descricao" th:text="${a.descricao}"></td>
+                            <td th:text="${a.realizadoPor != null ? a.realizadoPor : '-'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div th:unless="${listaAuditorias != null and !listaAuditorias.isEmpty()}" class="alert alert-info">
+            Nenhum registro de auditoria encontrado.
+        </div>
+    </div>
+</body>
+
+</html>

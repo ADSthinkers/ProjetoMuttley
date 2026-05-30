@@ -10,6 +10,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+// entidade que representa um certificado emitido para participante ou palestrante de uma palestra
 @Entity
 @Getter
 @Setter
@@ -43,6 +44,7 @@ public class Certificado {
     @Enumerated(EnumType.STRING)
     private TipoCertificado tipo;
 
+    // garante código de validação único, data de emissão e tipo padrão antes de persistir
     @PrePersist
     private void prePersist() {
         if (codigoValidacao == null) codigoValidacao = UUID.randomUUID().toString();
@@ -50,12 +52,14 @@ public class Certificado {
         if (tipo == null) tipo = TipoCertificado.PARTICIPACAO;
     }
 
+    // retorna o nome do titular do certificado, priorizando palestrante sobre participante
     public String getNomeTitular() {
         if (palestrante != null) return palestrante.getNome();
         if (participante != null) return participante.getNome();
         return "Titular";
     }
 
+    // retorna o e-mail do titular do certificado, priorizando palestrante sobre participante
     public String getEmailTitular() {
         if (palestrante != null) return palestrante.getEmail();
         if (participante != null) return participante.getEmail();

@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
 
+// controlador MVC responsável pelas telas de listagem, cadastro, edição e exclusão de administradores
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -22,6 +23,7 @@ public class AdminController {
         this.mapper = mapper;
     }
 
+    // exibe a listagem de todos os administradores cadastrados
     @GetMapping
     public String listar(Model model) {
         List<AdminListagem> lista = service.listarTodos()
@@ -32,12 +34,14 @@ public class AdminController {
         return "admin/listagem";
     }
 
+    // exibe o formulário de cadastro de um novo administrador
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
         model.addAttribute("admin", new Admin());
         return "admin/formulario";
     }
 
+    // carrega o formulário de edição com os dados do administrador sem expor a senha
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
         service.buscarPorId(id).ifPresent(admin -> {
@@ -50,6 +54,7 @@ public class AdminController {
         return "admin/formulario";
     }
 
+    // processa o formulário e salva ou atualiza o administrador
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("admin") Admin admin, BindingResult result, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
@@ -64,6 +69,7 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    // remove o administrador e redireciona para a listagem com mensagem de confirmação
     @GetMapping("/delete/{id}")
     public String deletar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.deletar(id);

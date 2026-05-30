@@ -2,6 +2,7 @@ package com.fateczl.muttley.xp;
 
 import org.mapstruct.*;
 
+// mapper responsável por converter entre a entidade Xp e seu DTO
 @Mapper(componentModel = "spring")
 public interface XpMapper {
 
