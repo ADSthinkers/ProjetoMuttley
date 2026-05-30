@@ -1,0 +1,217 @@
+import { useState, useEffect, useMemo } from "react";
+import Select from 'react-select';
+import axios from 'axios';
+
+const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
+    const dbURL = import.meta.env.VITE_DB_API_URL;
+    const dbKEY = import.meta.env.VITE_DB_API_KEY;
+
+    const api = useMemo(() => axios.create({
+        baseURL: dbURL,
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': dbKEY,
+            'Accept': 'application/json',
+        }
+    }), [dbURL, dbKEY]);
+
+    const [titulo, setTitulo] = useState(objeto?.titulo || "");
+    const [descricao, setDescricao] = useState(objeto?.descricao || "");
+    const [dataInicio, setDataInicio] = useState(objeto?.dataInicio || "");
+    const [dataFim, setDataFim] = useState(objeto?.dataFim || "");
+    const [localId, setLocalId] = useState(objeto?.localId || "");
+    const [local, setLocal] = useState(objeto?.local || "");
+    const [categoria, setCategoria] = useState(objeto?.categoria || "");
+    const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
+    const [cargaHoraria, setCargaHoraria] = useState(objeto?.cargaHoraria || "");
+    const [vagas, setVagas] = useState(objeto?.vagas || "");
+    const [entidadeResponsavel, setEntidadeResponsavel] = useState(objeto?.entidadeResponsavel || "");
+    const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const modalidades = [
+        { value: "PRESENCIAL", label: "Presencial" },
+        { value: "ONLINE", label: "Online" },
+        { value: "HIBRIDO", label: "Híbrido" }
+    ];
+
+    useEffect(() => {
+        const fetchLocais = async () => {
+            try {
+                const response = await api.get('/locais');
+                const formatted = response.data.map(l => ({ value: l.id, label: l.nome }));
+                setLocaisDisponiveis(formatted);
+            } catch (error) {
+                console.error("Erro ao buscar locais:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLocais();
+    }, [api]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setObjeto({
+            ...objeto,
+            titulo,
+            descricao,
+            dataInicio,
+            dataFim: dataFim || null,
+            local,
+            localId: localId || null,
+            categoria,
+            modalidade: modalidade || null,
+            cargaHoraria: cargaHoraria ? Number(cargaHoraria) : null,
+            vagas: vagas ? Number(vagas) : null,
+            entidadeResponsavel
+        });
+        setEtapa(3);
+    };
+
+    return (
+        <form className="flex flex-col gap-5 -mt-5 min-h-[68vh]" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-5 flex-1">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Título do Evento*</label>
+                    <input 
+                        required 
+                        type="text" 
+                        className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80" 
+                        placeholder="Nome do evento" 
+                        value={titulo} 
+                        onChange={(e) => setTitulo(e.target.value)} 
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Descrição <span className="font-normal text-primary/40">(opcional)</span></label>
+                    <textarea
+                        className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 min-h-28"
+                        placeholder="Resumo do evento"
+                        value={descricao}
+                        onChange={(e) => setDescricao(e.target.value)}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Data de Início*</label>
+                        <input
+                            required
+                            type="date"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            value={dataInicio}
+                            onChange={(e) => setDataInicio(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Data de Fim <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <input
+                            type="date"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            value={dataFim}
+                            onChange={(e) => setDataFim(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Categoria <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <input
+                            type="text"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            placeholder="Ex: Semana acadêmica"
+                            value={categoria}
+                            onChange={(e) => setCategoria(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Modalidade <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <Select
+                            options={modalidades}
+                            value={modalidades.find(m => m.value === modalidade)}
+                            unstyled
+                            isClearable
+                            onChange={(selectedOption) => setModalidade(selectedOption ? selectedOption.value : "")}
+                            placeholder="Selecione uma modalidade"
+                            classNames={{
+                                control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
+                                menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+                                placeholder: () => "text-primary/75 font-secondary text-sm",
+                                option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Carga horária <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <input
+                            min="0"
+                            type="number"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            placeholder="Horas"
+                            value={cargaHoraria}
+                            onChange={(e) => setCargaHoraria(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Vagas <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <input
+                            min="0"
+                            type="number"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            placeholder="Quantidade de vagas"
+                            value={vagas}
+                            onChange={(e) => setVagas(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Entidade responsável <span className="font-normal text-primary/40">(opcional)</span></label>
+                    <input 
+                        type="text" 
+                        className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80" 
+                        placeholder="Ex: Fatec Zona Leste" 
+                        value={entidadeResponsavel} 
+                        onChange={(e) => setEntidadeResponsavel(e.target.value)} 
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Local <span className="font-normal text-primary/40">(opcional)</span></label>
+                    <Select
+                        isLoading={loading}
+                        options={locaisDisponiveis}
+                        value={locaisDisponiveis.find(l => l.value === localId)}
+                        unstyled
+                        isClearable
+                        onChange={(selectedOption) => {
+                            setLocal(selectedOption ? selectedOption.label : "");
+                            setLocalId(selectedOption ? selectedOption.value : "");
+                        }}
+                        placeholder="Selecione um local"
+                        classNames={{
+                            control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
+                            menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+                            placeholder: () => "text-primary/75 font-secondary text-sm",
+                            option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
+                        }}
+                    />
+                </div>
+            </div>
+
+            <button type="submit" className="w-full text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer shadow-lg shadow-accent/10">
+                Revisar
+            </button>
+        </form>
+    );
+};
+
+export default EventoForm;
