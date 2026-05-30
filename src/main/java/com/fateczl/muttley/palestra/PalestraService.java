@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -122,8 +123,11 @@ public class PalestraService {
                     .orElseThrow(() -> new EntityNotFoundException("Patrocinador não encontrado"));
         }
 
+        float cargaHoraria = (dto.inicio() != null && dto.fim() != null)
+                ? Duration.between(dto.inicio(), dto.fim()).toMinutes() / 60.0f
+                : 0f;
+
         if (dto.id() != null) {
-             
             Palestra existente = palestraRepository.findById(dto.id())
                     .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
             palestraMapper.updateEntityFromDto(dto, existente);
@@ -131,6 +135,7 @@ public class PalestraService {
             existente.setPalestrantes(palestrantes);
             existente.setEvento(evento);
             existente.setPatrocinador(patrocinador);
+            existente.setCargaHoraria(cargaHoraria);
             if (dto.status() != null) existente.setStatus(dto.status());
             return palestraRepository.save(existente);
         } else {
@@ -139,6 +144,7 @@ public class PalestraService {
             nova.setPalestrantes(palestrantes);
             nova.setEvento(evento);
             nova.setPatrocinador(patrocinador);
+            nova.setCargaHoraria(cargaHoraria);
             nova.setQrCodeToken(UUID.randomUUID().toString());
             nova.setStatus(StatusPalestra.PENDENTE);
             return palestraRepository.save(nova);
