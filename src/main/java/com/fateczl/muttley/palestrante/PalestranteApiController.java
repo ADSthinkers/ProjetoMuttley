@@ -33,6 +33,13 @@ public class PalestranteApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // busca um palestrante pelo e-mail
+    @GetMapping("/buscar")
+    public ResponseEntity<PalestranteDTO> buscarPorEmail(@RequestParam String email) {
+        return service.buscarPorEmail(email).map(mapper::toAtualizacaoDto).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     // cria um novo palestrante com os dados fornecidos
     @PostMapping
     public ResponseEntity<PalestranteDTO> criar(@RequestBody @Valid PalestranteDTO dto) {

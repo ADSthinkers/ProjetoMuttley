@@ -57,6 +57,11 @@ public class PalestranteService {
         return repository.findById(id);
     }
 
+    // busca um palestrante pelo e-mail
+    public Optional<Palestrante> buscarPorEmail(String email) {
+        return repository.findByEmail(email);
+    }
+
     // remove um palestrante pelo seu identificador
      
     public void deletar(Long id) {
