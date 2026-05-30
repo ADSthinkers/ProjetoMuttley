@@ -8,7 +8,6 @@ import {
     CheckCircleIcon,
     CircleNotchIcon,
     IdentificationCardIcon,
-    MedalIcon,
     WarningCircleIcon
 } from "@phosphor-icons/react";
 import MuttleyLogo from "../assets/muttley_logo.svg";
@@ -21,7 +20,6 @@ const QrCode = () => {
     const isScannerMode = !token;
 
     const dbURL = import.meta.env.VITE_DB_API_URL;
-    const publicBaseURL = (dbURL || "").replace(/\/api\/?$/, "");
     const api = useMemo(() => axios.create({
         baseURL: dbURL,
         headers: {
@@ -248,39 +246,24 @@ const QrCode = () => {
                     <QrShell>
                         <StateIcon tone="success" icon={<CheckCircleIcon size={52} weight="fill" />} />
                         <div className="text-center">
-                            <h1 className="text-3xl font-primary font-bold text-primary">Presença confirmada</h1>
+                            <h1 className="text-3xl font-primary font-bold text-primary">Check-in registrado</h1>
                             <p className="text-sm text-primary/60 mt-2">
-                                Olá, <span className="font-bold text-primary">{sucesso?.nomeParticipante}</span>. Sua presença foi registrada.
+                                Olá, <span className="font-bold text-primary">{sucesso?.nomeParticipante}</span>. Seu nome entrou na lista de presença.
                             </p>
                         </div>
 
                         <div className="bg-right/10 border border-right/15 rounded-2xl p-4 flex items-center gap-3 text-primary">
-                            <MedalIcon size={24} weight="fill" className="text-right shrink-0" />
-                            <span className="text-sm">Medalha de participação e certificado emitidos automaticamente.</span>
+                            <CheckCircleIcon size={24} weight="fill" className="text-right shrink-0" />
+                            <span className="text-sm">
+                                {sucesso?.mensagem || "Aguarde a confirmação do palestrante ou administrador. Depois disso, o certificado será enviado por e-mail."}
+                            </span>
                         </div>
-
-                        {sucesso?.codigoCertificado && (
-                            <div className="bg-accent/20 border border-accent/20 rounded-2xl p-5 flex flex-col gap-4">
-                                <div>
-                                    <p className="text-[10px] uppercase text-primary/40 font-bold">Código do certificado</p>
-                                    <p className="text-xs font-mono text-primary break-all mt-1">{sucesso.codigoCertificado}</p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <a href={`${publicBaseURL}/certificado/${sucesso.certificadoId}/pdf`} className="btn btn-sm border-0 rounded-xl bg-accent text-primary font-secondary">
-                                        Baixar PDF
-                                    </a>
-                                    <a href={`${publicBaseURL}/certificado/validar/${sucesso.codigoCertificado}`} className="btn btn-sm border-0 rounded-xl bg-base-100 text-primary font-secondary">
-                                        Validar
-                                    </a>
-                                </div>
-                            </div>
-                        )}
                     </QrShell>
                 ) : step === "cadastro" ? (
                     <QrShell palestra={palestra} badge="Primeiro acesso">
                         <div className="text-center">
                             <h1 className="text-2xl font-primary font-bold text-primary">Complete seu cadastro</h1>
-                            <p className="text-sm text-primary/60 mt-1">Informe seu nome para confirmar presença.</p>
+                            <p className="text-sm text-primary/60 mt-1">Informe seu nome para entrar na lista de presença.</p>
                         </div>
 
                         {erro && <Alert tone="error">{erro}</Alert>}
@@ -296,7 +279,7 @@ const QrCode = () => {
                                 <input required type="email" className={inputClass} placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                             </Field>
                             <button disabled={submitting} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary min-h-13">
-                                {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : "Cadastrar e confirmar presença"}
+                                {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : "Cadastrar e fazer check-in"}
                             </button>
                         </form>
 
@@ -325,7 +308,7 @@ const QrCode = () => {
                             <button disabled={submitting} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary min-h-13">
                                 {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : (
                                     <>
-                                        Confirmar presença
+                                        Fazer check-in
                                         <ArrowRightIcon size={18} weight="bold" />
                                     </>
                                 )}

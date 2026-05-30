@@ -7,6 +7,12 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
     const [nome, setNome] = useState(objeto?.nome || "");
     const [cpf, setCpf] = useState(formatCpf(objeto?.cpf || ""));
     const [email, setEmail] = useState(objeto?.email || "");
+    const [miniCurriculo, setMiniCurriculo] = useState(objeto?.miniCurriculo || "");
+    const [formacao, setFormacao] = useState(objeto?.formacao || "");
+    const [areaAtuacao, setAreaAtuacao] = useState(objeto?.areaAtuacao || "");
+    const [instituicao, setInstituicao] = useState(objeto?.instituicao || "");
+    const [linkedin, setLinkedin] = useState(objeto?.linkedin || "");
+    const [foto, setFoto] = useState(objeto?.foto || "");
     const [senha, setSenha] = useState(objeto?.senha || "");
     const [showSenha, setShowSenha] = useState(false);
 
@@ -17,6 +23,12 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
             nome: nome,
             cpf: cpf,
             email: email,
+            miniCurriculo: miniCurriculo,
+            formacao: formacao,
+            areaAtuacao: areaAtuacao,
+            instituicao: instituicao,
+            linkedin: linkedin,
+            foto: foto,
             senha: senha
         });
         setEtapa(3);
@@ -68,6 +80,69 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Field label="Área de Atuação">
+                        <input
+                            type="text"
+                            className={inputClass}
+                            placeholder="Ex: Inteligência Artificial"
+                            value={areaAtuacao}
+                            onChange={(e) => setAreaAtuacao(e.target.value)}
+                        />
+                    </Field>
+
+                    <Field label="Instituição">
+                        <input
+                            type="text"
+                            className={inputClass}
+                            placeholder="Ex: Fatec Zona Leste"
+                            value={instituicao}
+                            onChange={(e) => setInstituicao(e.target.value)}
+                        />
+                    </Field>
+                </div>
+
+                <Field label="Formação">
+                    <input
+                        type="text"
+                        className={inputClass}
+                        placeholder="Ex: Doutorado em Computação"
+                        value={formacao}
+                        onChange={(e) => setFormacao(e.target.value)}
+                    />
+                </Field>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Field label="LinkedIn">
+                        <input
+                            type="url"
+                            className={inputClass}
+                            placeholder="https://linkedin.com/in/nome"
+                            value={linkedin}
+                            onChange={(e) => setLinkedin(e.target.value)}
+                        />
+                    </Field>
+
+                    <Field label="Foto">
+                        <input
+                            type="url"
+                            className={inputClass}
+                            placeholder="https://site.com/foto.jpg"
+                            value={foto}
+                            onChange={(e) => setFoto(e.target.value)}
+                        />
+                    </Field>
+                </div>
+
+                <Field label="Mini currículo">
+                    <textarea
+                        className={`${inputClass} min-h-28 resize-y`}
+                        placeholder="Resumo profissional do palestrante"
+                        value={miniCurriculo}
+                        onChange={(e) => setMiniCurriculo(e.target.value)}
+                    />
+                </Field>
+
                 {/* Senha */}
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-primary font-bold text-primary ml-1">Senha de Acesso</label>
@@ -103,5 +178,14 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
         </form>
     );
 };
+
+const inputClass = "w-full text-base p-4 bg-white/50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm";
+
+const Field = ({ label, children }) => (
+    <div className="flex flex-col gap-2">
+        <label className="text-sm font-primary font-bold text-primary ml-1">{label}</label>
+        {children}
+    </div>
+);
 
 export default PalestranteForm;

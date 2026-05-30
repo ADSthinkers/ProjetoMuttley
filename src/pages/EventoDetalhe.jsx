@@ -4,7 +4,8 @@ import {
     ArrowLeftIcon,
     CalendarStarIcon,
     CircleNotchIcon,
-    ClockIcon,
+    HandshakeIcon,
+    ImageSquareIcon,
     InfoIcon,
     MapPinIcon,
     PencilSimpleIcon,
@@ -36,6 +37,14 @@ const formatarModalidade = (modalidade) => {
     return modalidades.find((m) => m.value === modalidade)?.label || "-";
 };
 
+const formatarPatrocinadorLabel = (patrocinador) => (
+    patrocinador?.nomeFantasia ||
+    patrocinador?.razaoSocial ||
+    patrocinador?.nomeCompleto ||
+    patrocinador?.email ||
+    (patrocinador?.id ? `Patrocinador #${patrocinador.id}` : "-")
+);
+
 const EventoDetalhe = () => {
     const { idEvento } = useParams();
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -57,6 +66,7 @@ const EventoDetalhe = () => {
     const [error, setError] = useState(null);
     const [eventData, setEventData] = useState(null);
     const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
+    const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
 
     const [form, setForm] = useState({
         titulo: "",
@@ -66,9 +76,9 @@ const EventoDetalhe = () => {
         localId: "",
         categoria: "",
         modalidade: "",
-        cargaHoraria: "",
         vagas: "",
-        entidadeResponsavel: ""
+        banner: "",
+        patrocinadorId: ""
     });
 
     useEffect(() => {
@@ -76,16 +86,22 @@ const EventoDetalhe = () => {
             if (!idEvento) return;
 
             try {
-                const [eventoRes, locaisRes] = await Promise.all([
+                const [eventoRes, locaisRes, patrocinadoresRes] = await Promise.all([
                     api.get(`/eventos/${idEvento}`),
-                    api.get("/locais")
+                    api.get("/locais"),
+                    api.get("/patrocinadores")
                 ]);
 
                 const evento = eventoRes.data;
                 const locais = locaisRes.data.map((local) => ({ value: local.id, label: local.nome }));
+                const patrocinadores = patrocinadoresRes.data.map((patrocinador) => ({
+                    value: patrocinador.id,
+                    label: formatarPatrocinadorLabel(patrocinador)
+                }));
 
                 setEventData(evento);
                 setLocaisDisponiveis(locais);
+                setPatrocinadoresDisponiveis(patrocinadores);
                 setForm({
                     titulo: evento.titulo || "",
                     descricao: evento.descricao || "",
@@ -94,9 +110,9 @@ const EventoDetalhe = () => {
                     localId: evento.localId || "",
                     categoria: evento.categoria || "",
                     modalidade: evento.modalidade || "",
-                    cargaHoraria: evento.cargaHoraria ?? "",
                     vagas: evento.vagas ?? "",
-                    entidadeResponsavel: evento.entidadeResponsavel || ""
+                    banner: evento.banner || "",
+                    patrocinadorId: evento.patrocinadorId || ""
                 });
             } catch (err) {
                 console.error("Erro ao buscar evento:", err);
@@ -110,6 +126,7 @@ const EventoDetalhe = () => {
     }, [api, idEvento]);
 
     const localSelecionado = locaisDisponiveis.find((local) => local.value === form.localId);
+    const patrocinadorSelecionado = patrocinadoresDisponiveis.find((patrocinador) => patrocinador.value === form.patrocinadorId);
 
     const houveAlteracao = useMemo(() => {
         if (!eventData) return false;
@@ -121,9 +138,9 @@ const EventoDetalhe = () => {
             form.localId !== (eventData.localId || "") ||
             form.categoria !== (eventData.categoria || "") ||
             form.modalidade !== (eventData.modalidade || "") ||
-            String(form.cargaHoraria) !== String(eventData.cargaHoraria ?? "") ||
             String(form.vagas) !== String(eventData.vagas ?? "") ||
-            form.entidadeResponsavel !== (eventData.entidadeResponsavel || "");
+            form.banner !== (eventData.banner || "") ||
+            form.patrocinadorId !== (eventData.patrocinadorId || "");
     }, [eventData, form]);
 
     const updateForm = (field, value) => {
@@ -142,9 +159,9 @@ const EventoDetalhe = () => {
             localId: form.localId || null,
             categoria: form.categoria,
             modalidade: form.modalidade || null,
-            cargaHoraria: form.cargaHoraria ? Number(form.cargaHoraria) : null,
             vagas: form.vagas ? Number(form.vagas) : null,
-            entidadeResponsavel: form.entidadeResponsavel
+            banner: form.banner,
+            patrocinadorId: form.patrocinadorId || null
         };
 
         try {
@@ -158,9 +175,9 @@ const EventoDetalhe = () => {
                 localId: response.data.localId || "",
                 categoria: response.data.categoria || "",
                 modalidade: response.data.modalidade || "",
-                cargaHoraria: response.data.cargaHoraria ?? "",
                 vagas: response.data.vagas ?? "",
-                entidadeResponsavel: response.data.entidadeResponsavel || ""
+                banner: response.data.banner || "",
+                patrocinadorId: response.data.patrocinadorId || ""
             });
             setIsEditing(false);
             toast.success("Evento atualizado com sucesso.");
@@ -223,6 +240,15 @@ const EventoDetalhe = () => {
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar compact={true} />
                 <div className="pt-10 pl-5 pr-12 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
+                    <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="self-start btn btn-sm border-0 rounded-xl bg-accent/30 hover:bg-accent/50 text-primary font-secondary shadow-none"
+                    >
+                        <ArrowLeftIcon size={18} />
+                        Voltar
+                    </button>
+
                     <motion.div variants={itemVariants} className="bg-accent/20 rounded-3xl p-7 flex flex-col gap-5 border border-accent/10">
                         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
                             <div className="flex flex-col gap-2 min-w-0">
@@ -283,13 +309,14 @@ const EventoDetalhe = () => {
                                 form={form}
                                 updateForm={updateForm}
                                 locaisDisponiveis={locaisDisponiveis}
+                                patrocinadoresDisponiveis={patrocinadoresDisponiveis}
                                 modalidades={modalidades}
                                 saving={saving}
                                 houveAlteracao={houveAlteracao}
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <EventoDetails eventData={eventData} localNome={localSelecionado?.label} />
+                            <EventoDetails eventData={eventData} localNome={localSelecionado?.label} patrocinadorNome={patrocinadorSelecionado?.label} />
                         )
                     )}
 
@@ -344,7 +371,7 @@ const EventoDetalhe = () => {
     );
 };
 
-const EventoEditForm = ({ form, updateForm, locaisDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
+const EventoEditForm = ({ form, updateForm, locaisDisponiveis, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título do evento*" className="lg:col-span-2">
@@ -391,16 +418,30 @@ const EventoEditForm = ({ form, updateForm, locaisDisponiveis, modalidades, savi
                 />
             </Field>
 
-            <Field label="Entidade responsável" optional>
-                <input className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.entidadeResponsavel} onChange={(e) => updateForm("entidadeResponsavel", e.target.value)} />
-            </Field>
-
-            <Field label="Carga horária" optional>
-                <input min="0" type="number" className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.cargaHoraria} onChange={(e) => updateForm("cargaHoraria", e.target.value)} />
-            </Field>
-
             <Field label="Vagas" optional>
                 <input min="0" type="number" className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.vagas} onChange={(e) => updateForm("vagas", e.target.value)} />
+            </Field>
+
+            <Field label="Patrocinador" optional>
+                <Select
+                    options={patrocinadoresDisponiveis}
+                    value={patrocinadoresDisponiveis.find((patrocinador) => patrocinador.value === form.patrocinadorId)}
+                    unstyled
+                    isClearable
+                    onChange={(selectedOption) => updateForm("patrocinadorId", selectedOption ? selectedOption.value : "")}
+                    placeholder="Selecione um patrocinador"
+                    classNames={selectClasses}
+                />
+            </Field>
+
+            <Field label="Banner" optional className="lg:col-span-2">
+                <input
+                    type="url"
+                    className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm"
+                    placeholder="https://site.com/imagem.jpg"
+                    value={form.banner}
+                    onChange={(e) => updateForm("banner", e.target.value)}
+                />
             </Field>
         </div>
 
@@ -410,7 +451,7 @@ const EventoEditForm = ({ form, updateForm, locaisDisponiveis, modalidades, savi
     </motion.form>
 );
 
-const EventoDetails = ({ eventData, localNome }) => (
+const EventoDetails = ({ eventData, localNome, patrocinadorNome }) => (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
@@ -432,10 +473,19 @@ const EventoDetails = ({ eventData, localNome }) => (
             <SectionTitle title="Operação" />
             <div className="grid grid-cols-1 gap-4">
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
-                <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={eventData?.cargaHoraria ? `${eventData.cargaHoraria}h` : "-"} />
                 <DetailCard icon={<UsersIcon size={24} />} label="Vagas" value={eventData?.vagas} />
-                <DetailCard icon={<InfoIcon size={24} />} label="Responsável" value={eventData?.entidadeResponsavel} />
+                <DetailCard icon={<HandshakeIcon size={24} />} label="Patrocinador" value={patrocinadorNome || eventData?.patrocinadorNome} />
+                <DetailCard icon={<ImageSquareIcon size={24} />} label="Banner" value={eventData?.banner} />
             </div>
+            {eventData?.banner && (
+                <div className="overflow-hidden rounded-2xl border border-accent/15 bg-accent/20">
+                    <img
+                        src={eventData.banner}
+                        alt={`Banner de ${eventData?.titulo || "evento"}`}
+                        className="w-full aspect-video object-cover"
+                    />
+                </div>
+            )}
         </div>
     </motion.div>
 );

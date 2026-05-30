@@ -2,6 +2,7 @@ import Sidebar from "../components/Sidebar";
 import Select from "react-select";
 import QRCode from "qrcode";
 import {
+    ArrowLeftIcon,
     CalendarIcon,
     CheckCircleIcon,
     CircleNotchIcon,
@@ -77,8 +78,8 @@ const PalestraDetalhe = () => {
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
-    const [participantes, setParticipantes] = useState([]);
-    const [participantesSelecionados, setParticipantesSelecionados] = useState([]);
+    const [inscricoesPresenca, setInscricoesPresenca] = useState([]);
+    const [inscricoesSelecionadas, setInscricoesSelecionadas] = useState([]);
     const [buscaParticipante, setBuscaParticipante] = useState("");
     const [isConcluido, setIsConcluido] = useState(false);
     const [presencaLancada, setPresencaLancada] = useState(false);
@@ -105,12 +106,12 @@ const PalestraDetalhe = () => {
             if (!idPal) return;
 
             try {
-                const [palRes, compRes, palestrantesRes, eventosRes, participantesRes] = await Promise.all([
+                const [palRes, compRes, palestrantesRes, eventosRes, inscricoesRes] = await Promise.all([
                     api.get(`/palestras/${idPal}`),
                     api.get("/competencias"),
                     api.get("/palestrantes"),
                     api.get("/eventos"),
-                    api.get("/participantes")
+                    api.get(`/inscricoes/palestra/${idPal}`)
                 ]);
 
                 const palestra = palRes.data;
@@ -120,7 +121,8 @@ const PalestraDetalhe = () => {
                 setCompetenciasDisponiveis(compRes.data.map((c) => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palestrantesRes.data.map((p) => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eventosRes.data.map((e) => ({ value: e.id, label: e.titulo })));
-                setParticipantes(participantesRes.data);
+                setInscricoesPresenca(inscricoesRes.data);
+                setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
                 setForm({
                     titulo: palestra.titulo || "",
                     descricao: palestra.descricao || "",
@@ -191,12 +193,6 @@ const PalestraDetalhe = () => {
             });
     }, [publicQrUrl, qrAberto]);
 
-    const calcularHoras = () => {
-        if (!palestraData?.inicio || !palestraData?.fim) return 1;
-        const horas = Math.floor((new Date(palestraData.fim) - new Date(palestraData.inicio)) / 36e5);
-        return Math.max(1, horas);
-    };
-
     const handleSave = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -245,21 +241,20 @@ const PalestraDetalhe = () => {
     };
 
     const confirmarPresenca = async () => {
-        if (participantesSelecionados.length === 0) {
-            toast.error("Selecione pelo menos um participante.");
+        if (inscricoesSelecionadas.length === 0) {
+            toast.error("Selecione pelo menos um check-in.");
             return;
         }
 
         try {
-            await Promise.all(participantesSelecionados.map((participanteId) => (
-                api.post("/participacoes", {
-                    horas: calcularHoras(),
-                    participanteId,
-                    palestraId: Number(idPal)
-                }).catch(() => null)
-            )));
+            const response = await api.post(`/inscricoes/palestra/${idPal}/confirmar-presencas`, {
+                inscricaoIds: inscricoesSelecionadas
+            });
+            const inscricoesRes = await api.get(`/inscricoes/palestra/${idPal}`);
+            setInscricoesPresenca(inscricoesRes.data);
+            setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
             setPresencaLancada(true);
-            toast.success("Presença lançada com sucesso.");
+            toast.success(response.data?.mensagem || "Presença lançada com sucesso.");
             document.getElementById("modal_lancar_presenca").close();
         } catch (err) {
             console.error("Erro ao lançar presença:", err);
@@ -267,12 +262,12 @@ const PalestraDetalhe = () => {
         }
     };
 
-    const participantesFiltrados = participantes.filter((participante) => {
+    const participantesFiltrados = inscricoesPresenca.filter((inscricao) => {
         const termo = buscaParticipante.toLowerCase();
-        return participante.nome?.toLowerCase().includes(termo) ||
-            participante.email?.toLowerCase().includes(termo) ||
-            participante.email2?.toLowerCase().includes(termo) ||
-            participante.cpf?.toLowerCase().includes(termo);
+        return inscricao.participanteNome?.toLowerCase().includes(termo) ||
+            inscricao.email?.toLowerCase().includes(termo) ||
+            inscricao.email2?.toLowerCase().includes(termo) ||
+            inscricao.cpf?.toLowerCase().includes(termo);
     });
 
     if (loading) {
@@ -311,6 +306,15 @@ const PalestraDetalhe = () => {
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar compact={true} />
                 <div className="pt-10 pl-5 pr-12 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
+                    <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="self-start btn btn-sm border-0 rounded-xl bg-accent/30 hover:bg-accent/50 text-primary font-secondary shadow-none"
+                    >
+                        <ArrowLeftIcon size={18} />
+                        Voltar
+                    </button>
+
                     <motion.div variants={itemVariants} className="bg-accent/20 rounded-3xl p-7 flex flex-col gap-5 border border-accent/10">
                         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
                             <div className="flex flex-col gap-2 min-w-0">
@@ -380,14 +384,14 @@ const PalestraDetalhe = () => {
                             <ActionCard
                                 icon={<CheckCircleIcon size={44} />}
                                 title={isConcluido ? "Palestra concluída" : "Concluir palestra"}
-                                description="Ao concluir, a lista de presença será aberta para seleção dos participantes."
+                                description="Ao concluir, a lista de check-ins será aberta para confirmação das presenças."
                                 buttonLabel={isConcluido ? (presencaLancada ? "Editar presença" : "Lançar presença") : "Concluir e lançar presença"}
                                 onClick={abrirPresenca}
                             />
                             <ActionCard
                                 icon={<QrCodeIcon size={44} />}
                                 title="Gerar QR Code"
-                                description="Gera o QR Code público para registro externo de presença."
+                                description="Gera o QR Code público para check-in externo na lista de presença."
                                 buttonLabel="Abrir QR Code"
                                 onClick={() => setQrAberto(true)}
                             />
@@ -410,8 +414,8 @@ const PalestraDetalhe = () => {
                         <button className="btn btn-sm btn-ghost btn-circle absolute right-5 top-5 bg-accent/30 border-none text-primary hover:bg-accent/50 shadow-none">x</button>
                     </form>
                     <div>
-                        <h3 className="text-3xl font-primary text-primary font-bold">{presencaLancada ? "Editar presença" : "Lançar presença"}</h3>
-                        <p className="text-sm font-secondary text-primary/60">Selecione os participantes presentes nesta palestra.</p>
+                        <h3 className="text-3xl font-primary text-primary font-bold">{presencaLancada ? "Editar presença" : "Confirmar presença"}</h3>
+                        <p className="text-sm font-secondary text-primary/60">Confirme os participantes que fizeram check-in pelo QR Code.</p>
                     </div>
                     <input
                         type="text"
@@ -421,24 +425,34 @@ const PalestraDetalhe = () => {
                         className="w-full text-sm p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary/80 outline-none focus:border-accent"
                     />
                     <div className="flex flex-col gap-3 max-h-[45vh] overflow-y-auto pr-1">
-                        {participantesFiltrados.map((participante) => {
-                            const checked = participantesSelecionados.includes(participante.id);
+                        {participantesFiltrados.length === 0 && (
+                            <div className="bg-accent/10 rounded-2xl p-6 text-center text-sm font-secondary text-primary/50">
+                                Nenhum check-in encontrado para esta palestra.
+                            </div>
+                        )}
+                        {participantesFiltrados.map((inscricao) => {
+                            const checked = inscricoesSelecionadas.includes(inscricao.id);
                             return (
-                                <label key={participante.id} className="bg-accent/20 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                                <label key={inscricao.id} className="bg-accent/20 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-accent/30 transition-colors">
                                     <input
                                         type="checkbox"
                                         className="checkbox checkbox-sm checkbox-accent border-primary/20 rounded-sm"
                                         checked={checked}
                                         onChange={() => {
-                                            setParticipantesSelecionados((current) => checked
-                                                ? current.filter((id) => id !== participante.id)
-                                                : [...current, participante.id]
+                                            setInscricoesSelecionadas((current) => checked
+                                                ? current.filter((id) => id !== inscricao.id)
+                                                : [...current, inscricao.id]
                                             );
                                         }}
                                     />
                                     <div className="min-w-0">
-                                        <p className="font-primary font-bold text-primary truncate">{participante.nome}</p>
-                                        <p className="font-secondary text-xs text-primary/60 truncate">{participante.email} | CPF: {participante.cpf}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-primary font-bold text-primary truncate">{inscricao.participanteNome}</p>
+                                            <span className={`badge badge-sm border-0 font-secondary ${inscricao.status === "CONFIRMADA" ? "bg-right/20 text-primary" : "bg-warning/20 text-primary"}`}>
+                                                {inscricao.status === "CONFIRMADA" ? "Confirmada" : "Pendente"}
+                                            </span>
+                                        </div>
+                                        <p className="font-secondary text-xs text-primary/60 truncate">{inscricao.email} | CPF: {inscricao.cpf}</p>
                                     </div>
                                 </label>
                             );

@@ -1,9 +1,25 @@
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect, useMemo } from "react";
-import { CaretDownIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, MagnifyingGlassIcon, PencilSimpleIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
+import toast, { Toaster } from "react-hot-toast";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion } from "framer-motion"
 import axios from 'axios';
+
+const tiposCompetencia = [
+    { value: "HARD_SKILL", label: "Hard Skill" },
+    { value: "SOFT_SKILL", label: "Soft Skill" }
+];
+
+const formatarTipo = (tipo) => tiposCompetencia.find((t) => t.value === tipo)?.label || "Sem tipo";
+
+const getApiErrorMessage = (err) => {
+    const data = err.response?.data;
+    if (typeof data === "string") return data;
+    if (data?.erro) return data.erro;
+    if (data?.message) return data.message;
+    return "Não foi possível concluir a operação.";
+};
 
 const Competencias = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -22,23 +38,30 @@ const Competencias = () => {
     const [competencias, setCompetencias] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [competenciaEditando, setCompetenciaEditando] = useState(null);
+    const [competenciaExcluindo, setCompetenciaExcluindo] = useState(null);
+    const [form, setForm] = useState({ nome: "", tipo: "" });
+
+    const fetchData = async () => {
+        if (!dbURL || !dbKEY) {
+            setLoading(false);
+            return;
+        }
+        try {
+            const response = await api.get('/competencias');
+            setCompetencias(response.data);
+            setError(null);
+        } catch (error) {
+            console.error("Erro ao buscar dados", error);
+            setError("Não foi possível resgatar os dados. Verifique sua conexão ou tente novamente mais tarde.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!dbURL || !dbKEY) {
-                setLoading(false);
-                return;
-            }
-            try { 
-                const response = await api.get('/competencias');
-                setCompetencias(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error("Erro ao buscar dados", error);
-                setError("Não foi possível resgatar os dados. Verifique sua conexão ou tente novamente mais tarde.");
-                setLoading(false);
-            }
-        };
         fetchData();
     }, [api]);
 
@@ -57,8 +80,55 @@ const Competencias = () => {
             return 0
         })
 
+    const abrirEdicao = (competencia) => {
+        setCompetenciaEditando(competencia);
+        setForm({ nome: competencia.nome || "", tipo: competencia.tipo || "" });
+    };
+
+    const salvarEdicao = async (e) => {
+        e.preventDefault();
+        if (!competenciaEditando) return;
+
+        setSaving(true);
+        try {
+            const response = await api.put(`/competencias/${competenciaEditando.id}`, {
+                nome: form.nome,
+                tipo: form.tipo || null
+            });
+
+            setCompetencias((current) => (current || []).map((competencia) => (
+                competencia.id === competenciaEditando.id ? response.data : competencia
+            )));
+            setCompetenciaEditando(null);
+            toast.success("Competência atualizada.");
+        } catch (err) {
+            console.error("Erro ao atualizar competência:", err);
+            toast.error(getApiErrorMessage(err));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const confirmarExclusao = async () => {
+        if (!competenciaExcluindo) return;
+
+        setDeleting(true);
+        try {
+            await api.delete(`/competencias/${competenciaExcluindo.id}`);
+            setCompetencias((current) => (current || []).filter((competencia) => competencia.id !== competenciaExcluindo.id));
+            setCompetenciaExcluindo(null);
+            toast.success("Competência excluída.");
+        } catch (err) {
+            console.error("Erro ao excluir competência:", err);
+            toast.error(getApiErrorMessage(err));
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     return (
         <PageTransition>
+            <Toaster position="top-center" reverseOrder={false} />
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar className="" />
                 <div className="pt-5 pl-2 pr-5 w-full overflow-y-auto h-screen flex flex-col gap-6">
@@ -107,19 +177,40 @@ const Competencias = () => {
                                 <motion.div 
                                     key={c.id || index} 
                                     variants={itemVariants}
-                                    whileHover={{ scale: 1.05, y: -4, backgroundColor: "rgba(252, 209, 96, 0.7)" }}
+                                    whileHover={{ y: -4, backgroundColor: "rgba(252, 209, 96, 0.7)" }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="bg-accent/50 rounded-2xl px-6 py-5 flex items-start gap-3 min-w-48 transition-all group cursor-default border border-primary/5"
+                                    className="bg-accent/50 rounded-2xl px-6 py-5 flex items-start justify-between gap-5 min-w-64 transition-all group cursor-default border border-primary/5"
                                 >
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-2 min-w-0">
                                         <span className="text-base font-primary font-bold text-primary tracking-wide">
                                             {c.nome}
+                                        </span>
+                                        <span className="badge badge-sm badge-outline border-primary/20 text-primary/60 font-secondary">
+                                            {formatarTipo(c.tipo)}
                                         </span>
                                         {c.atribuida !== undefined && (
                                             <span className="text-xs font-secondary text-primary/60 underline underline-offset-2 decoration-primary/20 group-hover:decoration-primary/60 transition-colors">
                                                 Atribuído a {c.atribuida} palestras
                                             </span>
                                         )}
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => abrirEdicao(c)}
+                                            className="btn btn-sm btn-circle border-0 bg-base-100/50 hover:bg-base-100 text-primary shadow-none"
+                                            title="Editar competência"
+                                        >
+                                            <PencilSimpleIcon size={17} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCompetenciaExcluindo(c)}
+                                            className="btn btn-sm btn-circle border-0 bg-error/10 hover:bg-error/20 text-error shadow-none"
+                                            title="Excluir competência"
+                                        >
+                                            <TrashSimpleIcon size={17} />
+                                        </button>
                                     </div>
                                 </motion.div>
                             ))
@@ -131,9 +222,84 @@ const Competencias = () => {
                     </motion.div>
                 </div>
             </div>
+
+            {competenciaEditando && (
+                <div className="fixed inset-0 z-50 bg-primary/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setCompetenciaEditando(null)}>
+                    <form className="bg-base-100 rounded-3xl p-7 max-w-md w-full flex flex-col gap-5 shadow-xl" onSubmit={salvarEdicao} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-2xl font-primary font-bold text-primary">Editar competência</h2>
+                                <p className="text-sm font-secondary text-primary/60">A edição não altera as associações existentes.</p>
+                            </div>
+                            <button type="button" className="btn btn-sm btn-circle border-0 bg-accent/30 text-primary" onClick={() => setCompetenciaEditando(null)}>
+                                <XIcon size={18} />
+                            </button>
+                        </div>
+
+                        <Field label="Nome*">
+                            <input
+                                required
+                                type="text"
+                                className={inputClass}
+                                value={form.nome}
+                                onChange={(e) => setForm((current) => ({ ...current, nome: e.target.value }))}
+                            />
+                        </Field>
+
+                        <Field label="Tipo">
+                            <select
+                                className={inputClass}
+                                value={form.tipo}
+                                onChange={(e) => setForm((current) => ({ ...current, tipo: e.target.value }))}
+                            >
+                                <option value="">Sem tipo</option>
+                                {tiposCompetencia.map((tipo) => (
+                                    <option key={tipo.value} value={tipo.value}>{tipo.label}</option>
+                                ))}
+                            </select>
+                        </Field>
+
+                        <button disabled={saving} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary">
+                            {saving ? "Salvando..." : "Salvar alterações"}
+                        </button>
+                    </form>
+                </div>
+            )}
+
+            {competenciaExcluindo && (
+                <div className="fixed inset-0 z-50 bg-primary/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setCompetenciaExcluindo(null)}>
+                    <div className="bg-base-100 rounded-3xl p-7 max-w-md w-full flex flex-col gap-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="w-16 h-16 rounded-2xl bg-error/10 text-error flex items-center justify-center">
+                            <TrashSimpleIcon size={32} weight="fill" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-primary font-bold text-primary">Excluir competência?</h2>
+                            <p className="text-sm font-secondary text-primary/60 mt-1">
+                                A competência <span className="font-bold text-primary">"{competenciaExcluindo.nome}"</span> só será removida se não estiver associada a nenhuma palestra.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button type="button" className="btn border-0 rounded-xl bg-accent/20 text-primary font-secondary" onClick={() => setCompetenciaExcluindo(null)}>
+                                Cancelar
+                            </button>
+                            <button type="button" disabled={deleting} className="btn border-0 rounded-xl bg-error hover:bg-error/80 text-secondary font-secondary" onClick={confirmarExclusao}>
+                                {deleting ? "Excluindo..." : "Excluir"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PageTransition>
     )
 }
 
-export default Competencias;
+const inputClass = "w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 outline-none focus:border-accent";
 
+const Field = ({ label, children }) => (
+    <label className="flex flex-col gap-2">
+        <span className="text-sm font-secondary text-primary font-semibold">{label}</span>
+        {children}
+    </label>
+);
+
+export default Competencias;

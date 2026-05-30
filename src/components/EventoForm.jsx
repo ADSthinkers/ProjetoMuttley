@@ -23,10 +23,11 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const [local, setLocal] = useState(objeto?.local || "");
     const [categoria, setCategoria] = useState(objeto?.categoria || "");
     const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
-    const [cargaHoraria, setCargaHoraria] = useState(objeto?.cargaHoraria || "");
     const [vagas, setVagas] = useState(objeto?.vagas || "");
-    const [entidadeResponsavel, setEntidadeResponsavel] = useState(objeto?.entidadeResponsavel || "");
+    const [banner, setBanner] = useState(objeto?.banner || "");
+    const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
     const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
+    const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
     const modalidades = [
         { value: "PRESENCIAL", label: "Presencial" },
@@ -35,18 +36,32 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     ];
 
     useEffect(() => {
-        const fetchLocais = async () => {
+        const formatPatrocinadorLabel = (patrocinador) => (
+            patrocinador.nomeFantasia ||
+            patrocinador.razaoSocial ||
+            patrocinador.nomeCompleto ||
+            patrocinador.email ||
+            `Patrocinador #${patrocinador.id}`
+        );
+
+        const fetchOptions = async () => {
             try {
-                const response = await api.get('/locais');
-                const formatted = response.data.map(l => ({ value: l.id, label: l.nome }));
-                setLocaisDisponiveis(formatted);
+                const [locaisResponse, patrocinadoresResponse] = await Promise.all([
+                    api.get('/locais'),
+                    api.get('/patrocinadores')
+                ]);
+
+                setLocaisDisponiveis(locaisResponse.data.map(l => ({ value: l.id, label: l.nome })));
+                setPatrocinadoresDisponiveis(
+                    patrocinadoresResponse.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
+                );
             } catch (error) {
-                console.error("Erro ao buscar locais:", error);
+                console.error("Erro ao buscar opções do evento:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchLocais();
+        fetchOptions();
     }, [api]);
 
     const handleSubmit = (e) => {
@@ -61,9 +76,9 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
             localId: localId || null,
             categoria,
             modalidade: modalidade || null,
-            cargaHoraria: cargaHoraria ? Number(cargaHoraria) : null,
             vagas: vagas ? Number(vagas) : null,
-            entidadeResponsavel
+            banner,
+            patrocinadorId: patrocinadorId || null
         });
         setEtapa(3);
     };
@@ -149,18 +164,6 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-secondary text-primary font-semibold">Carga horária <span className="font-normal text-primary/40">(opcional)</span></label>
-                        <input
-                            min="0"
-                            type="number"
-                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
-                            placeholder="Horas"
-                            value={cargaHoraria}
-                            onChange={(e) => setCargaHoraria(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
                         <label className="text-sm font-secondary text-primary font-semibold">Vagas <span className="font-normal text-primary/40">(opcional)</span></label>
                         <input
                             min="0"
@@ -171,17 +174,17 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                             onChange={(e) => setVagas(e.target.value)}
                         />
                     </div>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-secondary text-primary font-semibold">Entidade responsável <span className="font-normal text-primary/40">(opcional)</span></label>
-                    <input 
-                        type="text" 
-                        className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80" 
-                        placeholder="Ex: Fatec Zona Leste" 
-                        value={entidadeResponsavel} 
-                        onChange={(e) => setEntidadeResponsavel(e.target.value)} 
-                    />
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Banner <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <input
+                            type="url"
+                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                            placeholder="https://site.com/imagem.jpg"
+                            value={banner}
+                            onChange={(e) => setBanner(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -197,6 +200,25 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                             setLocalId(selectedOption ? selectedOption.value : "");
                         }}
                         placeholder="Selecione um local"
+                        classNames={{
+                            control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
+                            menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+                            placeholder: () => "text-primary/75 font-secondary text-sm",
+                            option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
+                        }}
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Patrocinador <span className="font-normal text-primary/40">(opcional)</span></label>
+                    <Select
+                        isLoading={loading}
+                        options={patrocinadoresDisponiveis}
+                        value={patrocinadoresDisponiveis.find(p => p.value === patrocinadorId)}
+                        unstyled
+                        isClearable
+                        onChange={(selectedOption) => setPatrocinadorId(selectedOption ? selectedOption.value : "")}
+                        placeholder="Selecione um patrocinador"
                         classNames={{
                             control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
                             menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",

@@ -8,32 +8,33 @@ import {
     PhoneIcon,
     UserIcon
 } from "@phosphor-icons/react";
+import { formatCep, formatCnpj, formatCpf, formatInscricaoEstadual, formatPhone } from "../utils/formatters";
 
-const PatrocinadorForm = ({ setObjeto, setEtapa }) => {
-    const [tipo, setTipo] = useState("PJ"); // PJ ou PF
+const PatrocinadorForm = ({ setObjeto, setEtapa, objeto = {} }) => {
+    const [tipo, setTipo] = useState(objeto.tipo || "PJ"); // PJ ou PF
     
     // PJ fields
-    const [razaoSocial, setRazaoSocial] = useState("");
-    const [nomeFantasia, setNomeFantasia] = useState("");
-    const [cnpj, setCnpj] = useState("");
-    const [inscricaoEstadual, setInscricaoEstadual] = useState("");
+    const [razaoSocial, setRazaoSocial] = useState(objeto.razaoSocial || "");
+    const [nomeFantasia, setNomeFantasia] = useState(objeto.nomeFantasia || "");
+    const [cnpj, setCnpj] = useState(formatCnpj(objeto.cnpj || ""));
+    const [inscricaoEstadual, setInscricaoEstadual] = useState(formatInscricaoEstadual(objeto.inscricaoEstadual || ""));
 
     // PF fields
-    const [nomeCompleto, setNomeCompleto] = useState("");
-    const [cpf, setCpf] = useState("");
+    const [nomeCompleto, setNomeCompleto] = useState(objeto.nomeCompleto || "");
+    const [cpf, setCpf] = useState(formatCpf(objeto.cpf || ""));
 
     // Common fields
-    const [telefone, setTelefone] = useState("");
-    const [email, setEmail] = useState("");
-    const [nomeResponsavel, setNomeResponsavel] = useState("");
-    const [logradouro, setLogradouro] = useState("");
-    const [numero, setNumero] = useState("");
-    const [complemento, setComplemento] = useState("");
-    const [bairro, setBairro] = useState("");
-    const [cep, setCep] = useState("");
-    const [cidade, setCidade] = useState("");
-    const [uf, setUf] = useState("");
-    const [linkedin, setLinkedin] = useState("");
+    const [telefone, setTelefone] = useState(formatPhone(objeto.telefone || ""));
+    const [email, setEmail] = useState(objeto.email || "");
+    const [nomeResponsavel, setNomeResponsavel] = useState(objeto.nomeResponsavel || "");
+    const [logradouro, setLogradouro] = useState(objeto.logradouro || "");
+    const [numero, setNumero] = useState(objeto.numero || "");
+    const [complemento, setComplemento] = useState(objeto.complemento || "");
+    const [bairro, setBairro] = useState(objeto.bairro || "");
+    const [cep, setCep] = useState(formatCep(objeto.cep || ""));
+    const [cidade, setCidade] = useState(objeto.cidade || "");
+    const [uf, setUf] = useState(objeto.uf || "");
+    const [linkedin, setLinkedin] = useState(objeto.linkedin || "");
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -97,10 +98,10 @@ const PatrocinadorForm = ({ setObjeto, setEtapa }) => {
                             <input type="text" className={inputClass} placeholder="Nome comercial" value={nomeFantasia} onChange={(e) => setNomeFantasia(e.target.value)} />
                         </Field>
                         <Field label="CNPJ*">
-                            <input required type="text" className={inputClass} placeholder="00.000.000/0000-00" value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                            <input required type="text" inputMode="numeric" maxLength={18} className={inputClass} placeholder="00.000.000/0000-00" value={cnpj} onChange={(e) => setCnpj(formatCnpj(e.target.value))} />
                         </Field>
                         <Field label="Inscrição Estadual" optional>
-                            <input type="text" className={inputClass} placeholder="Inscrição estadual" value={inscricaoEstadual} onChange={(e) => setInscricaoEstadual(e.target.value)} />
+                            <input type="text" inputMode="numeric" maxLength={15} className={inputClass} placeholder="000.000.000.000" value={inscricaoEstadual} onChange={(e) => setInscricaoEstadual(formatInscricaoEstadual(e.target.value))} />
                         </Field>
                     </div>
                 ) : (
@@ -109,7 +110,7 @@ const PatrocinadorForm = ({ setObjeto, setEtapa }) => {
                             <input required type="text" className={inputClass} placeholder="Nome do patrocinador" value={nomeCompleto} onChange={(e) => setNomeCompleto(e.target.value)} />
                         </Field>
                         <Field label="CPF*">
-                            <input required type="text" className={inputClass} placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                            <input required type="text" inputMode="numeric" maxLength={14} className={inputClass} placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} />
                         </Field>
                     </div>
                 )}
@@ -118,7 +119,7 @@ const PatrocinadorForm = ({ setObjeto, setEtapa }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field label="Telefone*">
-                        <input required type="text" className={inputClass} placeholder="(11) 99999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                        <input required type="text" inputMode="numeric" maxLength={15} className={inputClass} placeholder="(11) 99999-9999" value={telefone} onChange={(e) => setTelefone(formatPhone(e.target.value))} />
                     </Field>
                     <Field label="E-mail*">
                         <input required type="email" className={inputClass} placeholder="contato@empresa.com" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -138,7 +139,7 @@ const PatrocinadorForm = ({ setObjeto, setEtapa }) => {
                         <input required type="text" className={inputClass} placeholder="Nº" value={numero} onChange={(e) => setNumero(e.target.value)} />
                     </Field>
                     <Field label="CEP*">
-                        <input required type="text" className={inputClass} placeholder="00000-000" value={cep} onChange={(e) => setCep(e.target.value)} />
+                        <input required type="text" inputMode="numeric" maxLength={9} className={inputClass} placeholder="00000-000" value={cep} onChange={(e) => setCep(formatCep(e.target.value))} />
                     </Field>
                     <Field label="Bairro*">
                         <input required type="text" className={inputClass} placeholder="Bairro" value={bairro} onChange={(e) => setBairro(e.target.value)} />

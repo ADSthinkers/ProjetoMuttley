@@ -1,7 +1,31 @@
 import { useState, useEffect, useMemo } from "react";
-import { X as XIcon } from "@phosphor-icons/react";
 import Select from 'react-select';
 import axios from 'axios';
+
+const modalidades = [
+    { value: "PRESENCIAL", label: "Presencial" },
+    { value: "ONLINE", label: "Online" },
+    { value: "HIBRIDO", label: "Híbrido" }
+];
+
+const tiposPalestra = [
+    "PALESTRA", "WORKSHOP", "CURSO", "SEMINARIO", "CONGRESSO",
+    "SEMANA_ACADEMICA", "TREINAMENTO", "EXTENSAO", "HACKATHON",
+    "PROJETO", "MONITORIA", "ORGANIZACAO"
+].map((tipo) => ({ value: tipo, label: formatarEnum(tipo) }));
+
+function formatarEnum(value) {
+    if (!value) return "";
+    return value.toLowerCase().replaceAll("_", " ").replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
+}
+
+const formatPatrocinadorLabel = (patrocinador) => (
+    patrocinador.nomeFantasia ||
+    patrocinador.razaoSocial ||
+    patrocinador.nomeCompleto ||
+    patrocinador.email ||
+    `Patrocinador #${patrocinador.id}`
+);
 
 const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -27,24 +51,35 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const [data, setData] = useState(objeto?.data || "");
     const [inicio, setInicio] = useState(objeto?.inicio ? objeto.inicio.split('T')[1].substring(0,5) : "");
     const [fim, setFim] = useState(objeto?.fim ? objeto.fim.split('T')[1].substring(0,5) : "");
+    const [tipo, setTipo] = useState(objeto?.tipo || "");
+    const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
+    const [vagas, setVagas] = useState(objeto?.vagas || "");
+    const [banner, setBanner] = useState(objeto?.banner || "");
+    const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
+    const [formError, setFormError] = useState("");
 
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
+    const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [compRes, palRes, eveRes] = await Promise.all([
+                const [compRes, palRes, eveRes, patrocinadoresRes] = await Promise.all([
                     api.get('/competencias'),
                     api.get('/palestrantes'),
-                    api.get('/eventos')
+                    api.get('/eventos'),
+                    api.get('/patrocinadores')
                 ]);
 
                 setCompetenciasDisponiveis(compRes.data.map(c => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palRes.data.map(p => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eveRes.data.map(e => ({ value: e.id, label: e.titulo, date: e.dataInicio })));
+                setPatrocinadoresDisponiveis(
+                    patrocinadoresRes.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
+                );
             } catch (error) {
                 console.error("Erro ao buscar dados para o formulário:", error);
             } finally {
@@ -56,6 +91,23 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (palestranteIds.length === 0) {
+            setFormError("Selecione pelo menos um palestrante.");
+            return;
+        }
+
+        if (competenciaIds.length === 0) {
+            setFormError("Selecione pelo menos uma competência.");
+            return;
+        }
+
+        if (!eventoId) {
+            setFormError("Selecione um evento para cadastrar a palestra.");
+            return;
+        }
+
+        setFormError("");
         
         // Combinando data com horários para LocalDateTime esperado no back
         const startDateTime = `${data}T${inicio}:00`;
@@ -70,10 +122,15 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
             competenciaIds, // IDs
             competencias, // Nomes para exibição na revisão
             evento, // Nome
-            eventoId: eventoId || null, // ID opcional
+            eventoId: eventoId || null,
             data,
             inicio: startDateTime,
-            fim: endDateTime
+            fim: endDateTime,
+            tipo: tipo || null,
+            modalidade: modalidade || null,
+            vagas: vagas ? Number(vagas) : null,
+            banner,
+            patrocinadorId: patrocinadorId || null
         });
         setEtapa(3);
     }
@@ -92,6 +149,59 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                         <textarea className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 min-h-30 text-sm" value={descricao} onChange={(e) => {setDescricao(e.target.value);}} required/>
                     </div>
         
+                    <div className="divider divider-primary opacity-50 text-sm font-secondary text-primary">Classificação</div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Field label="Tipo">
+                            <Select
+                                isLoading={loading}
+                                options={tiposPalestra}
+                                value={tiposPalestra.find(t => t.value === tipo)}
+                                unstyled
+                                isClearable
+                                onChange={(selectedOption) => setTipo(selectedOption ? selectedOption.value : "")}
+                                placeholder="Selecione o tipo"
+                                classNames={selectClasses}
+                            />
+                        </Field>
+
+                        <Field label="Modalidade">
+                            <Select
+                                isLoading={loading}
+                                options={modalidades}
+                                value={modalidades.find(m => m.value === modalidade)}
+                                unstyled
+                                isClearable
+                                onChange={(selectedOption) => setModalidade(selectedOption ? selectedOption.value : "")}
+                                placeholder="Selecione a modalidade"
+                                classNames={selectClasses}
+                            />
+                        </Field>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Field label="Vagas">
+                            <input
+                                min="0"
+                                type="number"
+                                className={inputClass}
+                                placeholder="Quantidade de vagas"
+                                value={vagas}
+                                onChange={(e) => setVagas(e.target.value)}
+                            />
+                        </Field>
+
+                        <Field label="Banner">
+                            <input
+                                type="url"
+                                className={inputClass}
+                                placeholder="https://site.com/imagem.jpg"
+                                value={banner}
+                                onChange={(e) => setBanner(e.target.value)}
+                            />
+                        </Field>
+                    </div>
+
                     <div className="divider divider-primary opacity-50 text-sm font-secondary text-primary">Palestrantes e competências</div>
         
                     {/* Palestrantes */}
@@ -109,6 +219,7 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                                 const apenasIds = opcoes.map(option => option.value);
                                 setPalestrantes(apenasNomes);
                                 setPalestranteIds(apenasIds);
+                                setFormError("");
                             }}
                             placeholder="Selecione os palestrantes"
                             classNames={{
@@ -133,10 +244,12 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                             value={competenciasDisponiveis.filter(c => competenciaIds.includes(c.value))}
                             unstyled
                             onChange={(selectedOptions) => {
-                                const apenasNomes = selectedOptions.map(option => option.label);
-                                const apenasIds = selectedOptions.map(option => option.value);
+                                const opcoes = selectedOptions || [];
+                                const apenasNomes = opcoes.map(option => option.label);
+                                const apenasIds = opcoes.map(option => option.value);
                                 setCompetencias(apenasNomes);
                                 setCompetenciaIds(apenasIds);
+                                setFormError("");
                             }}
                             placeholder="Selecione as competências"
                             classNames={{
@@ -155,7 +268,7 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
         
                     {/* Evento */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-base font-secondary font-semibold text-primary">Evento</label>
+                        <label className="text-base font-secondary font-semibold text-primary">Evento*</label>
                         <Select
                             isLoading={loading}
                             options={eventosDisponiveis}
@@ -165,17 +278,27 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                             onChange={(selectedOption) => {
                                 setEvento(selectedOption ? selectedOption.label : "");
                                 setEventoId(selectedOption ? selectedOption.value : "");
+                                setFormError("");
                                 if (selectedOption && selectedOption.date) {
                                     setData(selectedOption.date);
                                 }
                             }}
                             placeholder="Selecione um evento"
-                            classNames={{
-                                control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
-                                menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
-                                placeholder: () => "text-primary/75 font-secondary text-sm",
-                                option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
-                            }}
+                            classNames={selectClasses}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-base font-secondary font-semibold text-primary">Patrocinador</label>
+                        <Select
+                            isLoading={loading}
+                            options={patrocinadoresDisponiveis}
+                            value={patrocinadoresDisponiveis.find(p => p.value === patrocinadorId)}
+                            unstyled
+                            isClearable
+                            onChange={(selectedOption) => setPatrocinadorId(selectedOption ? selectedOption.value : "")}
+                            placeholder="Selecione um patrocinador"
+                            classNames={selectClasses}
                         />
                     </div>
         
@@ -198,10 +321,36 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                             <input type="time" className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" onChange={(e) => {setFim(e.target.value);}} value={fim} required/>
                         </div>
                     </div>
+
+                    {formError && (
+                        <div className="p-4 rounded-xl bg-error/10 border border-error/20 text-error text-sm font-secondary">
+                            {formError}
+                        </div>
+                    )}
         
                     <button type="submit" className={`w-full text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl cursor-pointer shadow-lg shadow-accent/10`}>Revisar</button>
             </form>
     );
 };
+
+const inputClass = "w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm";
+
+const selectClasses = {
+    control: () => "basic-multi-select bg-accent/30 px-4 py-2 min-h-15 border border-accent/20 rounded-xl text-primary text-sm",
+    multiValue: () => "bg-accent/30 rounded-full px-2 py-1 m-1 flex items-center text-primary font-secondary text-sm",
+    multiValueRemove: () => "hover:bg-accent/50 rounded-full ml-1 p-1 transition-colors",
+    menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+    placeholder: () => "text-primary/75 font-secondary text-sm",
+    option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
+};
+
+const Field = ({ label, children }) => (
+    <div className="flex flex-col gap-2">
+        <label className="text-base font-secondary font-semibold text-primary">
+            {label} <span className="font-normal text-primary/40">(opcional)</span>
+        </label>
+        {children}
+    </div>
+);
 
 export default PalestraForm;

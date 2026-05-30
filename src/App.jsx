@@ -10,15 +10,24 @@ import Buscar from "./pages/Buscar.jsx";
 import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
 import EventoDetalhe from "./pages/EventoDetalhe.jsx";
 import Novo from "./pages/Novo.jsx";
+import Configuracoes from "./pages/Configuracoes.jsx";
 import PerfilParticipante from "./pages/PerfilParticipante.jsx";
 import Palestrantes from "./pages/Palestrantes.jsx";
 import PerfilPalestrante from "./pages/PerfilPalestrante.jsx";
 import QrCode from "./pages/QrCode.jsx";
+import Locais from "./pages/Locais.jsx";
+import LocalDetalhe from "./pages/LocalDetalhe.jsx";
+import Patrocinadores from "./pages/Patrocinadores.jsx";
+import PatrocinadorDetalhe from "./pages/PatrocinadorDetalhe.jsx";
 import { useLocation } from "react-router-dom";
-import { isAuthenticated } from "./utils/auth.js";
+import { isAdmin, isAuthenticated } from "./utils/auth.js";
 
 const PrivateRoute = ({ children }) => (
   isAuthenticated() ? children : <Navigate to="/" replace />
+);
+
+const AdminRoute = ({ children }) => (
+  isAuthenticated() && isAdmin() ? children : <Navigate to="/home" replace />
 );
 
 
@@ -39,11 +48,16 @@ function App() {
           <Route path="/perfil" element={<PrivateRoute><PerfilParticipante /></PrivateRoute>} />
           <Route path="/palestrantes" element={<PrivateRoute><Palestrantes /></PrivateRoute>} />
           <Route path="/palestrante/:id" element={<PrivateRoute><PerfilPalestrante /></PrivateRoute>} />
+          <Route path="/locais" element={<PrivateRoute><Locais /></PrivateRoute>} />
+          <Route path="/local/:idLocal" element={<PrivateRoute><LocalDetalhe /></PrivateRoute>} />
+          <Route path="/patrocinadores" element={<PrivateRoute><Patrocinadores /></PrivateRoute>} />
+          <Route path="/patrocinador/:idPat" element={<PrivateRoute><PatrocinadorDetalhe /></PrivateRoute>} />
           <Route path="/evento-palestra" element={<PrivateRoute><EventoPalestra /></PrivateRoute>} />
           <Route path="/palestra/:idPal" element={<PrivateRoute><PalestraDetalhe /></PrivateRoute>} />
           <Route path="/evento/:idEvento" element={<PrivateRoute><EventoDetalhe /></PrivateRoute>} />
           <Route path="/buscar" element={<PrivateRoute><Buscar /></PrivateRoute>} />
           <Route path="/novo" element={<PrivateRoute><Novo /></PrivateRoute>} />
+          <Route path="/config" element={<AdminRoute><Configuracoes /></AdminRoute>} />
         </Routes>
       </AnimatePresence>
   )

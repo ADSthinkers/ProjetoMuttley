@@ -16,4 +16,17 @@ export const getAuthCookie = () => {
         ?.split("=")[1];
 };
 
+export const getAuthUser = () => {
+    const value = getAuthCookie();
+    if (!value) return null;
+
+    try {
+        return JSON.parse(decodeURIComponent(value));
+    } catch {
+        return null;
+    }
+};
+
+export const isAdmin = () => getAuthUser()?.role === "ADMIN";
+
 export const isAuthenticated = () => Boolean(getAuthCookie());

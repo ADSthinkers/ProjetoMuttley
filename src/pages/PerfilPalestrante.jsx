@@ -7,9 +7,14 @@ import {
     EnvelopeIcon, 
     GraduationCapIcon, 
     BriefcaseIcon,
-    CalendarIcon
+    CalendarIcon,
+    BuildingsIcon,
+    ImageSquareIcon,
+    LinkedinLogoIcon,
+    TargetIcon
 } from "@phosphor-icons/react";
 import Avatar from "../utils/Avatar";
+import { formatCpf } from "../utils/formatters";
 import { useParams } from "react-router-dom";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion, AnimatePresence } from "framer-motion"
@@ -92,6 +97,8 @@ const PerfilPalestrante = () => {
 
     if (!palestrante) return null;
 
+    const fotoPerfil = palestrante.foto?.trim();
+
     return (
         <PageTransition>
             <div className="flex bg-base-100 min-h-screen">
@@ -104,9 +111,13 @@ const PerfilPalestrante = () => {
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="w-24 h-24 rounded-full border-4 border-accent shadow-lg flex-shrink-0 z-10"
+                            className="w-24 h-24 rounded-full border-4 border-accent shadow-lg flex-shrink-0 z-10 overflow-hidden bg-accent/20"
                         >
-                            <Avatar email={palestrante.email} nome={palestrante.nome} className="w-full h-full rounded-full" />
+                            {fotoPerfil ? (
+                                <img src={fotoPerfil} alt={`Foto de ${palestrante.nome}`} className="w-full h-full object-cover" />
+                            ) : (
+                                <Avatar email={palestrante.email} nome={palestrante.nome} className="w-full h-full rounded-full" />
+                            )}
                         </motion.div>
                         <div className="flex flex-col z-10">
                             <div className="flex items-center gap-3">
@@ -120,7 +131,9 @@ const PerfilPalestrante = () => {
                                     Especialista
                                 </motion.div>
                             </div>
-                            <p className="text-primary/60 font-secondary mt-1">{palestrante.especialidade || "Palestrante Convidado"}</p>
+                            <p className="text-primary/60 font-secondary mt-1">
+                                {palestrante.areaAtuacao || palestrante.instituicao || "Palestrante Convidado"}
+                            </p>
                         </div>
                         <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-colors" />
                     </motion.div>
@@ -160,8 +173,12 @@ const PerfilPalestrante = () => {
                                 {activeTab === "dados" && (
                                     <div className="flex flex-col gap-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <InfoCard icon={<IdentificationCardIcon size={24} />} label="CPF" value={palestrante.cpf} index={0} />
+                                            <InfoCard icon={<IdentificationCardIcon size={24} />} label="CPF" value={formatCpf(palestrante.cpf || "") || "Não informado"} index={0} />
                                             <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail Profissional" value={palestrante.email} index={1} />
+                                            <InfoCard icon={<TargetIcon size={24} />} label="Área de atuação" value={palestrante.areaAtuacao} index={2} />
+                                            <InfoCard icon={<BuildingsIcon size={24} />} label="Instituição" value={palestrante.instituicao} index={3} />
+                                            <InfoCard icon={<LinkedinLogoIcon size={24} />} label="LinkedIn" value={palestrante.linkedin} index={4} />
+                                            <InfoCard icon={<ImageSquareIcon size={24} />} label="Foto" value={palestrante.foto} index={5} />
                                         </div>
 
                                         <motion.div 
@@ -181,9 +198,9 @@ const PerfilPalestrante = () => {
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center gap-2 text-primary font-primary font-bold text-xl">
                                                     <BriefcaseIcon size={24} weight="bold" />
-                                                    Biografia Profissional
+                                                    Mini currículo
                                                 </div>
-                                                <p className="text-primary/80 font-secondary leading-relaxed ml-8">{palestrante.biografia || "Sem biografia disponível."}</p>
+                                                <p className="text-primary/80 font-secondary leading-relaxed ml-8">{palestrante.miniCurriculo || "Sem mini currículo disponível."}</p>
                                             </div>
                                         </motion.div>
                                     </div>
@@ -245,7 +262,7 @@ const InfoCard = ({ icon, label, value, index }) => (
         </div>
         <div className="flex flex-col">
             <span className="text-xs font-secondary text-primary/50 uppercase tracking-wider">{label}</span>
-            <span className="text-lg font-primary font-bold text-primary">{value}</span>
+            <span className="text-lg font-primary font-bold text-primary break-words">{value || "Não informado"}</span>
         </div>
     </motion.div>
 );
