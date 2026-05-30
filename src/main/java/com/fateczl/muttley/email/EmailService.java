@@ -29,15 +29,16 @@ public class EmailService {
 
         try {
             String validationUrl = baseUrl + "/certificado/validar/" + cert.getCodigoValidacao();
+            String downloadUrl = baseUrl + "/certificado/validar/" + cert.getCodigoValidacao() + "/pdf";
             String linkedinUrl = buildLinkedInUrl(cert, validationUrl);
             boolean isApresentacao = cert.getTipo() == TipoCertificado.APRESENTACAO;
             String tipoCert = isApresentacao ? "Apresentação" : "Participação";
             String nomePalestra = cert.getPalestra() != null ? cert.getPalestra().getTitulo() : "Atividade";
             String orgName = resolverOrganizacao(cert);
 
-            String assunto = "Seu Certificado de " + tipoCert + " — " + nomePalestra;
+            String assunto = "Seu Certificado: " + nomePalestra;
             String corpo = buildHtmlEmail(cert.getNomeTitular(), nomePalestra, tipoCert,
-                    validationUrl, linkedinUrl, cert.getCodigoValidacao(), orgName);
+                    validationUrl, downloadUrl, linkedinUrl, cert.getCodigoValidacao(), orgName);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -83,50 +84,90 @@ public class EmailService {
     }
 
     private String buildHtmlEmail(String nome, String palestra, String tipo,
-                                   String validationUrl, String linkedinUrl,
+                                   String validationUrl, String downloadUrl, String linkedinUrl,
                                    String codigo, String organizacao) {
         return """
                 <!DOCTYPE html>
                 <html lang="pt-br">
-                <head><meta charset="UTF-8"></head>
-                <body style="font-family:'Segoe UI',sans-serif;background:#f0f2f5;padding:30px;margin:0;">
-                  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;
-                              padding:2.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-
-                    <h2 style="color:#007bff;margin-bottom:0.3rem;">Certificado de %s</h2>
-                    <p style="color:#555;margin-top:0;">%s</p>
-
-                    <p style="font-size:1rem;color:#333;">Olá, <strong>%s</strong>!</p>
-                    <p style="color:#555;">
-                      Seu certificado de <strong>%s</strong> na atividade
-                      <strong>%s</strong> está disponível em anexo neste e-mail.
-                    </p>
-
-                    <div style="background:#f8f9fa;border-radius:8px;padding:1rem;margin:1.5rem 0;">
-                      <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#888;font-weight:600;
-                                text-transform:uppercase;">Código de Validação</p>
-                      <p style="margin:0;font-family:monospace;color:#0056b3;font-size:0.9rem;">%s</p>
-                      <p style="margin:0.5rem 0 0;font-size:0.82rem;">
-                        <a href="%s" style="color:#007bff;">Validar certificado online</a>
-                      </p>
-                    </div>
-
-                    <div style="text-align:center;margin:1.5rem 0;">
-                      <a href="%s"
-                         style="display:inline-block;background:#0077b5;color:#fff;
-                                padding:0.75rem 1.8rem;border-radius:8px;text-decoration:none;
-                                font-weight:600;font-size:0.95rem;">
-                        &#128241; Adicionar ao LinkedIn
-                      </a>
-                      <p style="font-size:0.78rem;color:#aaa;margin-top:0.5rem;">
-                        Emitido por %s
-                      </p>
-                    </div>
-
-                  </div>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #FEFDF6; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%%">
+                        <tr>
+                            <td align="center" style="padding: 40px 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(19, 17, 0, 0.05); border: 1px solid rgba(19, 17, 0, 0.05);">
+                                    <!-- Header -->
+                                    <tr>
+                                        <td align="center" style="padding: 40px 40px 20px 40px;">
+                                            <div style="background-color: #FCD160; width: 60px; height: 60px; border-radius: 16px; display: inline-block; line-height: 60px; text-align: center; margin-bottom: 20px;">
+                                                <span style="font-size: 32px; font-weight: bold; color: #131100;">M</span>
+                                            </div>
+                                            <h1 style="margin: 0; color: #131100; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Seu Certificado Chegou!</h1>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td style="padding: 0 40px 40px 40px;">
+                                            <p style="margin: 0 0 20px 0; color: #131100; font-size: 18px; line-height: 1.6;">Olá, <strong>%s</strong>!</p>
+                                            <p style="margin: 0 0 30px 0; color: rgba(19, 17, 0, 0.7); font-size: 16px; line-height: 1.6;">
+                                                Parabéns por concluir sua atividade. Seu certificado de <strong>%s</strong> em <strong>%s</strong> já está pronto e disponível.
+                                            </p>
+                                            
+                                            <!-- Download Box -->
+                                            <table border="0" cellpadding="0" cellspacing="0" width="100%%" style="background-color: rgba(252, 209, 96, 0.1); border-radius: 20px; border: 1px dashed #FCD160;">
+                                                <tr>
+                                                    <td style="padding: 30px; text-align: center;">
+                                                        <a href="%s" style="display: inline-block; background-color: #FCD160; color: #131100; padding: 16px 32px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 16px; transition: all 0.2s ease;">
+                                                            Download do Certificado (PDF)
+                                                        </a>
+                                                        <p style="margin: 15px 0 0 0; color: rgba(19, 17, 0, 0.5); font-size: 13px;">Também enviamos uma cópia em anexo.</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Additional Info -->
+                                            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(19, 17, 0, 0.08);">
+                                                <div style="margin-bottom: 25px;">
+                                                    <p style="margin: 0 0 5px 0; font-size: 12px; font-weight: 700; color: rgba(19, 17, 0, 0.4); text-transform: uppercase; letter-spacing: 1px;">Código de Autenticidade</p>
+                                                    <p style="margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 16px; color: #131100; font-weight: 700; background: #f7f7f8; padding: 10px 15px; border-radius: 8px; display: inline-block;">%s</p>
+                                                </div>
+                                                
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%%">
+                                                    <tr>
+                                                        <td style="padding-bottom: 10px;">
+                                                            <a href="%s" style="color: #131100; text-decoration: underline; font-size: 14px; font-weight: 600;">Validar autenticidade online</a>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="%s" style="display: inline-block; background-color: #0077b5; color: #ffffff; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; margin-top: 10px;">
+                                                                Compartilhar no LinkedIn
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="padding: 30px 40px; background-color: #f7f7f8; text-align: center;">
+                                            <p style="margin: 0; color: rgba(19, 17, 0, 0.4); font-size: 12px; line-height: 1.5;">
+                                                Este certificado foi emitido por <strong>%s</strong>.<br>
+                                                Muttley Hopes and Prayers &copy; 2026
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </body>
                 </html>
-                """.formatted(tipo, palestra, nome, tipo, palestra, codigo,
-                validationUrl, linkedinUrl, organizacao);
+                """.formatted(nome, tipo, palestra, downloadUrl, codigo, validationUrl, linkedinUrl, organizacao);
     }
 }

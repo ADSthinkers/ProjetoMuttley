@@ -27,7 +27,7 @@ public class PalestranteApiController {
     }
 
     // busca um palestrante pelo seu identificador
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<PalestranteDTO> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id).map(mapper::toAtualizacaoDto).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
