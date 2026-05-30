@@ -30,6 +30,7 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios'
 import toast, { Toaster } from 'react-hot-toast';
+import { isAdmin, isPalestrante } from "../utils/auth";
 
 const getApiErrorMessage = (err) => {
     if (!err.response) {
@@ -90,13 +91,17 @@ const Novo = () => {
 
     const categorias = [
         { id: "palestra", label: "Palestra", icon: <LecternIcon size={40} /> },
-        { id: "evento", label: "Evento", icon: <CalendarStarIcon size={40} /> },
+        { id: "evento", label: "Evento", icon: <CalendarStarIcon size={40} />, roles: ["ADMIN"] },
         { id: "participante", label: "Participante", icon: <UsersIcon size={40} /> },
-        { id: "local", label: "Local", icon: <MapPinIcon size={40} /> },
+        { id: "local", label: "Local", icon: <MapPinIcon size={40} />, roles: ["ADMIN"] },
         { id: "palestrante", label: "Palestrante", icon: <MicrophoneStageIcon size={40} /> },
-        { id: "patrocinador", label: "Patrocinador", icon: <HandshakeIcon size={40} /> },
+        { id: "patrocinador", label: "Patrocinador", icon: <HandshakeIcon size={40} />, roles: ["ADMIN"] },
         { id: "competência", label: "Competência", icon: <MedalIcon size={40} /> },
-    ]
+    ].filter(cat => {
+        if (cat.roles && cat.roles.includes("ADMIN") && !isAdmin()) return false;
+        if (cat.id === "evento" && isPalestrante()) return false;
+        return true;
+    })
 
     const handleSelectTipo = (t) => {
         setTipo(t);
@@ -147,7 +152,8 @@ const Novo = () => {
                     endpoint = "/palestras";
                     data = {
                         ...data,
-                        eventoId: data.eventoId || null
+                        eventoId: data.eventoId || null,
+                        status: data.status || "PENDENTE"
                     };
                     break;
                 case "patrocinador":

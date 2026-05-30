@@ -24,6 +24,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
+import { getPalestraStatusLabel, PALESTRA_STATUS } from "../utils/palestraStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -98,7 +99,8 @@ const PalestraDetalhe = () => {
         tipo: "",
         modalidade: "",
         cargaHoraria: "",
-        vagas: ""
+        vagas: "",
+        status: "PENDENTE"
     });
 
     useEffect(() => {
@@ -115,9 +117,10 @@ const PalestraDetalhe = () => {
                 ]);
 
                 const palestra = palRes.data;
+                const status = palestra.status || "PENDENTE";
                 setPalestraData(palestra);
-                setIsConcluido(Boolean(palestra.concluido));
-                setPresencaLancada(Boolean(palestra.presencaLancada));
+                setIsConcluido(status !== "PENDENTE");
+                setPresencaLancada(status === "CERTIFICADOS_EMITIDOS");
                 setCompetenciasDisponiveis(compRes.data.map((c) => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palestrantesRes.data.map((p) => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eventosRes.data.map((e) => ({ value: e.id, label: e.titulo })));
@@ -135,7 +138,8 @@ const PalestraDetalhe = () => {
                     tipo: palestra.tipo || "",
                     modalidade: palestra.modalidade || "",
                     cargaHoraria: palestra.cargaHoraria ?? "",
-                    vagas: palestra.vagas ?? ""
+                    vagas: palestra.vagas ?? "",
+                    status: palestra.status || "PENDENTE"
                 });
             } catch (err) {
                 console.error("Erro ao buscar palestra:", err);
@@ -161,7 +165,8 @@ const PalestraDetalhe = () => {
             form.tipo !== (palestraData.tipo || "") ||
             form.modalidade !== (palestraData.modalidade || "") ||
             String(form.cargaHoraria) !== String(palestraData.cargaHoraria ?? "") ||
-            String(form.vagas) !== String(palestraData.vagas ?? "");
+            String(form.vagas) !== String(palestraData.vagas ?? "") ||
+            form.status !== (palestraData.status || "PENDENTE");
     }, [form, palestraData]);
 
     const competenciaNomes = competenciasDisponiveis.filter((c) => (palestraData?.competenciaIds || []).includes(c.value)).map((c) => c.label);
@@ -208,12 +213,16 @@ const PalestraDetalhe = () => {
             tipo: form.tipo || null,
             modalidade: form.modalidade || null,
             cargaHoraria: form.cargaHoraria ? Number(form.cargaHoraria) : null,
-            vagas: form.vagas ? Number(form.vagas) : null
+            vagas: form.vagas ? Number(form.vagas) : null,
+            status: form.status || "PENDENTE"
         };
 
         try {
             const response = await api.put(`/palestras/${idPal}`, payload);
             setPalestraData(response.data);
+            const status = response.data.status || "PENDENTE";
+            setIsConcluido(status !== "PENDENTE");
+            setPresencaLancada(status === "CERTIFICADOS_EMITIDOS");
             setIsEditing(false);
             toast.success("Palestra atualizada com sucesso.");
         } catch (err) {
@@ -254,6 +263,9 @@ const PalestraDetalhe = () => {
             setInscricoesPresenca(inscricoesRes.data);
             setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
             setPresencaLancada(true);
+            setIsConcluido(true);
+            setPalestraData((current) => current ? { ...current, status: "CERTIFICADOS_EMITIDOS" } : current);
+            updateForm("status", "CERTIFICADOS_EMITIDOS");
             toast.success(response.data?.mensagem || "Presença lançada com sucesso.");
             document.getElementById("modal_lancar_presenca").close();
         } catch (err) {
@@ -342,7 +354,7 @@ const PalestraDetalhe = () => {
                             <SummaryPill icon={<CalendarIcon size={18} />} label="Data" value={formatarData(palestraData?.inicio)} />
                             <SummaryPill icon={<ClockIcon size={18} />} label="Horário" value={`${formatarHora(palestraData?.inicio)} - ${formatarHora(palestraData?.fim)}`} />
                             <SummaryPill icon={<UserIcon size={18} />} label="Palestrantes" value={palestranteNomes.join(", ") || "-"} />
-                            <SummaryPill icon={<CheckCircleIcon size={18} />} label="Status" value={isConcluido ? "Concluída" : "Aberta"} />
+                            <SummaryPill icon={<CheckCircleIcon size={18} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
                         </div>
                     </motion.div>
 
@@ -542,6 +554,9 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
             <Field label="Modalidade" optional>
                 <Select options={modalidades} value={modalidades.find((m) => m.value === form.modalidade)} unstyled isClearable onChange={(option) => updateForm("modalidade", option ? option.value : "")} placeholder="Selecione uma modalidade" classNames={selectClasses} />
             </Field>
+            <Field label="Status">
+                <Select options={PALESTRA_STATUS} value={PALESTRA_STATUS.find((s) => s.value === form.status)} unstyled onChange={(option) => updateForm("status", option ? option.value : "PENDENTE")} placeholder="Selecione um status" classNames={selectClasses} />
+            </Field>
             <Field label="Data*">
                 <input required type="date" className={inputClass} value={form.data} onChange={(e) => updateForm("data", e.target.value)} />
             </Field>
@@ -587,6 +602,7 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
             <SectionTitle title="Operação" />
             <div className="grid grid-cols-1 gap-4">
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarEnum(palestraData?.modalidade)} />
+                <DetailCard icon={<CheckCircleIcon size={24} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
                 <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={palestraData?.cargaHoraria ? `${palestraData.cargaHoraria}h` : "-"} />
                 <DetailCard icon={<UsersIcon size={24} />} label="Vagas" value={palestraData?.vagas} />
                 <DetailCard icon={<QrCodeIcon size={24} />} label="Token QR" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />

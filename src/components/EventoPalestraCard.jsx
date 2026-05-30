@@ -1,6 +1,7 @@
 import Textura from "../assets/textura.webp"
 import { LecternIcon, CalendarStarIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { useNavigate } from "react-router-dom";
+import { getPalestraStatusBadgeClass, getPalestraStatusLabel } from "../utils/palestraStatus";
 
 
 /**
@@ -28,6 +29,16 @@ const Badge = ({ tipo }) => (
     </span>
 )
 
+const StatusBadge = ({ item }) => {
+    if (item.tipo?.toLowerCase() !== "palestra") return null;
+
+    return (
+        <span className={`px-3 py-1.5 rounded-full w-fit text-xs font-secondary font-medium ${getPalestraStatusBadgeClass(item.status || "PENDENTE")}`}>
+            {getPalestraStatusLabel(item.status)}
+        </span>
+    );
+};
+
 // ── Variante FULL (com imagem) ────────────────────────────────────────────────
 const CardFull = ({ item, navegarItem }) => (
 
@@ -40,7 +51,10 @@ const CardFull = ({ item, navegarItem }) => (
         {/* Conteúdo */}
         <div className="flex flex-col justify-between py-5 px-4 h-50"> 
             {/* 1. Badge fica no topo */}
-            <Badge tipo={item.tipo} />
+            <div className="flex flex-wrap gap-2">
+                <Badge tipo={item.tipo} />
+                <StatusBadge item={item} />
+            </div>
 
             {/* 2. O Título ocupará o espaço central */}
             <h3 className={`font-primary font-bold text-primary leading-snug ${item.titulo.length > 50 ? "text-base" : "text-xl"}`}>
@@ -71,6 +85,7 @@ const CardCompact = ({ item, navegarItem}) => (
                     {formatarData(item.data)}
                 </span>
                 <Badge tipo={item.tipo} />
+                <StatusBadge item={item} />
             </div>
 
             {/* Título + Descrição */}

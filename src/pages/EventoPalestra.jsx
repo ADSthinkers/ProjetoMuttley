@@ -5,6 +5,7 @@ import EventoPalestraCard from "../components/EventoPalestraCard";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion } from "framer-motion"
 import axios from 'axios';
+import { PALESTRA_STATUS } from "../utils/palestraStatus";
 
 const EventoPalestra = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -69,12 +70,11 @@ const EventoPalestra = () => {
     const [filtros, setFiltros] = useState({
         eventos: false,
         palestras: false,
-        pendentes: false,
-        concluidas: false
+        status: {}
     });
 
     const resetarFiltros = () => {
-        setFiltros({ eventos: false, palestras: false, pendentes: false, concluidas: false });
+        setFiltros({ eventos: false, palestras: false, status: {} });
         setBusca("");
     };
 
@@ -90,12 +90,9 @@ const EventoPalestra = () => {
             return true;
         })
         .filter(item => {
-            const filtroStatusAtivo = filtros.pendentes || filtros.concluidas;
-            if (filtroStatusAtivo) {
-                if (filtros.pendentes && item.concluido) return true;
-                if (filtros.concluidas && !item.concluido) return true;
-                return false;
-            }
+            const statusSelecionados = Object.entries(filtros.status).filter(([, ativo]) => ativo).map(([status]) => status);
+            if (statusSelecionados.length > 0 && item.tipo === "Palestra") return statusSelecionados.includes(item.status || "PENDENTE");
+            if (statusSelecionados.length > 0 && item.tipo !== "Palestra") return false;
             return true;
         })
         .sort((a, b) => {
@@ -152,17 +149,18 @@ const EventoPalestra = () => {
                                     Palestras
                                 </label>
 
-                                <label className={`flex-1 btn border-0 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.pendentes ? "bg-accent text-primary font-bold" : "bg-accent/30 text-primary/75"}`}>
-                                    <input type="checkbox" className="hidden" checked={filtros.pendentes} onChange={() => setFiltros(f => ({...f, pendentes: !f.pendentes}))} />
-                                    <ClockIcon size={20} />
-                                    Pendentes
-                                </label>
-
-                                <label className={`flex-1 btn border-0 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.concluidas ? "bg-accent text-primary font-bold" : "bg-accent/30 text-primary/75"}`}>
-                                    <input type="checkbox" className="hidden" checked={filtros.concluidas} onChange={() => setFiltros(f => ({...f, concluidas: !f.concluidas}))}/>
-                                    <CheckCircleIcon size={20} />
-                                    Concluídas
-                                </label>
+                                {PALESTRA_STATUS.map((status) => (
+                                    <label key={status.value} className={`flex-1 btn border-0 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.status[status.value] ? "bg-accent text-primary font-bold" : "bg-accent/30 text-primary/75"}`}>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={Boolean(filtros.status[status.value])}
+                                            onChange={() => setFiltros(f => ({...f, status: {...f.status, [status.value]: !f.status[status.value]}}))}
+                                        />
+                                        {status.value === "PENDENTE" ? <ClockIcon size={20} /> : <CheckCircleIcon size={20} />}
+                                        {status.label}
+                                    </label>
+                                ))}
 
                                 <button onClick={resetarFiltros} className="w-20 btn bg-accent/30 hover:bg-error/20 hover:text-error border-0 text-primary/75 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all">
                                     <XIcon size={20} />

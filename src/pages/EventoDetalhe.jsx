@@ -21,6 +21,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
+import { isAdmin, isPalestrante } from "../utils/auth";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -262,18 +263,20 @@ const EventoDetalhe = () => {
                                 </p>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setActiveTab("detalhes");
-                                    setIsEditing((current) => !current);
-                                }}
-                                className={`btn border-0 rounded-xl shadow-none font-secondary text-primary ${isEditing ? "bg-error/20 hover:bg-error/30" : "bg-accent hover:bg-accent/80"}`}
-                                title={isEditing ? "Cancelar edição" : "Editar evento"}
-                            >
-                                {isEditing ? <XIcon size={20} /> : <PencilSimpleIcon size={20} />}
-                                {isEditing ? "Cancelar" : "Editar"}
-                            </button>
+                            {isAdmin() && !isPalestrante() && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab("detalhes");
+                                        setIsEditing((current) => !current);
+                                    }}
+                                    className={`btn border-0 rounded-xl shadow-none font-secondary text-primary ${isEditing ? "bg-error/20 hover:bg-error/30" : "bg-accent hover:bg-accent/80"}`}
+                                    title={isEditing ? "Cancelar edição" : "Editar evento"}
+                                >
+                                    {isEditing ? <XIcon size={20} /> : <PencilSimpleIcon size={20} />}
+                                    {isEditing ? "Cancelar" : "Editar"}
+                                </button>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -293,14 +296,16 @@ const EventoDetalhe = () => {
                             <InfoIcon size={20} />
                             Detalhes
                         </button>
-                        <button
-                            type="button"
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "acoes" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`}
-                            onClick={() => setActiveTab("acoes")}
-                        >
-                            <SlidersHorizontalIcon size={20} />
-                            Ações
-                        </button>
+                        {isAdmin() && !isPalestrante() && (
+                            <button
+                                type="button"
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "acoes" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`}
+                                onClick={() => setActiveTab("acoes")}
+                            >
+                                <SlidersHorizontalIcon size={20} />
+                                Ações
+                            </button>
+                        )}
                     </motion.div>
 
                     {activeTab === "detalhes" && (

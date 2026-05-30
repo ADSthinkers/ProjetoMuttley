@@ -80,24 +80,28 @@ const Buscar = () => {
 
     const ordens = ["Nome (A-Z)", "Nome (Z-A)"];
 
-    const buscaFiltradas = todosItens
-        .filter(item => {
-            const matchesSearch = item.nome?.toLowerCase().includes(termoBusca.toLowerCase()) || 
-                                 item.titulo?.toLowerCase().includes(termoBusca.toLowerCase()) ||
-                                 item.email?.toLowerCase().includes(termoBusca.toLowerCase()) ||
-                                 item.email2?.toLowerCase().includes(termoBusca.toLowerCase()) ||
-                                 item.cpf?.toLowerCase().includes(termoBusca.toLowerCase()) ||
-                                 item.ra?.toLowerCase().includes(termoBusca.toLowerCase());
-            const matchesType = filtroTipo === "Todos" || item.tipo === filtroTipo;
-            return matchesSearch && matchesType;
-        })
-        .sort((a, b) => {
-            const nomeA = a.nome || a.titulo || "";
-            const nomeB = b.nome || b.titulo || "";
-            if (ordenar === "Nome (A-Z)") return nomeA.localeCompare(nomeB);
-            if (ordenar === "Nome (Z-A)") return nomeB.localeCompare(nomeA);
-            return 0;
-        });
+    const buscaFiltradas = useMemo(() => {
+        if (!termoBusca.trim()) return [];
+
+        return todosItens
+            .filter(item => {
+                const matchesSearch = item.nome?.toLowerCase().includes(termoBusca.toLowerCase()) || 
+                                     item.titulo?.toLowerCase().includes(termoBusca.toLowerCase()) ||
+                                     item.email?.toLowerCase().includes(termoBusca.toLowerCase()) ||
+                                     item.email2?.toLowerCase().includes(termoBusca.toLowerCase()) ||
+                                     item.cpf?.toLowerCase().includes(termoBusca.toLowerCase()) ||
+                                     item.ra?.toLowerCase().includes(termoBusca.toLowerCase());
+                const matchesType = filtroTipo === "Todos" || item.tipo === filtroTipo;
+                return matchesSearch && matchesType;
+            })
+            .sort((a, b) => {
+                const nomeA = a.nome || a.titulo || "";
+                const nomeB = b.nome || b.titulo || "";
+                if (ordenar === "Nome (A-Z)") return nomeA.localeCompare(nomeB);
+                if (ordenar === "Nome (Z-A)") return nomeB.localeCompare(nomeA);
+                return 0;
+            });
+    }, [termoBusca, todosItens, filtroTipo, ordenar]);
 
     const handleReset = () => {
         setFiltroTipo("Todos");

@@ -1,16 +1,26 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MuttleyLogo from "../assets/muttley_logo.svg"
 import MuttleyLogoRed from "../assets/muttley_logo_red.svg"
 import { motion, AnimatePresence } from "framer-motion"
-import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarSimpleIcon, UserIcon, MicrophoneStageIcon, MapPinIcon, BuildingsIcon } from "@phosphor-icons/react"
-import { clearAuthCookie, isAdmin } from "../utils/auth";
+import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarSimpleIcon, UserIcon, MicrophoneStageIcon, MapPinIcon, BuildingsIcon, SunIcon, MoonIcon } from "@phosphor-icons/react"
+import { clearAuthCookie, isAdmin, isPalestrante } from "../utils/auth";
 
 const Sidebar = ({ className, compact }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const largura = window.innerWidth > 1200
     const [isExpanded, setIsExpanded] = useState(compact ? false : largura);
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === "light" ? "dark" : "light");
+    };
 
     const navegarPara = (link) => {
         if (link === "/logout") {
@@ -26,18 +36,18 @@ const Sidebar = ({ className, compact }) => {
         {"nome": "Eventos e Palestras", "icone": <BookOpenIcon size={28} weight="light" />, "link": "/evento-palestra"},
         {"nome": "Participantes", "icone": <UsersIcon size={28} weight="light" />, "link": "/participantes"},
         {"nome": "Palestrantes", "icone": <MicrophoneStageIcon size={28} weight="light" />, "link": "/palestrantes"},
-        {"nome": "Locais", "icone": <MapPinIcon size={28} weight="light" />, "link": "/locais"},
-        {"nome": "Patrocinadores", "icone": <BuildingsIcon size={28} weight="light" />, "link": "/patrocinadores"},
+        {"nome": "Locais", "icone": <MapPinIcon size={28} weight="light" />, "link": "/locais", adminOnly: true},
+        {"nome": "Patrocinadores", "icone": <BuildingsIcon size={28} weight="light" />, "link": "/patrocinadores", adminOnly: true},
         {"nome": "Competências", "icone": <MedalIcon size={28} weight="light" />, "link": "/competencias"},
         {"nome": "Buscar", "icone": <MagnifyingGlassIcon size={28} weight="light" />, "link": "/buscar"},
-        {"nome": "Meu Perfil", "icone": <UserIcon size={28} weight="light" />, "link": "/perfil"},
         {"nome": "Novo", "icone": <PlusIcon size={28} weight="light" />, "link": "/novo"},
-    ]
+    ].filter(item => !item.adminOnly || isAdmin())
 
     const entradasMenuBaixo = [
+        {"nome": "Meu Perfil", "icone": <UserIcon size={28} weight="light" />, "link": "/perfil"},
         {"nome": "Configurações", "icone": <GearIcon size={28} weight="light" />, "link": "/config"},
         {"nome": "Sair", "icone": <SignOutIcon size={28} weight="light" />, "link": "/logout", "danger": true}
-    ].filter((item) => item.link !== "/config" || isAdmin())
+    ]
 
     return (
         <motion.div 
@@ -117,30 +127,89 @@ const Sidebar = ({ className, compact }) => {
 
             {/* Bottom nav */}
             <nav className="flex flex-col gap-1">
-                {entradasMenuBaixo.map((item) => (
+                {/* Meu Perfil */}
+                <SidebarItem 
+                    item={entradasMenuBaixo[0]} 
+                    isExpanded={isExpanded} 
+                    isActive={location.pathname.includes("/perfil")} 
+                    onClick={() => navegarPara("/perfil")} 
+                />
+
+                {/* Theme Toggle for Speakers */}
+                {isPalestrante() && (
                     <button 
-                        key={item.nome} 
-                        onClick={() => navegarPara(item.link)}
-                        className={`flex items-center gap-4 px-4 py-3 h-14 rounded-2xl text-base transition-all relative group ${item.danger ? "text-error hover:bg-error/10" : "text-primary/80 hover:bg-accent/20"}`}
+                        onClick={toggleTheme}
+                        className="flex items-center gap-4 px-4 py-3 h-14 rounded-2xl text-base transition-all relative group text-primary/80 hover:bg-accent/20 cursor-pointer"
                     >
-                        <span className="shrink-0">{item.icone}</span>
+                        <span className="shrink-0">
+                            {theme === "light" ? <MoonIcon size={28} weight="light" /> : <SunIcon size={28} weight="light" />}
+                        </span>
                         <AnimatePresence>
                             {isExpanded && (
                                 <motion.span 
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
-                                    className="whitespace-nowrap ml-2"
+                                    className="whitespace-nowrap ml-2 font-secondary"
                                 > 
-                                    {item.nome} 
+                                    Modo {theme === "light" ? "Escuro" : "Claro"}
                                 </motion.span>
                             )}
                         </AnimatePresence>
+                        {!isExpanded && (
+                            <div className="absolute left-full ml-4 px-3 py-2 bg-primary text-accent text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                                Modo {theme === "light" ? "Escuro" : "Claro"}
+                            </div>
+                        )}
                     </button>
-                ))}
+                )}
+
+                {/* Configurações (Admin only) */}
+                {isAdmin() && (
+                    <SidebarItem 
+                        item={entradasMenuBaixo[1]} 
+                        isExpanded={isExpanded} 
+                        isActive={location.pathname.includes("/config")} 
+                        onClick={() => navegarPara("/config")} 
+                    />
+                )}
+
+                {/* Sair */}
+                <SidebarItem 
+                    item={entradasMenuBaixo[2]} 
+                    isExpanded={isExpanded} 
+                    isActive={false} 
+                    onClick={() => navegarPara("/logout")} 
+                />
             </nav>
         </motion.div> 
     )
 }
+
+const SidebarItem = ({ item, isExpanded, isActive, onClick }) => (
+    <button 
+        onClick={onClick}
+        className={`flex items-center gap-4 px-4 py-3 h-14 rounded-2xl text-base transition-all relative group cursor-pointer ${item.danger ? "text-error hover:bg-error/10" : isActive ? "bg-accent/60 text-primary font-bold" : "text-primary/80 hover:bg-accent/20 font-light"}`}
+    >
+        <span className="shrink-0">{item.icone}</span>
+        <AnimatePresence>
+            {isExpanded && (
+                <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="whitespace-nowrap ml-2 font-secondary"
+                > 
+                    {item.nome} 
+                </motion.span>
+            )}
+        </AnimatePresence>
+        {!isExpanded && (
+            <div className="absolute left-full ml-4 px-3 py-2 bg-primary text-accent text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                {item.nome}
+            </div>
+        )}
+    </button>
+);
 
 export default Sidebar;

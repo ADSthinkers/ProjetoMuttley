@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Select from 'react-select';
 import axios from 'axios';
+import { PALESTRA_STATUS } from "../utils/palestraStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -56,6 +57,7 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const [vagas, setVagas] = useState(objeto?.vagas || "");
     const [banner, setBanner] = useState(objeto?.banner || "");
     const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
+    const [status, setStatus] = useState(objeto?.status || "PENDENTE");
     const [formError, setFormError] = useState("");
 
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
@@ -130,7 +132,8 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
             modalidade: modalidade || null,
             vagas: vagas ? Number(vagas) : null,
             banner,
-            patrocinadorId: patrocinadorId || null
+            patrocinadorId: patrocinadorId || null,
+            status
         });
         setEtapa(3);
     }
@@ -174,6 +177,17 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                                 isClearable
                                 onChange={(selectedOption) => setModalidade(selectedOption ? selectedOption.value : "")}
                                 placeholder="Selecione a modalidade"
+                                classNames={selectClasses}
+                            />
+                        </Field>
+
+                        <Field label="Status">
+                            <Select
+                                options={PALESTRA_STATUS}
+                                value={PALESTRA_STATUS.find(s => s.value === status)}
+                                unstyled
+                                onChange={(selectedOption) => setStatus(selectedOption ? selectedOption.value : "PENDENTE")}
+                                placeholder="Selecione o status"
                                 classNames={selectClasses}
                             />
                         </Field>

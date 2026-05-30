@@ -5,13 +5,15 @@ import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import Competencias from "./pages/Competencias.jsx";
 import Participantes from "./pages/Participantes.jsx";
+import PerfilParticipante from "./pages/PerfilParticipante.jsx";
 import EventoPalestra from "./pages/EventoPalestra.jsx";
 import Buscar from "./pages/Buscar.jsx";
 import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
 import EventoDetalhe from "./pages/EventoDetalhe.jsx";
 import Novo from "./pages/Novo.jsx";
 import Configuracoes from "./pages/Configuracoes.jsx";
-import PerfilParticipante from "./pages/PerfilParticipante.jsx";
+import Perfil from "./pages/Perfil.jsx";
+import ValidarCertificado from "./pages/ValidarCertificado.jsx";
 import Palestrantes from "./pages/Palestrantes.jsx";
 import PerfilPalestrante from "./pages/PerfilPalestrante.jsx";
 import QrCode from "./pages/QrCode.jsx";
@@ -39,19 +41,20 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/certificado/validar/:codigo" element={<ValidarCertificado />} />
           <Route path="/qrcode" element={<QrCode />} />
           <Route path="/qrcode/:token" element={<QrCode />} />
           <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/competencias" element={<PrivateRoute><Competencias /></PrivateRoute>} />
           <Route path="/participantes" element={<PrivateRoute><Participantes /></PrivateRoute>} />
           <Route path="/participante/:id" element={<PrivateRoute><PerfilParticipante /></PrivateRoute>} />
-          <Route path="/perfil" element={<PrivateRoute><PerfilParticipante /></PrivateRoute>} />
+          <Route path="/perfil" element={<PrivateRoute><Perfil /></PrivateRoute>} />
           <Route path="/palestrantes" element={<PrivateRoute><Palestrantes /></PrivateRoute>} />
           <Route path="/palestrante/:id" element={<PrivateRoute><PerfilPalestrante /></PrivateRoute>} />
-          <Route path="/locais" element={<PrivateRoute><Locais /></PrivateRoute>} />
-          <Route path="/local/:idLocal" element={<PrivateRoute><LocalDetalhe /></PrivateRoute>} />
-          <Route path="/patrocinadores" element={<PrivateRoute><Patrocinadores /></PrivateRoute>} />
-          <Route path="/patrocinador/:idPat" element={<PrivateRoute><PatrocinadorDetalhe /></PrivateRoute>} />
+          <Route path="/locais" element={<AdminRoute><Locais /></AdminRoute>} />
+          <Route path="/local/:idLocal" element={<AdminRoute><LocalDetalhe /></AdminRoute>} />
+          <Route path="/patrocinadores" element={<AdminRoute><Patrocinadores /></AdminRoute>} />
+          <Route path="/patrocinador/:idPat" element={<AdminRoute><PatrocinadorDetalhe /></AdminRoute>} />
           <Route path="/evento-palestra" element={<PrivateRoute><EventoPalestra /></PrivateRoute>} />
           <Route path="/palestra/:idPal" element={<PrivateRoute><PalestraDetalhe /></PrivateRoute>} />
           <Route path="/evento/:idEvento" element={<PrivateRoute><EventoDetalhe /></PrivateRoute>} />

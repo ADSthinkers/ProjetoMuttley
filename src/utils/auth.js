@@ -29,4 +29,6 @@ export const getAuthUser = () => {
 
 export const isAdmin = () => getAuthUser()?.role === "ADMIN";
 
+export const isPalestrante = () => getAuthUser()?.role === "PALESTRANTE";
+
 export const isAuthenticated = () => Boolean(getAuthCookie());

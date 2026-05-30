@@ -365,6 +365,6 @@ const StateIcon = ({ icon, tone }) => (
     </div>
 );
 
-const inputClass = "w-full text-base p-4 bg-white/60 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm placeholder:text-primary/30";
+const inputClass = "w-full text-base p-4 bg-base-100/80 border-2 border-accent/20 focus:border-accent focus:bg-base-100 rounded-2xl font-secondary text-primary caret-accent transition-all outline-none shadow-sm placeholder:text-primary/40";
 
 export default QrCode;
