@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react";
+import { BriefcaseIcon, BuildingsIcon, CaretRightIcon, CheckIcon, EnvelopeIcon, IdentificationCardIcon, LinkedinLogoIcon } from "@phosphor-icons/react";
 import Avatar from '../utils/Avatar';
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -16,40 +16,63 @@ const PalestranteCard = ({ palestrante, check }) => {
     return (
         <motion.div 
             onClick={navegarPalestrante} 
-            whileHover={{ scale: 1.01, x: 4, backgroundColor: "rgba(252, 209, 96, 0.8)" }}
+            whileHover={{ y: -5, scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            className={`flex items-center gap-4 bg-accent/60 rounded-2xl px-5 py-4 transition-all group cursor-pointer ${selecionado ? "ring-2 ring-primary/30" : ""}`}
+            className={`relative overflow-hidden flex flex-col gap-5 bg-accent/25 hover:bg-accent/35 border border-accent/15 rounded-3xl p-5 transition-all group cursor-pointer min-h-72 ${selecionado ? "ring-2 ring-primary/30" : ""}`}
         >
-            {/* Checkbox */}
-            {check ? <div className="relative">
-                <button onClick={(e) => { e.stopPropagation(); setSelecionado(!selecionado); }} className={`w-7 h-7 rounded-lg border-2 shrink-0 transition-all cursor-pointer ${selecionado ? "bg-primary/10 border-primary/40" : "bg-accent/30 border-primary/20 hover:border-primary/40"}`}/>
-                <CheckIcon size={20} weight="light" className={`absolute text-primary top-1 left-1 pointer-events-none ${selecionado ? "opacity-75" : "opacity-0"}`}/>
-            </div> : null}
+            <div className="absolute right-0 top-0 w-24 h-24 bg-accent/20 rounded-bl-[40px]" />
 
-            {/* Avatar */}
-            <Avatar email={palestrante.email} nome={palestrante.nome} />
-
-            {/* Infos */}
-            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                    <span className="text-base font-primary font-bold text-primary truncate">{palestrante.nome}</span>
-                    <div className="badge badge-primary badge-outline text-[10px] h-4 font-secondary">Palestrante</div>
+            <div className="flex items-start justify-between gap-4 z-10">
+                <div className="flex items-center gap-4 min-w-0">
+                    <Avatar email={palestrante.email} nome={palestrante.nome} className="w-16 h-16 rounded-2xl object-cover shrink-0 border-2 border-accent/40" />
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <h3 className="text-xl font-primary font-bold text-primary leading-tight truncate">{palestrante.nome}</h3>
+                        </div>
+                        <p className="text-xs font-secondary text-primary/50 mt-1 truncate">{palestrante.areaAtuacao || palestrante.instituicao || "Palestrante"}</p>
+                    </div>
                 </div>
-                <span className="text-xs font-secondary text-primary/60 truncate">
-                    {palestrante.email}
-                    <span className="mx-2 text-primary/30">|</span>
-                    CPF: {palestrante.cpf}
-                </span>
+
+                {check ? (
+                    <div className="relative shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); setSelecionado(!selecionado); }} className={`w-8 h-8 rounded-xl border-2 shrink-0 transition-all cursor-pointer ${selecionado ? "bg-accent border-primary/40" : "bg-base-100/40 border-primary/15 hover:border-primary/40"}`}/>
+                        <CheckIcon size={20} weight="light" className={`absolute text-primary top-1.5 left-1.5 pointer-events-none ${selecionado ? "opacity-75" : "opacity-0"}`}/>
+                    </div>
+                ) : null}
             </div>
 
-            {/* Ações */}
-            <div className="flex items-center gap-2 shrink-0">
-                <div className="text-primary/50 group-hover:text-primary transition-colors p-1 group-hover:translate-x-1 transition-transform">
+            <div className="grid grid-cols-1 gap-2 z-10">
+                <InfoLine icon={<EnvelopeIcon size={16} />} value={palestrante.email} />
+                <div className="grid grid-cols-2 gap-2">
+                    <InfoPill icon={<IdentificationCardIcon size={15} />} value={palestrante.cpf || "Sem CPF"} />
+                    <InfoPill icon={<BuildingsIcon size={15} />} value={palestrante.instituicao || "Sem inst."} />
+                </div>
+                <InfoLine icon={<BriefcaseIcon size={16} />} value={palestrante.formacao || "Formação não informada"} muted />
+                {palestrante.linkedin && <InfoLine icon={<LinkedinLogoIcon size={16} />} value={palestrante.linkedin} muted />}
+            </div>
+
+            <div className="mt-auto z-10 flex items-center justify-between border-t border-primary/10 pt-4">
+                <span className="badge bg-accent/60 border-0 text-primary rounded-xl font-secondary">Palestrante</span>
+                <div className="w-10 h-10 rounded-xl bg-base-100/60 group-hover:bg-accent flex items-center justify-center text-primary/60 group-hover:text-primary group-hover:translate-x-1 transition-all">
                     <CaretRightIcon size={18} weight="light" />
                 </div>
             </div>
         </motion.div>
     )
 }
+
+const InfoLine = ({ icon, value, muted }) => (
+    <div className={`flex items-center gap-2 min-w-0 text-sm font-secondary ${muted ? "text-primary/45" : "text-primary/65"}`}>
+        <span className="shrink-0 text-primary/35">{icon}</span>
+        <span className="truncate">{value || "-"}</span>
+    </div>
+);
+
+const InfoPill = ({ icon, value }) => (
+    <div className="flex items-center gap-1.5 min-w-0 bg-base-100/50 border border-accent/10 rounded-xl px-3 py-2 text-xs font-secondary text-primary/60">
+        <span className="shrink-0 text-primary/35">{icon}</span>
+        <span className="truncate">{value}</span>
+    </div>
+);
 
 export default PalestranteCard;
