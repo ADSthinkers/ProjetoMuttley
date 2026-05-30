@@ -6,6 +6,7 @@ import com.fateczl.muttley.evento.Evento;
 import com.fateczl.muttley.evento.EventoService;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteRepository;
+import com.fateczl.muttley.certificado.CertificadoRepository;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 
@@ -41,6 +42,9 @@ public class PalestraService {
 
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
+
+    @Autowired
+    private CertificadoRepository certificadoRepository;
 
     // lista todas as palestras ordenadas pelo título com carregamento forçado de palestrantes e competências
     @Transactional
@@ -92,6 +96,14 @@ public class PalestraService {
         });
     }
 
+    // propaga a nova carga horária para todos os certificados vinculados à palestra
+    private void atualizarCargaHorariaCertificados(Long palestraId, float cargaHoraria) {
+        certificadoRepository.findByPalestraId(palestraId).forEach(cert -> {
+            cert.setCargaHoraria(cargaHoraria);
+            certificadoRepository.save(cert);
+        });
+    }
+
     // atualiza o status de uma palestra pelo seu identificador
     public void atualizarStatus(Long palestraId, StatusPalestra status) {
         Palestra palestra = palestraRepository.findById(palestraId)
@@ -137,7 +149,9 @@ public class PalestraService {
             existente.setPatrocinador(patrocinador);
             existente.setCargaHoraria(cargaHoraria);
             if (dto.status() != null) existente.setStatus(dto.status());
-            return palestraRepository.save(existente);
+            Palestra salva = palestraRepository.save(existente);
+            atualizarCargaHorariaCertificados(salva.getId(), cargaHoraria);
+            return salva;
         } else {
             Palestra nova = palestraMapper.toEntity(dto);
             nova.setCompetencias(competencias);
