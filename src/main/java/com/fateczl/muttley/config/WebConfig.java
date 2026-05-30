@@ -16,17 +16,18 @@ public class WebConfig implements WebMvcConfigurer {
     // registra o ApiKeyInterceptor para atuar em todos os endpoints da API
      
     @Override
-    public void addInterceptors(  @SuppressWarnings("null") InterceptorRegistry registry) {
+    public void addInterceptors(@SuppressWarnings("null") InterceptorRegistry registry) {
         registry.addInterceptor(apiKeyInterceptor)
                 .addPathPatterns("/api/**");
     }
 
     // libera CORS para todos os métodos e origens nos endpoints da API
     @Override
-    public void addCorsMappings(  @SuppressWarnings("null") CorsRegistry registry) {
+    public void addCorsMappings(@SuppressWarnings("null") CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("*")
+                .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("x-api-key", "Content-Type")
+                .allowCredentials(true);
     }
 }
