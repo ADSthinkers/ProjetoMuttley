@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect, useMemo } from "react";
-import { CaretDownIcon, MagnifyingGlassIcon, PencilSimpleIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, MagnifyingGlassIcon, MedalIcon, PencilSimpleIcon, SparkleIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
 import toast, { Toaster } from "react-hot-toast";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion } from "framer-motion"
@@ -131,20 +131,33 @@ const Competencias = () => {
             <Toaster position="top-center" reverseOrder={false} />
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar className="" />
-                <div className="pt-5 pl-2 pr-5 w-full overflow-y-auto h-screen flex flex-col gap-6">
-                    <motion.h1 variants={itemVariants} className="text-4xl font-primary text-primary font-bold mt-8">Competências</motion.h1>
+                <div className="pt-8 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
+                    <motion.div variants={itemVariants} className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-5">
+                        <div>
+                            <div className="inline-flex items-center gap-2 bg-accent/25 rounded-full px-4 py-2 font-secondary text-xs font-semibold text-primary mb-3">
+                                <SparkleIcon size={16} weight="fill" />
+                                Matriz de habilidades
+                            </div>
+                            <h1 className="text-4xl font-primary text-primary font-bold">Competências</h1>
+                            <p className="text-sm font-secondary text-primary/55 mt-2">Organize habilidades usadas em palestras, certificados e medalhas.</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 w-full xl:w-auto">
+                            <MetricCard icon={<MedalIcon size={20} />} label="Exibindo" value={competenciasFiltradas.length} />
+                            <MetricCard icon={<MedalIcon size={20} />} label="Hard" value={(competencias || []).filter((c) => c.tipo === "HARD_SKILL").length} />
+                            <MetricCard icon={<MedalIcon size={20} />} label="Soft" value={(competencias || []).filter((c) => c.tipo === "SOFT_SKILL").length} />
+                        </div>
+                    </motion.div>
 
                     {/* Busca + Ordenar */}
-                    <motion.div variants={itemVariants} className="flex flex-col gap-2">
-                        <label className="text-base font-primary text-primary/85" htmlFor="busca">Buscar</label>
-                        <div className="flex gap-3">
-                            <div className="flex items-center gap-3 flex-1 bg-accent/20 rounded-2xl px-5 py-3.5 h-15 focus-within:ring-2 focus-within:ring-accent/50 transition-all">
-                                <input id="busca" type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Digite o nome de uma competência aqui" className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/30 focus:outline-none"/>
+                    <motion.div variants={itemVariants} className="bg-accent/20 border border-accent/10 rounded-3xl p-4 flex flex-col gap-3">
+                        <div className="flex flex-col lg:flex-row gap-3">
+                            <div className="flex items-center gap-3 flex-1 bg-base-100/65 border border-accent/10 rounded-2xl px-5 py-3.5 h-15 focus-within:ring-2 focus-within:ring-accent/50 transition-all">
+                                <input id="busca" type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por nome de competência" className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/35 focus:outline-none"/>
                                 <MagnifyingGlassIcon size={20} weight="light" className="text-primary/40 shrink-0" />
                             </div>
     
                             <div className="relative">
-                                <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)} className="appearance-none bg-accent/20 rounded-2xl px-5 py-3.5 pr-10 text-sm font-secondary text-primary focus:outline-none cursor-pointer min-w-70 h-full hover:bg-accent/30 transition-colors">
+                                <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)} className="appearance-none bg-base-100/65 border border-accent/10 rounded-2xl px-5 py-3.5 pr-10 text-sm font-secondary text-primary focus:outline-none cursor-pointer min-w-full lg:min-w-70 h-full hover:bg-accent/20 transition-colors">
                                     <option value="" disabled>Ordenar por</option>
                                     {ordens.map(o => (
                                         <option key={o} value={o}>{o}</option>
@@ -160,16 +173,16 @@ const Competencias = () => {
                         variants={containerVariants}
                         initial="initial"
                         animate="animate"
-                        className="flex flex-wrap gap-4"
+                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5"
                     >
                         {loading ? (
                             // Skeleton Loading
                             Array.from({ length: 8 }).map((_, i) => (
-                                <div key={i} className="bg-accent/10 animate-pulse rounded-2xl px-6 py-5 min-w-48 h-20" />
+                                <div key={i} className="bg-accent/10 animate-pulse rounded-3xl h-44" />
                             ))
                         ) : error ? (
                             // Mensagem de Erro
-                            <motion.div variants={itemVariants} className="text-sm font-secondary text-error py-12 text-center bg-error/5 rounded-3xl border border-dashed border-error/20 w-full">
+                            <motion.div variants={itemVariants} className="md:col-span-2 xl:col-span-3 2xl:col-span-4 text-sm font-secondary text-error py-12 text-center bg-error/5 rounded-3xl border border-dashed border-error/20 w-full">
                                 {error}
                             </motion.div>
                         ) : competenciasFiltradas.length > 0 ? (
@@ -179,13 +192,17 @@ const Competencias = () => {
                                     variants={itemVariants}
                                     whileHover={{ y: -4, backgroundColor: "rgba(252, 209, 96, 0.7)" }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="bg-accent/50 rounded-2xl px-6 py-5 flex items-start justify-between gap-5 min-w-64 transition-all group cursor-default border border-primary/5"
+                                    className="relative overflow-hidden bg-accent/25 hover:bg-accent/35 rounded-3xl p-5 flex flex-col justify-between gap-5 min-h-44 transition-all group cursor-default border border-accent/15"
                                 >
+                                    <div className="absolute right-0 top-0 w-20 h-20 bg-accent/20 rounded-bl-[36px]" />
                                     <div className="flex flex-col gap-2 min-w-0">
-                                        <span className="text-base font-primary font-bold text-primary tracking-wide">
+                                        <div className="w-12 h-12 rounded-2xl bg-accent/50 text-primary flex items-center justify-center border border-accent/20 mb-1">
+                                            <MedalIcon size={24} weight="light" />
+                                        </div>
+                                        <span className="text-xl font-primary font-bold text-primary leading-tight">
                                             {c.nome}
                                         </span>
-                                        <span className="badge badge-sm badge-outline border-primary/20 text-primary/60 font-secondary">
+                                        <span className="badge bg-accent/60 border-0 text-primary rounded-xl font-secondary w-fit">
                                             {formatarTipo(c.tipo)}
                                         </span>
                                         {c.atribuida !== undefined && (
@@ -194,7 +211,7 @@ const Competencias = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex items-center justify-end gap-2 shrink-0 border-t border-primary/10 pt-4">
                                         <button
                                             type="button"
                                             onClick={() => abrirEdicao(c)}
@@ -215,7 +232,7 @@ const Competencias = () => {
                                 </motion.div>
                             ))
                         ) : (
-                            <motion.div variants={itemVariants} className="text-sm font-secondary text-primary/40 py-8 text-center w-full">
+                            <motion.div variants={itemVariants} className="md:col-span-2 xl:col-span-3 2xl:col-span-4 text-sm font-secondary text-primary/40 py-12 text-center bg-accent/5 border border-dashed border-accent/20 rounded-3xl w-full">
                                 Nenhuma competência encontrada.
                             </motion.div>
                         )}
@@ -294,6 +311,16 @@ const Competencias = () => {
 }
 
 const inputClass = "w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 outline-none focus:border-accent";
+
+const MetricCard = ({ icon, label, value }) => (
+    <div className="bg-accent/20 border border-accent/10 rounded-2xl px-4 py-3 min-w-0">
+        <div className="flex items-center gap-2 text-primary/55">
+            {icon}
+            <span className="text-xs font-secondary uppercase truncate">{label}</span>
+        </div>
+        <p className="text-2xl font-primary font-bold text-primary mt-1">{value}</p>
+    </div>
+);
 
 const Field = ({ label, children }) => (
     <label className="flex flex-col gap-2">

@@ -17,7 +17,8 @@ import {
     FileTextIcon,
     CircleNotchIcon,
     EyeIcon,
-    EyeSlashIcon
+    EyeSlashIcon,
+    SparkleIcon
 } from "@phosphor-icons/react"
 import ParticipanteForm from "../components/ParticipanteForm"
 import PalestraForm from "../components/PalestraForm"
@@ -186,15 +187,22 @@ const Novo = () => {
                 <div className="print:hidden">
                     <Sidebar />
                 </div>
-                <div className="pt-10 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-8 print:p-0 print:h-auto print:overflow-visible">
-                    <div className="flex items-center justify-between print:hidden">
-                        <motion.h1 variants={itemVariants} className="text-4xl font-primary text-primary font-bold">Novo Cadastro</motion.h1>
+                <div className="pt-8 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6 print:p-0 print:h-auto print:overflow-visible">
+                    <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-5 print:hidden">
+                        <motion.div variants={itemVariants}>
+                            <div className="inline-flex items-center gap-2 bg-accent/25 rounded-full px-4 py-2 font-secondary text-xs font-semibold text-primary mb-3">
+                                <SparkleIcon size={16} weight="fill" />
+                                Assistente de cadastro
+                            </div>
+                            <h1 className="text-4xl font-primary text-primary font-bold">Novo Cadastro</h1>
+                            <p className="text-sm font-secondary text-primary/55 mt-2">Escolha uma categoria, preencha os dados e revise antes de salvar.</p>
+                        </motion.div>
                         {etapa > 1 && etapa < 4 && (
                             <motion.button 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 onClick={() => setEtapa(etapa - 1)}
-                                className="flex items-center gap-2 text-primary/60 hover:text-accent transition-colors font-secondary text-sm cursor-pointer"
+                                className="btn border-0 rounded-2xl bg-accent/20 hover:bg-accent/35 text-primary font-secondary shadow-none"
                             >
                                 <ArrowLeftIcon size={20} />
                                 Voltar
@@ -203,14 +211,14 @@ const Novo = () => {
                     </div>
 
                     {/* Stepper Moderno */}
-                    <motion.div variants={itemVariants} className="flex items-center justify-center w-full max-w-4xl mx-auto mb-4 print:hidden">
+                    <motion.div variants={itemVariants} className="bg-accent/20 border border-accent/10 rounded-3xl p-5 flex items-center justify-center w-full max-w-5xl mx-auto print:hidden">
                         {passos.map((passo, idx) => (
                             <div key={passo.id} className="flex items-center flex-1 last:flex-none">
                                 <div 
                                     onClick={() => etapa > passo.id && setEtapa(passo.id)}
-                                    className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${etapa === passo.id ? "scale-110" : "opacity-60 hover:opacity-100"}`}
+                                    className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${etapa === passo.id ? "scale-105" : "opacity-65 hover:opacity-100"}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-primary transition-all duration-300 ${etapa >= passo.id ? "bg-accent text-primary shadow-lg shadow-accent/20" : "bg-accent/10 text-primary/30"}`}>
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-primary transition-all duration-300 ${etapa >= passo.id ? "bg-accent text-primary shadow-sm" : "bg-base-100/60 text-primary/35 border border-accent/10"}`}>
                                         {etapa > passo.id ? <CheckCircleIcon size={28} weight="fill" className="text-secondary/75"/> : passo.id}
                                     </div>
                                     <span className={`text-[10px] font-secondary uppercase tracking-tighter ${etapa >= passo.id ? "text-primary font-bold" : "text-primary/30"}`}>
@@ -218,7 +226,7 @@ const Novo = () => {
                                     </span>
                                 </div>
                                 {idx < passos.length - 1 && (
-                                    <div className="flex-1 h-0.5 mx-4 bg-accent/20 relative overflow-hidden">
+                                    <div className="flex-1 h-0.5 mx-4 bg-base-100/60 relative overflow-hidden rounded-full">
                                         <motion.div 
                                             initial={false}
                                             animate={{ width: etapa > passo.id ? "100%" : "0%" }}
@@ -239,7 +247,7 @@ const Novo = () => {
                                     initial="initial"
                                     animate="animate"
                                     exit={{ opacity: 0, y: -20 }}
-                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:hidden"
+                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 print:hidden"
                                 >
                                     {categorias.map((cat) => (
                                         <motion.div 
@@ -248,14 +256,20 @@ const Novo = () => {
                                             whileHover={{ y: -8, scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => handleSelectTipo(cat.id)}
-                                            className="bg-accent/20 hover:bg-accent/30 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 cursor-pointer border border-accent/10 transition-colors group"
+                                            className="relative overflow-hidden bg-accent/25 hover:bg-accent/35 rounded-3xl p-7 flex flex-col items-start justify-between gap-8 cursor-pointer border border-accent/15 transition-colors group min-h-64"
                                         >
-                                            <div className="w-20 h-20 bg-accent/40 rounded-2xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:rotate-6 transition-all duration-300">
+                                            <div className="absolute right-0 top-0 w-24 h-24 bg-accent/20 rounded-bl-[40px]" />
+                                            <div className="w-18 h-18 bg-accent/50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:rotate-3 transition-all duration-300 border border-accent/20 z-10">
                                                 {cat.icon}
                                             </div>
-                                            <div className="text-center">
-                                                <h2 className="text-xl font-primary text-primary font-bold">{cat.label}</h2>
-                                                <p className="text-xs font-secondary text-primary/40 mt-1 uppercase tracking-widest">Clique para iniciar</p>
+                                            <div className="z-10 w-full">
+                                                <h2 className="text-2xl font-primary text-primary font-bold">{cat.label}</h2>
+                                                <div className="mt-4 flex items-center justify-between border-t border-primary/10 pt-4">
+                                                    <p className="text-xs font-secondary text-primary/45 uppercase tracking-widest">Iniciar cadastro</p>
+                                                    <div className="w-10 h-10 rounded-xl bg-base-100/60 group-hover:bg-accent flex items-center justify-center text-primary/60 group-hover:text-primary group-hover:translate-x-1 transition-all">
+                                                        <ArrowRightIcon size={18} weight="light" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </motion.div>
                                     ))}
@@ -268,7 +282,7 @@ const Novo = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="max-w-2xl mx-auto w-full bg-accent/10 p-10 rounded-[40px] border border-accent/20 print:hidden"
+                                    className="max-w-2xl mx-auto w-full bg-accent/15 p-8 md:p-10 rounded-3xl border border-accent/15 print:hidden"
                                 >
                                     <div className="flex items-center gap-4 mb-8">
                                         <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center text-primary shadow-lg shadow-accent/20">
@@ -291,7 +305,7 @@ const Novo = () => {
                                     exit={{ opacity: 0, y: -20 }}
                                     className="max-w-3xl mx-auto w-full flex flex-col gap-8 print:block"
                                 >
-                                    <div className="bg-accent/10 p-10 rounded-[40px] border border-accent/20 print:bg-white print:border-none print:p-0">
+                                    <div className="bg-accent/15 p-8 md:p-10 rounded-3xl border border-accent/15 print:bg-white print:border-none print:p-0">
                                         <div className="flex items-center justify-between mb-8 print:mb-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center text-primary print:hidden">

@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import { useEffect, useMemo, useState } from "react";
-import { BuildingsIcon, CaretDownIcon, IdentificationCardIcon, LinkIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon } from "@phosphor-icons/react";
+import { BuildingsIcon, CaretDownIcon, IdentificationCardIcon, LinkIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, SparkleIcon } from "@phosphor-icons/react";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -81,30 +81,40 @@ const Patrocinadores = () => {
         <PageTransition>
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar />
-                <div className="pt-10 pl-5 pr-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
-                    <motion.div variants={itemVariants} className="flex flex-col gap-1">
-                        <h1 className="text-4xl font-primary text-primary font-bold">Patrocinadores</h1>
-                        <p className="text-sm font-secondary text-primary/50">Empresas e pessoas vinculadas como patrocinadores.</p>
+                <div className="pt-8 pl-5 pr-8 pb-8 w-full overflow-y-auto h-screen flex flex-col gap-6">
+                    <motion.div variants={itemVariants} className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-5">
+                        <div>
+                            <div className="inline-flex items-center gap-2 bg-accent/25 rounded-full px-4 py-2 font-secondary text-xs font-semibold text-primary mb-3">
+                                <SparkleIcon size={16} weight="fill" />
+                                Rede de apoio
+                            </div>
+                            <h1 className="text-4xl font-primary text-primary font-bold">Patrocinadores</h1>
+                            <p className="text-sm font-secondary text-primary/55 mt-2">Empresas e pessoas vinculadas como patrocinadores.</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 w-full xl:w-auto">
+                            <MetricCard icon={<BuildingsIcon size={20} />} label="Exibindo" value={patrocinadoresFiltrados.length} />
+                            <MetricCard icon={<BuildingsIcon size={20} />} label="PJ" value={patrocinadores.filter((p) => p.tipo === "PJ").length} />
+                            <MetricCard icon={<IdentificationCardIcon size={20} />} label="PF" value={patrocinadores.filter((p) => p.tipo === "PF").length} />
+                        </div>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="flex flex-col gap-3">
+                    <motion.div variants={itemVariants} className="bg-accent/20 border border-accent/10 rounded-3xl p-4 flex flex-col gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-secondary text-primary/70" htmlFor="busca-patrocinador">Buscar</label>
                             <div className="flex flex-col xl:flex-row gap-3">
-                                <div className="flex items-center gap-3 flex-1 bg-accent/30 border border-accent/40 rounded-2xl px-5 py-3.5 focus-within:ring-2 focus-within:ring-accent/60 transition-all">
+                                <div className="flex items-center gap-3 flex-1 bg-base-100/65 border border-accent/10 rounded-2xl px-5 py-3.5 focus-within:ring-2 focus-within:ring-accent/60 transition-all">
                                     <input
                                         id="busca-patrocinador"
                                         type="text"
                                         value={busca}
                                         onChange={(e) => setBusca(e.target.value)}
                                         placeholder="Busque por nome, documento, contato ou cidade"
-                                        className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/30 focus:outline-none"
+                                        className="flex-1 bg-transparent text-sm font-secondary text-primary placeholder:text-primary/35 focus:outline-none"
                                     />
                                     <MagnifyingGlassIcon size={20} weight="light" className="text-primary/40 shrink-0" />
                                 </div>
 
                                 <div className="relative">
-                                    <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)} className="appearance-none bg-accent/30 border border-accent/40 rounded-2xl px-5 py-3.5 pr-10 text-sm font-secondary text-primary focus:outline-none cursor-pointer min-w-60 h-full hover:bg-accent/40 transition-colors">
+                                    <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)} className="appearance-none bg-base-100/65 border border-accent/10 rounded-2xl px-5 py-3.5 pr-10 text-sm font-secondary text-primary focus:outline-none cursor-pointer min-w-full xl:min-w-60 h-full hover:bg-accent/20 transition-colors">
                                         <option value="" disabled>Ordenar por</option>
                                         {ordens.map((ordem) => (
                                             <option key={ordem} value={ordem}>{ordem}</option>
@@ -115,13 +125,13 @@ const Patrocinadores = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 bg-base-100/45 border border-accent/10 rounded-2xl p-3">
                             {tipos.map((item) => (
                                 <button
                                     key={item}
                                     type="button"
                                     onClick={() => setTipo(item)}
-                                    className={`px-4 py-2 rounded-xl text-sm font-secondary border transition-all cursor-pointer ${tipo === item ? "bg-accent border-accent text-primary shadow-sm shadow-accent/20" : "bg-accent/25 border-accent/35 text-primary/70 hover:bg-accent/40"}`}
+                                    className={`px-4 py-2 rounded-xl text-sm font-secondary border transition-all cursor-pointer ${tipo === item ? "bg-accent border-accent text-primary font-semibold shadow-sm" : "bg-accent/10 border-transparent text-primary/70 hover:bg-accent/20"}`}
                                 >
                                     {item === "Todos" ? "Todos" : item === "PJ" ? "Pessoa jurídica" : "Pessoa física"}
                                 </button>
@@ -133,14 +143,14 @@ const Patrocinadores = () => {
                         variants={containerVariants}
                         initial="initial"
                         animate="animate"
-                        className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-8"
+                        className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-5 pb-8"
                     >
                         {loading ? (
                             Array.from({ length: 4 }).map((_, index) => (
-                                <div key={index} className="h-64 bg-accent/10 animate-pulse rounded-3xl" />
+                                <div key={index} className="h-72 bg-accent/10 animate-pulse rounded-3xl" />
                             ))
                         ) : error ? (
-                            <motion.div variants={itemVariants} className="xl:col-span-2 text-sm font-secondary text-error py-12 text-center bg-error/5 rounded-3xl border border-dashed border-error/20">
+                            <motion.div variants={itemVariants} className="xl:col-span-2 2xl:col-span-3 text-sm font-secondary text-error py-12 text-center bg-error/5 rounded-3xl border border-dashed border-error/20">
                                 {error}
                             </motion.div>
                         ) : patrocinadoresFiltrados.length > 0 ? (
@@ -150,7 +160,7 @@ const Patrocinadores = () => {
                                 </motion.div>
                             ))
                         ) : (
-                            <motion.div variants={itemVariants} className="xl:col-span-2 text-sm font-secondary text-primary/40 py-8 text-center">
+                            <motion.div variants={itemVariants} className="xl:col-span-2 2xl:col-span-3 text-sm font-secondary text-primary/40 py-12 text-center bg-accent/5 border border-dashed border-accent/20 rounded-3xl">
                                 Nenhum patrocinador encontrado.
                             </motion.div>
                         )}
@@ -176,11 +186,12 @@ const PatrocinadorCard = ({ patrocinador }) => {
     return (
         <div
             onClick={() => navigate(`/patrocinador/${patrocinador.id}`)}
-            className="h-full bg-accent/50 rounded-3xl p-5 border border-accent/30 shadow-sm hover:shadow-md hover:bg-accent/60 transition-all flex flex-col gap-5 cursor-pointer"
+            className="relative overflow-hidden min-h-72 h-full bg-accent/25 rounded-3xl p-5 border border-accent/15 hover:bg-accent/35 transition-all flex flex-col gap-5 cursor-pointer group"
         >
+            <div className="absolute right-0 top-0 w-24 h-24 bg-accent/20 rounded-bl-[40px]" />
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-base-100/60 text-primary flex items-center justify-center shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-accent/50 text-primary flex items-center justify-center shrink-0 border border-accent/20">
                         {isPJ ? <BuildingsIcon size={24} weight="light" /> : <IdentificationCardIcon size={24} weight="light" />}
                     </div>
                     <div className="flex flex-col gap-1 min-w-0">
@@ -190,15 +201,17 @@ const PatrocinadorCard = ({ patrocinador }) => {
                         </span>
                     </div>
                 </div>
-                <div className="badge badge-outline border-primary/20 text-primary/60 font-secondary">
-                    {patrocinador.tipo}
+                <div className="badge bg-accent/60 border-0 text-primary rounded-xl font-secondary z-10">
+                    {isPJ ? "PJ" : "PF"}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 z-10">
                 <InfoBlock label="E-mail" value={patrocinador.email} />
-                <InfoBlock label="Responsável" value={patrocinador.nomeResponsavel} />
-                <InfoBlock icon={<PhoneIcon size={18} weight="light" />} label="Telefone" value={patrocinador.telefone} />
+                <div className="grid grid-cols-2 gap-3">
+                    <InfoBlock label="Responsável" value={patrocinador.nomeResponsavel} />
+                    <InfoBlock icon={<PhoneIcon size={18} weight="light" />} label="Telefone" value={patrocinador.telefone} />
+                </div>
                 <InfoBlock icon={<MapPinIcon size={18} weight="light" />} label="Endereço" value={endereco || "Não informado"} />
             </div>
 
@@ -208,7 +221,7 @@ const PatrocinadorCard = ({ patrocinador }) => {
                     target="_blank"
                     rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="mt-auto inline-flex items-center gap-2 w-fit text-sm font-secondary text-primary/70 hover:text-primary transition-colors"
+                    className="mt-auto inline-flex items-center gap-2 w-fit text-sm font-secondary text-primary/70 hover:text-primary transition-colors z-10"
                 >
                     <LinkIcon size={18} weight="light" />
                     LinkedIn
@@ -219,7 +232,7 @@ const PatrocinadorCard = ({ patrocinador }) => {
 };
 
 const InfoBlock = ({ icon, label, value }) => (
-    <div className="rounded-2xl bg-base-100/45 border border-base-100/50 p-4 min-w-0">
+    <div className="rounded-2xl bg-base-100/50 border border-accent/10 p-4 min-w-0">
         <span className="flex items-center gap-2 text-xs font-secondary text-primary/45">
             {icon}
             {label}
@@ -234,6 +247,16 @@ const getNomePatrocinador = (patrocinador) => (
     patrocinador.nomeCompleto ||
     patrocinador.email ||
     `Patrocinador #${patrocinador.id}`
+);
+
+const MetricCard = ({ icon, label, value }) => (
+    <div className="bg-accent/20 border border-accent/10 rounded-2xl px-4 py-3 min-w-0">
+        <div className="flex items-center gap-2 text-primary/55">
+            {icon}
+            <span className="text-xs font-secondary uppercase truncate">{label}</span>
+        </div>
+        <p className="text-2xl font-primary font-bold text-primary mt-1">{value}</p>
+    </div>
 );
 
 export default Patrocinadores;

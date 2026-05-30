@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuthUser } from "../utils/auth";
+import { applyTheme, getInitialTheme, setThemeCookie } from "../utils/theme";
 import {
     CircleNotchIcon,
     EyeClosedIcon,
@@ -82,7 +83,7 @@ const Configuracoes = () => {
         },
     }), [dbURL, dbKEY, authUser?.login]);
 
-    const [theme, setTheme] = useState(() => localStorage.getItem("muttley_theme") || "light");
+    const [theme, setTheme] = useState(getInitialTheme);
     const [admins, setAdmins] = useState([]);
     const [auditorias, setAuditorias] = useState([]);
     const [loadingAdmins, setLoadingAdmins] = useState(true);
@@ -94,8 +95,8 @@ const Configuracoes = () => {
     const [filters, setFilters] = useState({ entidade: "", acao: "", realizadoPor: "" });
 
     useEffect(() => {
-        document.documentElement.dataset.theme = theme;
-        localStorage.setItem("muttley_theme", theme);
+        applyTheme(theme);
+        setThemeCookie(theme);
     }, [theme]);
 
     const fetchAdmins = async () => {
