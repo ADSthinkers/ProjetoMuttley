@@ -2,6 +2,7 @@ package com.fateczl.muttley.palestra;
 
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.evento.Evento;
+import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
@@ -58,6 +59,10 @@ public class Palestra {
     @ManyToOne
     @JoinColumn(name = "evento_id")
     private Evento evento;
+
+    @ManyToOne
+    @JoinColumn(name = "local_id")
+    private Local local;
 
     private LocalDateTime inicio;
     private LocalDateTime fim;

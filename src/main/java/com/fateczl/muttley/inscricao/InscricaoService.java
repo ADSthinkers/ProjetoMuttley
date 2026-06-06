@@ -79,6 +79,18 @@ public class InscricaoService {
         return repository.findByPalestraId(palestraId);
     }
 
+    public Optional<Inscricao> buscarPorParticipanteEPalestra(Long participanteId, Long palestraId) {
+        return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId);
+    }
+
+    public long contarCheckInsAtivos(Long palestraId) {
+        return repository.countByPalestraIdAndStatusNot(palestraId, StatusInscricao.CANCELADA);
+    }
+
+    public boolean temVagaDisponivel(Long palestraId, Integer vagas) {
+        return vagas == null || vagas <= 0 || contarCheckInsAtivos(palestraId) < vagas;
+    }
+
     // atualiza o status da inscrição para CONFIRMADA marcando presença do participante
     public Inscricao marcarPresente(Long id) {
         return atualizarStatus(id, StatusInscricao.CONFIRMADA);

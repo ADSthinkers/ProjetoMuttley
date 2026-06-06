@@ -152,7 +152,6 @@
                         <th>Título</th>
                         <th>Início</th>
                         <th>Término</th>
-                        <th>Local</th>
                         <th>Patrocinador</th>
                         <th>Ações</th>
                     </tr>
@@ -162,7 +161,6 @@
                         <td th:text="${evento.titulo}" style="font-weight:600;"></td>
                         <td th:text="${evento.dataInicio != null ? #temporals.format(evento.dataInicio, 'dd/MM/yyyy') : '-'}"></td>
                         <td th:text="${evento.dataFim != null ? #temporals.format(evento.dataFim, 'dd/MM/yyyy') : '-'}"></td>
-                        <td th:text="${evento.localNome != null ? evento.localNome : '-'}"></td>
                         <td th:text="${evento.patrocinadorNome != null ? evento.patrocinadorNome : '-'}"></td>
                         <td class="action-links">
                             <a th:href="@{/evento/formulario/{id}(id=${evento.id})}" class="link-edit">Editar</a>

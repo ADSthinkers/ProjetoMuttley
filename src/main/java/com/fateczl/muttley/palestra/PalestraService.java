@@ -4,6 +4,8 @@ import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.evento.Evento;
 import com.fateczl.muttley.evento.EventoService;
+import com.fateczl.muttley.local.Local;
+import com.fateczl.muttley.local.LocalRepository;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.certificado.CertificadoRepository;
@@ -42,6 +44,9 @@ public class PalestraService {
 
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
+
+    @Autowired
+    private LocalRepository localRepository;
 
     @Autowired
     private CertificadoRepository certificadoRepository;
@@ -112,7 +117,7 @@ public class PalestraService {
         palestraRepository.save(palestra);
     }
 
-    // cria ou atualiza uma palestra resolvendo todas as associações de competências, palestrantes e evento
+    // cria ou atualiza uma palestra resolvendo todas as associações de competências, palestrantes, evento e local
     public Palestra saveOrUpdate(PalestraDTO dto) {
         List<Long> competenciaIds = dto.competenciaIds();
         List<Competencia> competencias = competenciaService.findAllbyIdCompetencias(competenciaIds);
@@ -128,6 +133,16 @@ public class PalestraService {
 
         Evento evento = eventoService.buscarPorId(dto.eventoId())
                 .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
+
+        Local local = null;
+        if (dto.localId() != null) {
+            local = localRepository.findById(dto.localId())
+                    .orElseThrow(() -> new EntityNotFoundException("Local não encontrado"));
+        }
+        if (local != null && local.getCapacidade() != null && dto.vagas() != null
+                && dto.vagas() > local.getCapacidade()) {
+            throw new IllegalArgumentException("Vagas da palestra não podem exceder a capacidade do local");
+        }
 
         Patrocinador patrocinador = null;
         if (dto.patrocinadorId() != null) {
@@ -146,6 +161,7 @@ public class PalestraService {
             existente.setCompetencias(competencias);
             existente.setPalestrantes(palestrantes);
             existente.setEvento(evento);
+            existente.setLocal(local);
             existente.setPatrocinador(patrocinador);
             existente.setCargaHoraria(cargaHoraria);
             if (dto.status() != null) existente.setStatus(dto.status());
@@ -157,6 +173,7 @@ public class PalestraService {
             nova.setCompetencias(competencias);
             nova.setPalestrantes(palestrantes);
             nova.setEvento(evento);
+            nova.setLocal(local);
             nova.setPatrocinador(patrocinador);
             nova.setCargaHoraria(cargaHoraria);
             nova.setQrCodeToken(UUID.randomUUID().toString());

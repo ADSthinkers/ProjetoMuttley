@@ -24,6 +24,9 @@ public record PalestraDTO(
 
     Long eventoId,
 
+    @NotNull(message = "Selecione um local")
+    Long localId,
+
     @NotNull(message = "Data/Horario inicial é obrigatório")
     @FutureOrPresent(message = "Data/hora inicial inválida")
     LocalDateTime inicio,
@@ -36,6 +39,7 @@ public record PalestraDTO(
     TipoPalestra tipo,
     Modalidade modalidade,
     Float cargaHoraria,
+    @Positive(message = "Vagas deve ser maior que zero")
     Integer vagas,
     String banner,
     Long patrocinadorId,

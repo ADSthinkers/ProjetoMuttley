@@ -56,7 +56,7 @@ public class PalestraApiController {
                                                   HttpServletRequest request) {
         PalestraDTO dtoComId = new PalestraDTO(
                 id, dto.titulo(), dto.descricao(), dto.competenciaIds(), dto.palestranteIds(),
-                dto.eventoId(), dto.inicio(), dto.fim(), null,
+                dto.eventoId(), dto.localId(), dto.inicio(), dto.fim(), null,
                 dto.tipo(), dto.modalidade(), dto.cargaHoraria(), dto.vagas(), dto.banner(),
                 dto.patrocinadorId(), dto.status());
         Palestra salva = service.saveOrUpdate(dtoComId);

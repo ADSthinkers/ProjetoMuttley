@@ -2,6 +2,7 @@ package com.fateczl.muttley.xp;
 
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.competencia.CompetenciaService;
+import com.fateczl.muttley.email.EmailService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteService;
@@ -28,6 +29,9 @@ public class XpService {
     @Autowired
     private CompetenciaService competenciaService;
 
+    @Autowired
+    private EmailService emailService;
+
     // cria ou atualiza um registro de XP resolvendo as associações de competência e participante
      
     public Xp saveOrAtualizeXp(XpDTO dto) {
@@ -40,16 +44,21 @@ public class XpService {
         if (dto.id() != null) {
             Xp existente = xpRepository.findById(dto.id())
                     .orElseThrow(() -> new EntityNotFoundException("Xp não encontrado"));
+            float horasAnteriores = existente.getHoras();
             existente.setHoras(dto.horas());
             existente.setCompetencia(competencia);
             existente.setParticipante(participante);
-            return xpRepository.save(existente);
+            Xp salvo = xpRepository.save(existente);
+            notificarEvolucaoSeNecessario(participante, competencia, horasAnteriores, salvo.getHoras());
+            return salvo;
         } else {
             Xp novo = new Xp();
             novo.setHoras(dto.horas());
             novo.setCompetencia(competencia);
             novo.setParticipante(participante);
-            return xpRepository.save(novo);
+            Xp salvo = xpRepository.save(novo);
+            notificarEvolucaoSeNecessario(participante, competencia, 0f, salvo.getHoras());
+            return salvo;
         }
     }
 
@@ -65,21 +74,43 @@ public class XpService {
                     participanteId, competencia.getId());
             if (existente.isPresent()) {
                 Xp xp = existente.get();
+                float horasAnteriores = xp.getHoras();
                 xp.setHoras(xp.getHoras() + horas);
-                xpRepository.save(xp);
+                Xp salvo = xpRepository.save(xp);
+                notificarEvolucaoSeNecessario(participante, competencia, horasAnteriores, salvo.getHoras());
             } else {
                 Xp novo = new Xp();
                 novo.setHoras(horas);
                 novo.setCompetencia(competencia);
                 novo.setParticipante(participante);
-                xpRepository.save(novo);
+                Xp salvo = xpRepository.save(novo);
+                notificarEvolucaoSeNecessario(participante, competencia, 0f, salvo.getHoras());
             }
         }
+    }
+
+    private void notificarEvolucaoSeNecessario(Participante participante, Competencia competencia,
+                                               float horasAnteriores, float horasAtualizadas) {
+        int nivelAnterior = calcularNivelCompetencia(horasAnteriores);
+        int nivelAtual = calcularNivelCompetencia(horasAtualizadas);
+
+        if (nivelAtual > nivelAnterior) {
+            emailService.enviarEvolucaoCompetencia(participante, competencia, horasAtualizadas, nivelAtual);
+        }
+    }
+
+    private int calcularNivelCompetencia(float horas) {
+        if (horas <= 5f) return 1;
+        return ((int) Math.floor((horas - 0.0001f) / 5f)) + 1;
     }
 
     // lista todos os registros de XP ordenados pelo id
     public List<Xp> findAllXps() {
         return xpRepository.findAll(Sort.by("id").ascending());
+    }
+
+    public List<Xp> findByParticipanteId(Long participanteId) {
+        return xpRepository.findByParticipanteId(participanteId);
     }
 
     // remove um registro de XP pelo seu identificador

@@ -167,6 +167,8 @@
                         <th>Título</th>
                         <th>Status</th>
                         <th>Patrocinador</th>
+                        <th>Local</th>
+                        <th>Vagas</th>
                         <th>Palestrantes</th>
                         <th>Competências</th>
                         <th>Início</th>
@@ -187,6 +189,8 @@
                             <span th:unless="${palestra.status != null}">-</span>
                         </td>
                         <td th:text="${palestra.patrocinadorNome != null ? palestra.patrocinadorNome : '-'}"></td>
+                        <td th:text="${palestra.localNome != null ? palestra.localNome : '-'}"></td>
+                        <td th:text="${palestra.vagas != null ? palestra.vagas : '-'}"></td>
                         <td>
                             <span th:if="${palestra.palestrantes != null and !palestra.palestrantes.isEmpty()}">
                                 <span th:each="nome, stat : ${palestra.palestrantes}">

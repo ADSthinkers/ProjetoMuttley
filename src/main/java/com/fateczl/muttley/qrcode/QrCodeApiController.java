@@ -2,15 +2,13 @@ package com.fateczl.muttley.qrcode;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
-import com.fateczl.muttley.certificado.Certificado;
-import com.fateczl.muttley.certificado.CertificadoService;
 import com.fateczl.muttley.config.PublicRoute;
-import com.fateczl.muttley.medalha.MedalhaService;
+import com.fateczl.muttley.inscricao.Inscricao;
+import com.fateczl.muttley.inscricao.InscricaoDTO;
+import com.fateczl.muttley.inscricao.InscricaoService;
+import com.fateczl.muttley.inscricao.StatusInscricao;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
-import com.fateczl.muttley.participacao.ParticipacaoDTO;
-import com.fateczl.muttley.participacao.ParticipacaoRepository;
-import com.fateczl.muttley.participacao.ParticipacaoService;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteDTO;
 import com.fateczl.muttley.participante.ParticipanteService;
@@ -18,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 @RestController
 @RequestMapping("/api/qrcode")
@@ -26,25 +23,16 @@ public class QrCodeApiController {
 
     private final PalestraService palestraService;
     private final ParticipanteService participanteService;
-    private final ParticipacaoService participacaoService;
-    private final ParticipacaoRepository participacaoRepository;
-    private final CertificadoService certificadoService;
-    private final MedalhaService medalhaService;
+    private final InscricaoService inscricaoService;
     private final AuditoriaService auditoriaService;
 
     public QrCodeApiController(PalestraService palestraService,
                                ParticipanteService participanteService,
-                               ParticipacaoService participacaoService,
-                               ParticipacaoRepository participacaoRepository,
-                               CertificadoService certificadoService,
-                               MedalhaService medalhaService,
+                               InscricaoService inscricaoService,
                                AuditoriaService auditoriaService) {
         this.palestraService = palestraService;
         this.participanteService = participanteService;
-        this.participacaoService = participacaoService;
-        this.participacaoRepository = participacaoRepository;
-        this.certificadoService = certificadoService;
-        this.medalhaService = medalhaService;
+        this.inscricaoService = inscricaoService;
         this.auditoriaService = auditoriaService;
     }
 
@@ -78,19 +66,13 @@ public class QrCodeApiController {
         Participante participante = participanteService.buscarPorCpfEEmail(cpf, email).orElse(null);
 
         if (participante == null) {
+            if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+                return ResponseEntity.status(409).body(new QrErroResponse("A capacidade máxima desta palestra já foi atingida."));
+            }
             return ResponseEntity.ok(new QrIdentificacaoResponse("CADASTRO_NECESSARIO", cpf, email, null));
         }
 
-        if (participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
-            return ResponseEntity.ok(new QrIdentificacaoResponse(
-                    "JA_REGISTRADO",
-                    cpf,
-                    email,
-                    "Você já está registrado nesta palestra, " + participante.getNome() + "!"
-            ));
-        }
-
-        return ResponseEntity.ok(registrarParticipacao(palestra, participante, false));
+        return registrarParticipacao(palestra, participante, false);
     }
 
     @PublicRoute
@@ -106,20 +88,36 @@ public class QrCodeApiController {
         String email = normalizar(request.email());
 
         Participante participante = participanteService.buscarPorCpfEEmail(cpf, email).orElse(null);
+        if (participante == null && !inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+            return ResponseEntity.status(409).body(new QrErroResponse("A capacidade máxima desta palestra já foi atingida."));
+        }
+
         if (participante == null) {
             participante = participanteService.salvarOuAtualizar(
                     new ParticipanteDTO(null, nome, null, cpf, email, null, null, null)
             );
         }
 
-        return ResponseEntity.ok(registrarParticipacao(palestra, participante, true));
+        return registrarParticipacao(palestra, participante, true);
     }
 
-    private QrSucessoResponse registrarParticipacao(Palestra palestra, Participante participante, boolean novoCadastro) {
-        if (!participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
-            participacaoService.salvarOuAtualizar(
-                    new ParticipacaoDTO(null, calcularHoras(palestra), participante.getId(), palestra.getId())
-            );
+    private ResponseEntity<?> registrarParticipacao(Palestra palestra, Participante participante, boolean novoCadastro) {
+        Inscricao inscricao = inscricaoService.buscarPorParticipanteEPalestra(participante.getId(), palestra.getId())
+                .orElse(null);
+
+        if (inscricao == null) {
+            if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+                return ResponseEntity.status(409).body(new QrErroResponse("A capacidade máxima desta palestra já foi atingida."));
+            }
+
+            inscricao = inscricaoService.inscrever(new InscricaoDTO(
+                    null,
+                    participante.getId(),
+                    palestra.getId(),
+                    null,
+                    StatusInscricao.PENDENTE,
+                    null
+            ));
         }
 
         auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
@@ -127,29 +125,12 @@ public class QrCodeApiController {
                         + " na palestra: " + palestra.getTitulo(),
                 participante.getNome());
 
-        Certificado certificado = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
-        auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", certificado.getId(),
-                "Certificado emitido para " + participante.getNome() + " — " + palestra.getTitulo(),
-                "sistema");
-
-        medalhaService.concederSeNaoExistir(participante.getId(), palestra);
-        auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestra.getId(),
-                "Medalha de participação concedida a " + participante.getNome(),
-                "sistema");
-
-        return new QrSucessoResponse(
-                "SUCESSO",
+        return ResponseEntity.ok(new QrSucessoResponse(
+                inscricao.getStatus() == StatusInscricao.CONFIRMADA ? "JA_CONFIRMADO" : "AGUARDANDO_CONFIRMACAO",
                 participante.getNome(),
                 palestra.getTitulo(),
-                certificado.getCodigoValidacao(),
-                certificado.getId()
-        );
-    }
-
-    private float calcularHoras(Palestra palestra) {
-        if (palestra.getInicio() == null || palestra.getFim() == null) return 1f;
-        long horas = ChronoUnit.HOURS.between(palestra.getInicio(), palestra.getFim());
-        return Math.max(1f, (float) horas);
+                "Check-in registrado. Aguarde a confirmação do palestrante ou administrador para receber seu certificado por e-mail."
+        ));
     }
 
     private String normalizar(String value) {
@@ -160,6 +141,6 @@ public class QrCodeApiController {
     public record QrIdentificacaoRequest(String cpf, String email) {}
     public record QrCadastroRequest(String nome, String cpf, String email) {}
     public record QrIdentificacaoResponse(String status, String cpf, String email, String mensagem) {}
-    public record QrSucessoResponse(String status, String nomeParticipante, String palestraTitulo, String codigoCertificado, Long certificadoId) {}
+    public record QrSucessoResponse(String status, String nomeParticipante, String palestraTitulo, String mensagem) {}
     public record QrErroResponse(String erro) {}
 }

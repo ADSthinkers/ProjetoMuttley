@@ -1,6 +1,5 @@
 package com.fateczl.muttley.evento;
 
-import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
@@ -13,7 +12,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
 
-// entidade que representa um evento que agrupa palestras, com local, patrocinador e modalidade
+// entidade que representa um evento que agrupa palestras, com patrocinador e modalidade
 @Entity
 @Getter
 @Setter
@@ -36,16 +35,10 @@ public class Evento {
 
     private LocalDate dataFim;
 
-    @ManyToOne
-    @JoinColumn(name = "local_id")
-    private Local local;
-
     private String categoria;
 
     @Enumerated(EnumType.STRING)
     private Modalidade modalidade;
-
-    private Integer vagas;
 
     private String banner;
 

@@ -35,6 +35,13 @@ public class MedalhaApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/participante/{participanteId}")
+    public ResponseEntity<List<MedalhaListagem>> listarPorParticipante(@PathVariable Long participanteId) {
+        return ResponseEntity.ok(service.listarPorParticipante(participanteId).stream()
+                .map(this::toListagem)
+                .toList());
+    }
+
     // cria uma nova medalha com os dados fornecidos
     @PostMapping
     public ResponseEntity<MedalhaDTO> criar(@RequestBody @Valid MedalhaDTO dto) {

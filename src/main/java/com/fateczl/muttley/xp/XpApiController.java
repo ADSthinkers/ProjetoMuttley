@@ -37,6 +37,12 @@ public class XpApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/participante/{participanteId}")
+    public ResponseEntity<List<XpDTO>> listarPorParticipante(@PathVariable Long participanteId) {
+        return ResponseEntity.ok(service.findByParticipanteId(participanteId)
+                .stream().map(mapper::toXpDTO).toList());
+    }
+
     // cria um novo registro de XP com os dados fornecidos
     @PostMapping
     public ResponseEntity<XpDTO> criar(@RequestBody @Valid XpDTO dto) {

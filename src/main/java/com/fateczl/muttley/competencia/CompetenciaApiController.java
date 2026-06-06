@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 // controlador REST que expõe os endpoints de CRUD para competências
 @RestController
@@ -54,8 +55,12 @@ public class CompetenciaApiController {
 
     // remove uma competência pelo seu identificador
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        service.apagarPorId(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        try {
+            service.apagarPorId(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro", e.getMessage()));
+        }
     }
 }

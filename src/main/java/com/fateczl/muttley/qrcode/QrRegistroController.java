@@ -74,6 +74,12 @@ public class QrRegistroController {
         Participante participante = participanteService.buscarPorCpfEEmail(cpf.trim(), email.trim()).orElse(null);
 
         if (participante == null) {
+            if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+                model.addAttribute("palestra", palestra);
+                model.addAttribute("token", token);
+                model.addAttribute("erro", "A capacidade máxima desta palestra já foi atingida.");
+                return "qrcode/identificacao";
+            }
             redirectAttributes.addFlashAttribute("cpf", cpf.trim());
             redirectAttributes.addFlashAttribute("email", email.trim());
             return "redirect:/participar/" + token + "/cadastro";
@@ -83,6 +89,13 @@ public class QrRegistroController {
             model.addAttribute("palestra", palestra);
             model.addAttribute("token", token);
             model.addAttribute("aviso", "Presença já registrada nesta palestra, " + participante.getNome() + "!");
+            return "qrcode/identificacao";
+        }
+
+        if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+            model.addAttribute("palestra", palestra);
+            model.addAttribute("token", token);
+            model.addAttribute("erro", "A capacidade máxima desta palestra já foi atingida.");
             return "qrcode/identificacao";
         }
 
@@ -123,12 +136,25 @@ public class QrRegistroController {
         Participante participante = participanteService
                 .buscarPorCpfEEmail(cpf.trim(), email.trim()).orElse(null);
 
+        if (participante == null && !inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+            model.addAttribute("palestra", palestra);
+            model.addAttribute("token", token);
+            model.addAttribute("erro", "A capacidade máxima desta palestra já foi atingida.");
+            return "qrcode/cadastro";
+        }
+
         if (participante == null) {
             ParticipanteDTO novoDto = new ParticipanteDTO(null, nome.trim(), null, cpf.trim(), email.trim(), null, null, null);
             participante = participanteService.salvarOuAtualizar(novoDto);
         }
 
         if (!participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
+            if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
+                model.addAttribute("palestra", palestra);
+                model.addAttribute("token", token);
+                model.addAttribute("erro", "A capacidade máxima desta palestra já foi atingida.");
+                return "qrcode/cadastro";
+            }
             registrarPresenca(participante, palestra);
         }
 

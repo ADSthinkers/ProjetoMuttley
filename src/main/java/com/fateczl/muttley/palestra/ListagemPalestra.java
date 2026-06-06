@@ -11,6 +11,8 @@ public record ListagemPalestra(
     String descricao,
     List<Competencia> competencias,
     List<String> palestrantes,
+    String localNome,
+    Integer vagas,
     LocalDateTime inicio,
     LocalDateTime fim,
     StatusPalestra status,

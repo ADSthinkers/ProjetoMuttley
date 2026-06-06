@@ -10,10 +10,8 @@ public record EventoListagem(
     String descricao,
     LocalDate dataInicio,
     LocalDate dataFim,
-    String localNome,
     String categoria,
     Modalidade modalidade,
-    Integer vagas,
     String banner,
     String patrocinadorNome
 ) {}

@@ -64,6 +64,15 @@ public class CompetenciaService {
     // remove uma competência pelo seu identificador
      
     public void apagarPorId (Long id) {
+        if (!competenciaRepository.existsById(id)) {
+            throw new EntityNotFoundException("Competência não encontrada com ID: " + id);
+        }
+
+        long palestrasAssociadas = competenciaRepository.contarPalestrasAssociadas(id);
+        if (palestrasAssociadas > 0) {
+            throw new IllegalStateException("Competência associada a palestra não pode ser excluída");
+        }
+
         competenciaRepository.deleteById(id);
     }
     

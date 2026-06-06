@@ -7,7 +7,7 @@ import java.util.List;
 
 // controlador REST que expõe endpoints de consulta aos registros de auditoria
 @RestController
-@RequestMapping("/api/auditorias")
+@RequestMapping({"/api/auditorias", "/api/auditoria"})
 public class AuditoriaApiController {
 
     private final AuditoriaService service;
@@ -26,17 +26,12 @@ public class AuditoriaApiController {
 
         List<Auditoria> lista;
 
-        if (entidade != null && entidadeId != null) {
-            lista = service.listarPorEntidadeEId(entidade, entidadeId);
-        } else if (entidade != null) {
-            lista = service.listarPorEntidade(entidade);
-        } else if (acao != null) {
-            lista = service.listarPorAcao(acao);
-        } else if (realizadoPor != null) {
-            lista = service.listarPorAtor(realizadoPor);
-        } else {
-            lista = service.listarTodos();
-        }
+        lista = service.listarTodos().stream()
+                .filter(a -> entidade == null || (a.getEntidade() != null && a.getEntidade().equalsIgnoreCase(entidade)))
+                .filter(a -> entidadeId == null || entidadeId.equals(a.getEntidadeId()))
+                .filter(a -> acao == null || acao.equals(a.getAcao()))
+                .filter(a -> realizadoPor == null || (a.getRealizadoPor() != null && a.getRealizadoPor().equalsIgnoreCase(realizadoPor)))
+                .toList();
 
         return ResponseEntity.ok(lista.stream().map(this::toListagem).toList());
     }

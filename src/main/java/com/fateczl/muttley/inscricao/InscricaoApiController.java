@@ -2,6 +2,17 @@ package com.fateczl.muttley.inscricao;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
+import com.fateczl.muttley.certificado.Certificado;
+import com.fateczl.muttley.certificado.CertificadoPdfService;
+import com.fateczl.muttley.certificado.CertificadoService;
+import com.fateczl.muttley.email.EmailService;
+import com.fateczl.muttley.medalha.MedalhaService;
+import com.fateczl.muttley.palestra.Palestra;
+import com.fateczl.muttley.palestra.PalestraService;
+import com.fateczl.muttley.palestra.StatusPalestra;
+import com.fateczl.muttley.palestrante.Palestrante;
+import com.fateczl.muttley.participacao.ParticipacaoService;
+import com.fateczl.muttley.xp.XpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -10,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 // controlador REST que expõe endpoints para inscrição, atualização de status e cancelamento com auditoria
 @RestController
@@ -18,10 +31,32 @@ public class InscricaoApiController {
 
     private final InscricaoService service;
     private final AuditoriaService auditoriaService;
+    private final PalestraService palestraService;
+    private final CertificadoService certificadoService;
+    private final CertificadoPdfService certificadoPdfService;
+    private final MedalhaService medalhaService;
+    private final XpService xpService;
+    private final ParticipacaoService participacaoService;
+    private final EmailService emailService;
 
-    public InscricaoApiController(InscricaoService service, AuditoriaService auditoriaService) {
+    public InscricaoApiController(InscricaoService service,
+                                  AuditoriaService auditoriaService,
+                                  PalestraService palestraService,
+                                  CertificadoService certificadoService,
+                                  CertificadoPdfService certificadoPdfService,
+                                  MedalhaService medalhaService,
+                                  XpService xpService,
+                                  ParticipacaoService participacaoService,
+                                  EmailService emailService) {
         this.service = service;
         this.auditoriaService = auditoriaService;
+        this.palestraService = palestraService;
+        this.certificadoService = certificadoService;
+        this.certificadoPdfService = certificadoPdfService;
+        this.medalhaService = medalhaService;
+        this.xpService = xpService;
+        this.participacaoService = participacaoService;
+        this.emailService = emailService;
     }
 
     // lista todas as inscrições cadastradas
@@ -32,6 +67,13 @@ public class InscricaoApiController {
                         i.getParticipante() != null ? i.getParticipante().getNome() : null,
                         i.getPalestra() != null ? i.getPalestra().getTitulo() : null,
                         i.getDataInscricao(), i.getStatus()))
+                .toList());
+    }
+
+    @GetMapping("/palestra/{palestraId}")
+    public ResponseEntity<List<InscricaoPresencaResponse>> listarPorPalestra(@PathVariable Long palestraId) {
+        return ResponseEntity.ok(service.listarPorPalestra(palestraId).stream()
+                .map(this::toPresencaResponse)
                 .toList());
     }
 
@@ -62,6 +104,66 @@ public class InscricaoApiController {
         return ResponseEntity.ok(Map.of("status", status.name()));
     }
 
+    @PostMapping("/palestra/{palestraId}/confirmar-presencas")
+    public ResponseEntity<ConfirmacaoPresencaResponse> confirmarPresencas(@PathVariable Long palestraId,
+                                                                           @RequestBody ConfirmacaoPresencaRequest body,
+                                                                           HttpServletRequest request) {
+        Palestra palestra = palestraService.findByIdComPalestrantes(palestraId)
+                .orElseThrow(() -> new IllegalArgumentException("Palestra não encontrada"));
+        String realizadoPor = ator(request);
+        Set<Long> inscricaoIds = body.inscricaoIds() == null
+                ? Set.of()
+                : body.inscricaoIds().stream().collect(Collectors.toSet());
+
+        int countParticipantes = 0;
+        int countPalestrantes = 0;
+
+        List<Inscricao> selecionadas = service.listarPorPalestra(palestraId).stream()
+                .filter(i -> inscricaoIds.contains(i.getId()))
+                .toList();
+
+        for (Inscricao inscricao : selecionadas) {
+            service.atualizarStatus(inscricao.getId(), StatusInscricao.CONFIRMADA);
+            participacaoService.registrarOuAtualizar(inscricao.getParticipante(), palestra);
+
+            Certificado cert = certificadoService.emitirOuBuscar(inscricao.getParticipante().getId(), palestraId);
+            auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
+                    "Certificado emitido para " + inscricao.getParticipante().getNome(), realizadoPor);
+
+            medalhaService.concederSeNaoExistir(inscricao.getParticipante().getId(), palestra);
+            auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
+                    "Medalha concedida a " + inscricao.getParticipante().getNome(), realizadoPor);
+
+            xpService.registrarParaPalestra(inscricao.getParticipante().getId(), palestra);
+            enviarCertificadoPorEmail(cert.getId(), request);
+            countParticipantes++;
+        }
+
+        List<Palestrante> palestrantes = palestra.getPalestrantes();
+        if (palestrantes != null) {
+            for (Palestrante palestrante : palestrantes) {
+                Certificado certPalestrante = certificadoService.emitirOuBuscarPalestrante(palestrante.getId(), palestraId);
+                auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", certPalestrante.getId(),
+                        "Certificado de apresentação emitido para " + palestrante.getNome(), realizadoPor);
+
+                medalhaService.concederPalestranteSeNaoExistir(palestrante.getId(), palestra);
+                auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
+                        "Medalha de apresentação concedida a " + palestrante.getNome(), realizadoPor);
+
+                enviarCertificadoPorEmail(certPalestrante.getId(), request);
+                countPalestrantes++;
+            }
+        }
+
+        palestraService.atualizarStatus(palestraId, StatusPalestra.CERTIFICADOS_EMITIDOS);
+
+        return ResponseEntity.ok(new ConfirmacaoPresencaResponse(
+                countParticipantes,
+                countPalestrantes,
+                "Presenças confirmadas. Certificados emitidos e e-mails enviados."
+        ));
+    }
+
     // cancela a inscrição e registra a ação no log de auditoria antes de remover
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelar(@PathVariable Long id, HttpServletRequest request) {
@@ -76,4 +178,36 @@ public class InscricaoApiController {
         String key = request.getHeader("X-API-KEY");
         return key != null ? "api:" + key : "sistema";
     }
+
+    private void enviarCertificadoPorEmail(Long certificadoId, HttpServletRequest request) {
+        certificadoService.buscarPorIdComDetalhes(certificadoId).ifPresent(certCompleto -> {
+            byte[] pdf = certificadoPdfService.gerar(certCompleto, baseUrl(request));
+            emailService.enviarCertificado(certCompleto, pdf);
+        });
+    }
+
+    private String baseUrl(HttpServletRequest request) {
+        int port = request.getServerPort();
+        return request.getScheme() + "://" + request.getServerName()
+                + (port != 80 && port != 443 ? ":" + port : "");
+    }
+
+    private InscricaoPresencaResponse toPresencaResponse(Inscricao inscricao) {
+        return new InscricaoPresencaResponse(
+                inscricao.getId(),
+                inscricao.getParticipante() != null ? inscricao.getParticipante().getId() : null,
+                inscricao.getParticipante() != null ? inscricao.getParticipante().getNome() : null,
+                inscricao.getParticipante() != null ? inscricao.getParticipante().getCpf() : null,
+                inscricao.getParticipante() != null ? inscricao.getParticipante().getEmail() : null,
+                inscricao.getParticipante() != null ? inscricao.getParticipante().getEmail2() : null,
+                inscricao.getDataInscricao(),
+                inscricao.getStatus()
+        );
+    }
+
+    public record ConfirmacaoPresencaRequest(List<Long> inscricaoIds) {}
+    public record ConfirmacaoPresencaResponse(int certificadosParticipantes, int certificadosPalestrantes, String mensagem) {}
+    public record InscricaoPresencaResponse(Long id, Long participanteId, String participanteNome, String cpf,
+                                            String email, String email2, java.time.LocalDateTime dataInscricao,
+                                            StatusInscricao status) {}
 }

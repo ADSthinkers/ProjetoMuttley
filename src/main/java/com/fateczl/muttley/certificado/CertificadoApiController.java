@@ -73,6 +73,20 @@ public class CertificadoApiController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // gera e retorna o PDF do certificado para download pelo código de validação
+    @GetMapping("/validar/{codigo}/pdf")
+    @PublicRoute
+    public ResponseEntity<byte[]> downloadPdfPorCodigo(@PathVariable String codigo, HttpServletRequest request) {
+        return service.buscarPorCodigoComDetalhes(codigo).map(cert -> {
+            byte[] pdf = pdfService.gerar(cert, baseUrl(request));
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"certificado-" + cert.getCodigoValidacao() + ".pdf\"")
+                    .body(pdf);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     // remove um certificado pelo seu identificador
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {

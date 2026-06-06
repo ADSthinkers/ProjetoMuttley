@@ -1,7 +1,5 @@
 package com.fateczl.muttley.evento;
 
-import com.fateczl.muttley.local.Local;
-import com.fateczl.muttley.local.LocalRepository;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 
@@ -17,26 +15,17 @@ public class EventoService {
 
     private final EventoRepository repository;
     private final EventoMapper mapper;
-    private final LocalRepository localRepository;
     private final PatrocinadorRepository patrocinadorRepository;
 
     public EventoService(EventoRepository repository, EventoMapper mapper,
-                         LocalRepository localRepository,
                          PatrocinadorRepository patrocinadorRepository) {
         this.repository = repository;
         this.mapper = mapper;
-        this.localRepository = localRepository;
         this.patrocinadorRepository = patrocinadorRepository;
     }
 
-    // cria ou atualiza um evento resolvendo as associações de local e patrocinador pelo id
+    // cria ou atualiza um evento resolvendo a associação de patrocinador pelo id
     public Evento salvarOuAtualizar(EventoDTO dto) {
-        Local local = null;
-        if (dto.localId() != null) {
-            local = localRepository.findById(dto.localId())
-                    .orElseThrow(() -> new EntityNotFoundException("Local não encontrado"));
-        }
-
         Patrocinador patrocinador = null;
         if (dto.patrocinadorId() != null) {
             patrocinador = patrocinadorRepository.findById(dto.patrocinadorId())
@@ -47,12 +36,10 @@ public class EventoService {
             Evento existente = repository.findById(dto.id())
                     .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
             mapper.updateEntity(dto, existente);
-            existente.setLocal(local);
             existente.setPatrocinador(patrocinador);
             return repository.save(existente);
         } else {
             Evento novo = mapper.toEntity(dto);
-            novo.setLocal(local);
             novo.setPatrocinador(patrocinador);
             return repository.save(novo);
         }

@@ -1,6 +1,5 @@
 package com.fateczl.muttley.evento;
 
-import com.fateczl.muttley.local.LocalService;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.tipo.Modalidade;
 
@@ -21,15 +20,12 @@ public class EventoController {
 
     private final EventoService service;
     private final EventoMapper mapper;
-    private final LocalService localService;
     private final PatrocinadorRepository patrocinadorRepository;
 
     public EventoController(EventoService service, EventoMapper mapper,
-                             LocalService localService,
                              PatrocinadorRepository patrocinadorRepository) {
         this.service = service;
         this.mapper = mapper;
-        this.localService = localService;
         this.patrocinadorRepository = patrocinadorRepository;
     }
 
@@ -45,7 +41,7 @@ public class EventoController {
     // exibe o formulário de criação de um novo evento
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null, null, null));
+        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null));
         popularModel(model);
         return "evento/formulario";
     }
@@ -94,9 +90,8 @@ public class EventoController {
         return "redirect:/evento";
     }
 
-    // preenche o modelo com as listas de locais, modalidades e patrocinadores para o formulário
+    // preenche o modelo com as listas de modalidades e patrocinadores para o formulário
     private void popularModel(Model model) {
-        model.addAttribute("locais", localService.findAllLocais());
         model.addAttribute("modalidades", Modalidade.values());
         model.addAttribute("patrocinadores", patrocinadorRepository.findAll());
     }

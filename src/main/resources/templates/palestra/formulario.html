@@ -196,6 +196,14 @@
             </div>
 
             <div class="form-group">
+                <label for="localId">Local / Sala</label>
+                <select th:field="*{localId}">
+                    <option value="">-- Selecione um local --</option>
+                    <option th:each="l : ${locais}" th:value="${l.id}" th:text="${l.nome}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="inicio">Data/Hora Início</label>
                 <input type="datetime-local" th:field="*{inicio}"
                     th:classappend="${#fields.hasErrors('inicio')} ? 'is-invalid'">
@@ -215,6 +223,11 @@
                     <option value="">-- Nenhum --</option>
                     <option th:each="p : ${patrocinadores}" th:value="${p.id}" th:text="${p.nomeExibicao}"></option>
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label for="vagas">Vagas</label>
+                <input type="number" min="1" th:field="*{vagas}">
             </div>
 
             <div class="form-group">

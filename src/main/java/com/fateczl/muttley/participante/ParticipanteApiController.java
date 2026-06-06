@@ -76,6 +76,8 @@ public class ParticipanteApiController {
                         p.getPalestrantes() != null
                                 ? p.getPalestrantes().stream().map(Palestrante::getNome).toList()
                                 : List.of(),
+                        p.getLocal() != null ? p.getLocal().getNome() : null,
+                        p.getVagas(),
                         p.getInicio(), p.getFim(),
                         p.getStatus(),
                         p.getPatrocinador() != null ? p.getPatrocinador().getNomeExibicao() : null))
