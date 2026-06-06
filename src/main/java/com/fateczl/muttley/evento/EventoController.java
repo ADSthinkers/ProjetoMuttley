@@ -21,12 +21,15 @@ public class EventoController {
     private final EventoService service;
     private final EventoMapper mapper;
     private final PatrocinadorRepository patrocinadorRepository;
+    private final CategoriaEventoRepository categoriaEventoRepository;
 
     public EventoController(EventoService service, EventoMapper mapper,
-                             PatrocinadorRepository patrocinadorRepository) {
+                             PatrocinadorRepository patrocinadorRepository,
+                             CategoriaEventoRepository categoriaEventoRepository) {
         this.service = service;
         this.mapper = mapper;
         this.patrocinadorRepository = patrocinadorRepository;
+        this.categoriaEventoRepository = categoriaEventoRepository;
     }
 
     // exibe a listagem de todos os eventos cadastrados
@@ -94,5 +97,6 @@ public class EventoController {
     private void popularModel(Model model) {
         model.addAttribute("modalidades", Modalidade.values());
         model.addAttribute("patrocinadores", patrocinadorRepository.findAll());
+        model.addAttribute("categorias", categoriaEventoRepository.findAll());
     }
 }

@@ -35,7 +35,9 @@ public class Evento {
 
     private LocalDate dataFim;
 
-    private String categoria;
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private CategoriaEvento categoria;
 
     @Enumerated(EnumType.STRING)
     private Modalidade modalidade;

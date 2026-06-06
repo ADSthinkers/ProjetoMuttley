@@ -16,12 +16,15 @@ public class EventoService {
     private final EventoRepository repository;
     private final EventoMapper mapper;
     private final PatrocinadorRepository patrocinadorRepository;
+    private final CategoriaEventoRepository categoriaEventoRepository;
 
     public EventoService(EventoRepository repository, EventoMapper mapper,
-                         PatrocinadorRepository patrocinadorRepository) {
+                         PatrocinadorRepository patrocinadorRepository,
+                         CategoriaEventoRepository categoriaEventoRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.patrocinadorRepository = patrocinadorRepository;
+        this.categoriaEventoRepository = categoriaEventoRepository;
     }
 
     // cria ou atualiza um evento resolvendo a associação de patrocinador pelo id
@@ -31,16 +34,23 @@ public class EventoService {
             patrocinador = patrocinadorRepository.findById(dto.patrocinadorId())
                     .orElseThrow(() -> new EntityNotFoundException("Patrocinador não encontrado"));
         }
+        CategoriaEvento categoria = null;
+        if (dto.categoriaId() != null) {
+            categoria = categoriaEventoRepository.findById(dto.categoriaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+        }
 
         if (dto.id() != null) {
             Evento existente = repository.findById(dto.id())
                     .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
             mapper.updateEntity(dto, existente);
             existente.setPatrocinador(patrocinador);
+            existente.setCategoria(categoria);
             return repository.save(existente);
         } else {
             Evento novo = mapper.toEntity(dto);
             novo.setPatrocinador(patrocinador);
+            novo.setCategoria(categoria);
             return repository.save(novo);
         }
     }

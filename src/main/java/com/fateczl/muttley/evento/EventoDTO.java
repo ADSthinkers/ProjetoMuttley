@@ -12,7 +12,7 @@ public record EventoDTO(
     String descricao,
     @NotNull(message = "Data de início é obrigatória") LocalDate dataInicio,
     LocalDate dataFim,
-    String categoria,
+    Long categoriaId,
     Modalidade modalidade,
     String banner,
     Long patrocinadorId
