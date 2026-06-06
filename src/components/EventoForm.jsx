@@ -19,14 +19,10 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const [descricao, setDescricao] = useState(objeto?.descricao || "");
     const [dataInicio, setDataInicio] = useState(objeto?.dataInicio || "");
     const [dataFim, setDataFim] = useState(objeto?.dataFim || "");
-    const [localId, setLocalId] = useState(objeto?.localId || "");
-    const [local, setLocal] = useState(objeto?.local || "");
     const [categoria, setCategoria] = useState(objeto?.categoria || "");
     const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
-    const [vagas, setVagas] = useState(objeto?.vagas || "");
     const [banner, setBanner] = useState(objeto?.banner || "");
     const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
-    const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
     const modalidades = [
@@ -46,12 +42,8 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
 
         const fetchOptions = async () => {
             try {
-                const [locaisResponse, patrocinadoresResponse] = await Promise.all([
-                    api.get('/locais'),
-                    api.get('/patrocinadores')
-                ]);
+                const patrocinadoresResponse = await api.get('/patrocinadores');
 
-                setLocaisDisponiveis(locaisResponse.data.map(l => ({ value: l.id, label: l.nome })));
                 setPatrocinadoresDisponiveis(
                     patrocinadoresResponse.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
                 );
@@ -67,16 +59,12 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setObjeto({
-            ...objeto,
             titulo,
             descricao,
             dataInicio,
             dataFim: dataFim || null,
-            local,
-            localId: localId || null,
             categoria,
             modalidade: modalidade || null,
-            vagas: vagas ? Number(vagas) : null,
             banner,
             patrocinadorId: patrocinadorId || null
         });
@@ -164,18 +152,6 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-secondary text-primary font-semibold">Vagas <span className="font-normal text-primary/40">(opcional)</span></label>
-                        <input
-                            min="0"
-                            type="number"
-                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
-                            placeholder="Quantidade de vagas"
-                            value={vagas}
-                            onChange={(e) => setVagas(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
                         <label className="text-sm font-secondary text-primary font-semibold">Banner <span className="font-normal text-primary/40">(opcional)</span></label>
                         <input
                             type="url"
@@ -185,47 +161,25 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                             onChange={(e) => setBanner(e.target.value)}
                         />
                     </div>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-secondary text-primary font-semibold">Local <span className="font-normal text-primary/40">(opcional)</span></label>
-                    <Select
-                        isLoading={loading}
-                        options={locaisDisponiveis}
-                        value={locaisDisponiveis.find(l => l.value === localId)}
-                        unstyled
-                        isClearable
-                        onChange={(selectedOption) => {
-                            setLocal(selectedOption ? selectedOption.label : "");
-                            setLocalId(selectedOption ? selectedOption.value : "");
-                        }}
-                        placeholder="Selecione um local"
-                        classNames={{
-                            control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
-                            menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
-                            placeholder: () => "text-primary/75 font-secondary text-sm",
-                            option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
-                        }}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-secondary text-primary font-semibold">Patrocinador <span className="font-normal text-primary/40">(opcional)</span></label>
-                    <Select
-                        isLoading={loading}
-                        options={patrocinadoresDisponiveis}
-                        value={patrocinadoresDisponiveis.find(p => p.value === patrocinadorId)}
-                        unstyled
-                        isClearable
-                        onChange={(selectedOption) => setPatrocinadorId(selectedOption ? selectedOption.value : "")}
-                        placeholder="Selecione um patrocinador"
-                        classNames={{
-                            control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
-                            menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
-                            placeholder: () => "text-primary/75 font-secondary text-sm",
-                            option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
-                        }}
-                    />
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-secondary text-primary font-semibold">Patrocinador <span className="font-normal text-primary/40">(opcional)</span></label>
+                        <Select
+                            isLoading={loading}
+                            options={patrocinadoresDisponiveis}
+                            value={patrocinadoresDisponiveis.find(p => p.value === patrocinadorId)}
+                            unstyled
+                            isClearable
+                            onChange={(selectedOption) => setPatrocinadorId(selectedOption ? selectedOption.value : "")}
+                            placeholder="Selecione um patrocinador"
+                            classNames={{
+                                control: () => "basic-multi-select bg-accent/30 px-4 py-2 h-15 border border-accent/20 rounded-xl text-primary text-sm",
+                                menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+                                placeholder: () => "text-primary/75 font-secondary text-sm",
+                                option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 

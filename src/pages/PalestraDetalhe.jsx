@@ -9,6 +9,7 @@ import {
     ClockIcon,
     InfoIcon,
     LecternIcon,
+    MapPinIcon,
     MedalIcon,
     PencilSimpleIcon,
     QrCodeIcon,
@@ -79,6 +80,7 @@ const PalestraDetalhe = () => {
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
+    const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [inscricoesPresenca, setInscricoesPresenca] = useState([]);
     const [inscricoesSelecionadas, setInscricoesSelecionadas] = useState([]);
     const [buscaParticipante, setBuscaParticipante] = useState("");
@@ -93,6 +95,7 @@ const PalestraDetalhe = () => {
         competenciaIds: [],
         palestranteIds: [],
         eventoId: "",
+        localId: "",
         data: "",
         inicio: "",
         fim: "",
@@ -108,11 +111,12 @@ const PalestraDetalhe = () => {
             if (!idPal) return;
 
             try {
-                const [palRes, compRes, palestrantesRes, eventosRes, inscricoesRes] = await Promise.all([
+                const [palRes, compRes, palestrantesRes, eventosRes, locaisRes, inscricoesRes] = await Promise.all([
                     api.get(`/palestras/${idPal}`),
                     api.get("/competencias"),
                     api.get("/palestrantes"),
                     api.get("/eventos"),
+                    api.get("/locais"),
                     api.get(`/inscricoes/palestra/${idPal}`)
                 ]);
 
@@ -124,6 +128,7 @@ const PalestraDetalhe = () => {
                 setCompetenciasDisponiveis(compRes.data.map((c) => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palestrantesRes.data.map((p) => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eventosRes.data.map((e) => ({ value: e.id, label: e.titulo })));
+                setLocaisDisponiveis(locaisRes.data.map((local) => ({ value: local.id, label: local.nome, capacidade: local.capacidade })));
                 setInscricoesPresenca(inscricoesRes.data);
                 setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
                 setForm({
@@ -132,6 +137,7 @@ const PalestraDetalhe = () => {
                     competenciaIds: palestra.competenciaIds || [],
                     palestranteIds: palestra.palestranteIds || [],
                     eventoId: palestra.eventoId || "",
+                    localId: palestra.localId || "",
                     data: toDateInput(palestra.inicio),
                     inicio: toTimeInput(palestra.inicio),
                     fim: toTimeInput(palestra.fim),
@@ -159,6 +165,7 @@ const PalestraDetalhe = () => {
             JSON.stringify(form.competenciaIds) !== JSON.stringify(palestraData.competenciaIds || []) ||
             JSON.stringify(form.palestranteIds) !== JSON.stringify(palestraData.palestranteIds || []) ||
             form.eventoId !== (palestraData.eventoId || "") ||
+            form.localId !== (palestraData.localId || "") ||
             form.data !== toDateInput(palestraData.inicio) ||
             form.inicio !== toTimeInput(palestraData.inicio) ||
             form.fim !== toTimeInput(palestraData.fim) ||
@@ -172,6 +179,7 @@ const PalestraDetalhe = () => {
     const competenciaNomes = competenciasDisponiveis.filter((c) => (palestraData?.competenciaIds || []).includes(c.value)).map((c) => c.label);
     const palestranteNomes = palestrantesDisponiveis.filter((p) => (palestraData?.palestranteIds || []).includes(p.value)).map((p) => p.label);
     const eventoNome = eventosDisponiveis.find((e) => e.value === palestraData?.eventoId)?.label;
+    const localNome = locaisDisponiveis.find((local) => local.value === palestraData?.localId)?.label || palestraData?.localNome;
     const publicQrUrl = palestraData?.qrCodeToken ? `${window.location.origin}/qrcode/${palestraData.qrCodeToken}` : "";
     const qrFileName = `qrcode-${(palestraData?.titulo || "palestra").toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.png`;
 
@@ -200,6 +208,10 @@ const PalestraDetalhe = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        if (!form.localId) {
+            toast.error("Selecione um local para a palestra.");
+            return;
+        }
         setSaving(true);
 
         const payload = {
@@ -208,6 +220,7 @@ const PalestraDetalhe = () => {
             competenciaIds: form.competenciaIds,
             palestranteIds: form.palestranteIds,
             eventoId: form.eventoId || null,
+            localId: form.localId || null,
             inicio: `${form.data}T${form.inicio}:00`,
             fim: `${form.data}T${form.fim}:00`,
             tipo: form.tipo || null,
@@ -377,6 +390,7 @@ const PalestraDetalhe = () => {
                                 competenciasDisponiveis={competenciasDisponiveis}
                                 palestrantesDisponiveis={palestrantesDisponiveis}
                                 eventosDisponiveis={eventosDisponiveis}
+                                locaisDisponiveis={locaisDisponiveis}
                                 saving={saving}
                                 houveAlteracao={houveAlteracao}
                                 handleSave={handleSave}
@@ -387,6 +401,7 @@ const PalestraDetalhe = () => {
                                 competenciaNomes={competenciaNomes}
                                 palestranteNomes={palestranteNomes}
                                 eventoNome={eventoNome}
+                                localNome={localNome}
                             />
                         )
                     )}
@@ -530,7 +545,7 @@ const PalestraDetalhe = () => {
     );
 };
 
-const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestrantesDisponiveis, eventosDisponiveis, saving, houveAlteracao, handleSave }) => (
+const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestrantesDisponiveis, eventosDisponiveis, locaisDisponiveis, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título da palestra*" className="lg:col-span-2">
@@ -547,6 +562,19 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
             </Field>
             <Field label="Evento" optional>
                 <Select options={eventosDisponiveis} value={eventosDisponiveis.find((e) => e.value === form.eventoId)} unstyled isClearable onChange={(option) => updateForm("eventoId", option ? option.value : "")} placeholder="Selecione um evento" classNames={selectClasses} />
+            </Field>
+            <Field label="Local / Sala*">
+                <Select
+                    options={locaisDisponiveis}
+                    value={locaisDisponiveis.find((local) => local.value === form.localId)}
+                    unstyled
+                    onChange={(option) => {
+                        updateForm("localId", option ? option.value : "");
+                        updateForm("vagas", option?.capacidade ?? "");
+                    }}
+                    placeholder="Selecione um local"
+                    classNames={selectClasses}
+                />
             </Field>
             <Field label="Tipo" optional>
                 <Select options={tiposPalestra} value={tiposPalestra.find((t) => t.value === form.tipo)} unstyled isClearable onChange={(option) => updateForm("tipo", option ? option.value : "")} placeholder="Selecione um tipo" classNames={selectClasses} />
@@ -569,8 +597,8 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
             <Field label="Carga horária" optional>
                 <input min="0" type="number" step="0.5" className={inputClass} value={form.cargaHoraria} onChange={(e) => updateForm("cargaHoraria", e.target.value)} />
             </Field>
-            <Field label="Vagas" optional>
-                <input min="0" type="number" className={inputClass} value={form.vagas} onChange={(e) => updateForm("vagas", e.target.value)} />
+            <Field label="Capacidade" optional>
+                <input min="1" type="number" className={inputClass} value={form.vagas} onChange={(e) => updateForm("vagas", e.target.value)} />
             </Field>
         </div>
         <button disabled={!houveAlteracao || saving} className={`w-full text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl flex items-center justify-center gap-2 ${houveAlteracao ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
@@ -579,7 +607,7 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
     </motion.form>
 );
 
-const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome }) => (
+const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome, localNome }) => (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
@@ -589,6 +617,7 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
                 <DetailCard icon={<UserIcon size={24} />} label="Palestrantes" value={palestranteNomes.join(", ")} />
                 <DetailCard icon={<MedalIcon size={24} />} label="Competências" value={competenciaNomes.join(", ")} />
                 <DetailCard icon={<LecternIcon size={24} />} label="Evento" value={eventoNome || "Sem evento"} />
+                <DetailCard icon={<MapPinIcon size={24} />} label="Local / Sala" value={localNome || "Sem local"} />
                 <DetailCard icon={<InfoIcon size={24} />} label="Tipo" value={formatarEnum(palestraData?.tipo)} />
             </div>
             <div className="flex flex-col gap-2">
@@ -604,7 +633,7 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarEnum(palestraData?.modalidade)} />
                 <DetailCard icon={<CheckCircleIcon size={24} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
                 <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={palestraData?.cargaHoraria ? `${palestraData.cargaHoraria}h` : "-"} />
-                <DetailCard icon={<UsersIcon size={24} />} label="Vagas" value={palestraData?.vagas} />
+                <DetailCard icon={<UsersIcon size={24} />} label="Capacidade" value={palestraData?.vagas} />
                 <DetailCard icon={<QrCodeIcon size={24} />} label="Token QR" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />
             </div>
         </div>

@@ -7,12 +7,10 @@ import {
     HandshakeIcon,
     ImageSquareIcon,
     InfoIcon,
-    MapPinIcon,
     PencilSimpleIcon,
     SlidersHorizontalIcon,
     TagIcon,
     TrashSimpleIcon,
-    UsersIcon,
     XIcon
 } from "@phosphor-icons/react";
 import { useState, useEffect, useMemo } from "react";
@@ -66,7 +64,6 @@ const EventoDetalhe = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [eventData, setEventData] = useState(null);
-    const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
 
     const [form, setForm] = useState({
@@ -74,10 +71,8 @@ const EventoDetalhe = () => {
         descricao: "",
         dataInicio: "",
         dataFim: "",
-        localId: "",
         categoria: "",
         modalidade: "",
-        vagas: "",
         banner: "",
         patrocinadorId: ""
     });
@@ -87,31 +82,26 @@ const EventoDetalhe = () => {
             if (!idEvento) return;
 
             try {
-                const [eventoRes, locaisRes, patrocinadoresRes] = await Promise.all([
+                const [eventoRes, patrocinadoresRes] = await Promise.all([
                     api.get(`/eventos/${idEvento}`),
-                    api.get("/locais"),
                     api.get("/patrocinadores")
                 ]);
 
                 const evento = eventoRes.data;
-                const locais = locaisRes.data.map((local) => ({ value: local.id, label: local.nome }));
                 const patrocinadores = patrocinadoresRes.data.map((patrocinador) => ({
                     value: patrocinador.id,
                     label: formatarPatrocinadorLabel(patrocinador)
                 }));
 
                 setEventData(evento);
-                setLocaisDisponiveis(locais);
                 setPatrocinadoresDisponiveis(patrocinadores);
                 setForm({
                     titulo: evento.titulo || "",
                     descricao: evento.descricao || "",
                     dataInicio: evento.dataInicio || "",
                     dataFim: evento.dataFim || "",
-                    localId: evento.localId || "",
                     categoria: evento.categoria || "",
                     modalidade: evento.modalidade || "",
-                    vagas: evento.vagas ?? "",
                     banner: evento.banner || "",
                     patrocinadorId: evento.patrocinadorId || ""
                 });
@@ -126,7 +116,6 @@ const EventoDetalhe = () => {
         fetchData();
     }, [api, idEvento]);
 
-    const localSelecionado = locaisDisponiveis.find((local) => local.value === form.localId);
     const patrocinadorSelecionado = patrocinadoresDisponiveis.find((patrocinador) => patrocinador.value === form.patrocinadorId);
 
     const houveAlteracao = useMemo(() => {
@@ -136,10 +125,8 @@ const EventoDetalhe = () => {
             form.descricao !== (eventData.descricao || "") ||
             form.dataInicio !== (eventData.dataInicio || "") ||
             form.dataFim !== (eventData.dataFim || "") ||
-            form.localId !== (eventData.localId || "") ||
             form.categoria !== (eventData.categoria || "") ||
             form.modalidade !== (eventData.modalidade || "") ||
-            String(form.vagas) !== String(eventData.vagas ?? "") ||
             form.banner !== (eventData.banner || "") ||
             form.patrocinadorId !== (eventData.patrocinadorId || "");
     }, [eventData, form]);
@@ -157,10 +144,8 @@ const EventoDetalhe = () => {
             descricao: form.descricao,
             dataInicio: form.dataInicio,
             dataFim: form.dataFim || null,
-            localId: form.localId || null,
             categoria: form.categoria,
             modalidade: form.modalidade || null,
-            vagas: form.vagas ? Number(form.vagas) : null,
             banner: form.banner,
             patrocinadorId: form.patrocinadorId || null
         };
@@ -173,10 +158,8 @@ const EventoDetalhe = () => {
                 descricao: response.data.descricao || "",
                 dataInicio: response.data.dataInicio || "",
                 dataFim: response.data.dataFim || "",
-                localId: response.data.localId || "",
                 categoria: response.data.categoria || "",
                 modalidade: response.data.modalidade || "",
-                vagas: response.data.vagas ?? "",
                 banner: response.data.banner || "",
                 patrocinadorId: response.data.patrocinadorId || ""
             });
@@ -279,11 +262,10 @@ const EventoDetalhe = () => {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <SummaryPill icon={<CalendarStarIcon size={18} />} label="Início" value={formatarData(eventData?.dataInicio)} />
-                            <SummaryPill icon={<MapPinIcon size={18} />} label="Local" value={localSelecionado?.label || "Sem local"} />
                             <SummaryPill icon={<TagIcon size={18} />} label="Categoria" value={eventData?.categoria || "-"} />
-                            <SummaryPill icon={<UsersIcon size={18} />} label="Vagas" value={eventData?.vagas ?? "-"} />
+                            <SummaryPill icon={<SlidersHorizontalIcon size={18} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
                         </div>
                     </motion.div>
 
@@ -313,7 +295,6 @@ const EventoDetalhe = () => {
                             <EventoEditForm
                                 form={form}
                                 updateForm={updateForm}
-                                locaisDisponiveis={locaisDisponiveis}
                                 patrocinadoresDisponiveis={patrocinadoresDisponiveis}
                                 modalidades={modalidades}
                                 saving={saving}
@@ -321,7 +302,7 @@ const EventoDetalhe = () => {
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <EventoDetails eventData={eventData} localNome={localSelecionado?.label} patrocinadorNome={patrocinadorSelecionado?.label} />
+                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} />
                         )
                     )}
 
@@ -376,7 +357,7 @@ const EventoDetalhe = () => {
     );
 };
 
-const EventoEditForm = ({ form, updateForm, locaisDisponiveis, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
+const EventoEditForm = ({ form, updateForm, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título do evento*" className="lg:col-span-2">
@@ -395,18 +376,6 @@ const EventoEditForm = ({ form, updateForm, locaisDisponiveis, patrocinadoresDis
                 <input type="date" className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.dataFim} onChange={(e) => updateForm("dataFim", e.target.value)} />
             </Field>
 
-            <Field label="Local" optional>
-                <Select
-                    options={locaisDisponiveis}
-                    value={locaisDisponiveis.find((local) => local.value === form.localId)}
-                    unstyled
-                    isClearable
-                    onChange={(selectedOption) => updateForm("localId", selectedOption ? selectedOption.value : "")}
-                    placeholder="Selecione um local"
-                    classNames={selectClasses}
-                />
-            </Field>
-
             <Field label="Categoria" optional>
                 <input className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.categoria} onChange={(e) => updateForm("categoria", e.target.value)} />
             </Field>
@@ -421,10 +390,6 @@ const EventoEditForm = ({ form, updateForm, locaisDisponiveis, patrocinadoresDis
                     placeholder="Selecione uma modalidade"
                     classNames={selectClasses}
                 />
-            </Field>
-
-            <Field label="Vagas" optional>
-                <input min="0" type="number" className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.vagas} onChange={(e) => updateForm("vagas", e.target.value)} />
             </Field>
 
             <Field label="Patrocinador" optional>
@@ -456,14 +421,13 @@ const EventoEditForm = ({ form, updateForm, locaisDisponiveis, patrocinadoresDis
     </motion.form>
 );
 
-const EventoDetails = ({ eventData, localNome, patrocinadorNome }) => (
+const EventoDetails = ({ eventData, patrocinadorNome }) => (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de início" value={formatarData(eventData?.dataInicio)} />
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de fim" value={formatarData(eventData?.dataFim)} />
-                <DetailCard icon={<MapPinIcon size={24} />} label="Local" value={localNome || "Sem local"} />
                 <DetailCard icon={<TagIcon size={24} />} label="Categoria" value={eventData?.categoria} />
             </div>
             <div className="flex flex-col gap-2">
@@ -478,7 +442,6 @@ const EventoDetails = ({ eventData, localNome, patrocinadorNome }) => (
             <SectionTitle title="Operação" />
             <div className="grid grid-cols-1 gap-4">
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
-                <DetailCard icon={<UsersIcon size={24} />} label="Vagas" value={eventData?.vagas} />
                 <DetailCard icon={<HandshakeIcon size={24} />} label="Patrocinador" value={patrocinadorNome || eventData?.patrocinadorNome} />
                 <DetailCard icon={<ImageSquareIcon size={24} />} label="Banner" value={eventData?.banner} />
             </div>

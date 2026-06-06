@@ -41,7 +41,7 @@ const EventoPalestra = () => {
                     tipo: "Evento",
                     inicio: new Date(e.dataInicio),
                     fim: e.dataFim ? new Date(e.dataFim) : null,
-                    descricao: e.descricao || e.local || e.categoria || "Evento cadastrado",
+                    descricao: e.descricao || e.categoria || "Evento cadastrado",
                     link: `/evento/${e.id}`
                 }));
 

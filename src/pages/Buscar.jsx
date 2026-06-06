@@ -54,7 +54,7 @@ const Buscar = () => {
                     ...e, 
                     tipo: "Evento", 
                     nome: e.titulo, 
-                    descricao: e.local, 
+                    descricao: e.descricao || e.categoria, 
                     inicio: new Date(e.dataInicio) 
                 }));
                 const palestras = palestrasRes.data.map(p => ({ 

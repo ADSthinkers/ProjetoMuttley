@@ -1,15 +1,29 @@
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect, useMemo } from "react";
-import { UserIcon, BookOpenIcon, MedalIcon, IdentificationCardIcon, EnvelopeIcon, HashIcon, TrophyIcon } from "@phosphor-icons/react";
+import { UserIcon, BookOpenIcon, MedalIcon, IdentificationCardIcon, EnvelopeIcon, HashIcon, TrophyIcon, PencilSimpleIcon, XIcon, CheckCircleIcon, CircleNotchIcon } from "@phosphor-icons/react";
 import Avatar from "../utils/Avatar";
 import { useParams } from "react-router-dom";
 import PageTransition, { containerVariants, itemVariants } from "../components/PageTransition"
 import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios';
+import toast, { Toaster } from "react-hot-toast";
+import { isAdmin } from "../utils/auth";
+import { formatCpf } from "../utils/formatters";
+
+const toParticipanteForm = (data = {}) => ({
+    nome: data.nome || "",
+    ra: data.ra || "",
+    cpf: formatCpf(data.cpf || ""),
+    email: data.email || "",
+    email2: data.email2 || "",
+    telefone: data.telefone || "",
+    curso: data.curso || "",
+});
 
 const PerfilParticipante = () => {
     const { id } = useParams();
     const [activeTab, setActiveTab] = useState("dados");
+    const canEdit = isAdmin();
 
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const dbKEY = import.meta.env.VITE_DB_API_KEY;
@@ -25,7 +39,10 @@ const PerfilParticipante = () => {
 
     const [participante, setParticipante] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [form, setForm] = useState(toParticipanteForm());
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,6 +67,7 @@ const PerfilParticipante = () => {
                     xps: xpsRes.data,
                     totalHoras: horasRes.data?.totalHoras || 0
                 });
+                setForm(toParticipanteForm(participanteRes.data));
                 setLoading(false);
             } catch (error) {
                 console.error("Erro ao buscar dados", error);
@@ -59,6 +77,42 @@ const PerfilParticipante = () => {
         };
         fetchData();
     }, [api, id]);
+
+    const updateForm = (field, value) => {
+        setForm((current) => ({ ...current, [field]: value }));
+    };
+
+    const toggleEditing = () => {
+        if (isEditing) {
+            setForm(toParticipanteForm(participante));
+        } else {
+            setActiveTab("dados");
+        }
+        setIsEditing((current) => !current);
+    };
+
+    const handleSave = async (event) => {
+        event.preventDefault();
+        setSaving(true);
+        try {
+            const response = await api.put(`/participantes/${id}`, form);
+            setParticipante((current) => ({
+                ...current,
+                ...response.data,
+            }));
+            setForm(toParticipanteForm(response.data));
+            setIsEditing(false);
+            toast.success("Participante atualizado com sucesso!");
+        } catch (err) {
+            console.error("Erro ao salvar participante:", err);
+            const message = err.response?.data?.message
+                || err.response?.data?.erro
+                || "Erro ao salvar alterações.";
+            toast.error(message);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -100,24 +154,36 @@ const PerfilParticipante = () => {
 
     return (
         <PageTransition>
+            <Toaster position="top-center" reverseOrder={false} />
             <div className="flex bg-base-100 min-h-screen">
                 <Sidebar />
                 <div className="pt-10 pl-5 pr-8 w-full overflow-y-auto h-screen flex flex-col gap-8">
                     
                     {/* Cabeçalho do Perfil */}
-                    <motion.div variants={itemVariants} className="flex items-center gap-6 bg-accent/20 p-8 rounded-3xl relative overflow-hidden group">
-                        <motion.div 
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="w-24 h-24 rounded-full border-4 border-accent shadow-lg flex-shrink-0 z-10"
-                        >
-                            <Avatar email={participante.email} nome={participante.nome} className="w-full h-full rounded-full" />
-                        </motion.div>
-                        <div className="flex flex-col z-10">
-                            <h1 className="text-4xl font-primary text-primary font-bold">{participante.nome}</h1>
-                            <p className="text-primary/60 font-secondary">{participante.curso || "Participante"}</p>
+                    <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-accent/20 p-8 rounded-3xl relative overflow-hidden group">
+                        <div className="flex items-center gap-6 z-10">
+                            <motion.div 
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                className="w-24 h-24 rounded-full border-4 border-accent shadow-lg flex-shrink-0"
+                            >
+                                <Avatar email={participante.email} nome={participante.nome} className="w-full h-full rounded-full" />
+                            </motion.div>
+                            <div className="flex flex-col">
+                                <h1 className="text-4xl font-primary text-primary font-bold">{participante.nome}</h1>
+                                <p className="text-primary/60 font-secondary">{participante.curso || "Participante"}</p>
+                            </div>
                         </div>
+                        {canEdit && (
+                            <button
+                                onClick={toggleEditing}
+                                className={`btn border-0 rounded-xl shadow-none font-secondary text-primary z-10 ${isEditing ? "bg-error/20 hover:bg-error/30" : "bg-accent hover:bg-accent/80"}`}
+                            >
+                                {isEditing ? <XIcon size={20} /> : <PencilSimpleIcon size={20} />}
+                                {isEditing ? "Cancelar" : "Editar Participante"}
+                            </button>
+                        )}
                         {/* Subtle background decoration */}
                         <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-colors" />
                     </motion.div>
@@ -157,14 +223,23 @@ const PerfilParticipante = () => {
                                 transition={{ duration: 0.2 }}
                             >
                                 {activeTab === "dados" && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <InfoCard icon={<IdentificationCardIcon size={24} />} label="CPF" value={participante.cpf} index={0} />
-                                        <InfoCard icon={<HashIcon size={24} />} label="RA" value={participante.ra} index={1} />
-                                        <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail" value={participante.email} index={2} />
-                                        <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail secundário" value={participante.email2} index={3} />
-                                        <InfoCard icon={<HashIcon size={24} />} label="Telefone" value={participante.telefone} index={4} />
-                                        <InfoCard icon={<UserIcon size={24} />} label="Curso" value={participante.curso} index={5} />
-                                    </div>
+                                    isEditing ? (
+                                        <EditParticipanteForm
+                                            form={form}
+                                            saving={saving}
+                                            onChange={updateForm}
+                                            onSubmit={handleSave}
+                                        />
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <InfoCard icon={<IdentificationCardIcon size={24} />} label="CPF" value={formatCpf(participante.cpf || "")} index={0} />
+                                            <InfoCard icon={<HashIcon size={24} />} label="RA" value={participante.ra} index={1} />
+                                            <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail" value={participante.email} index={2} />
+                                            <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail secundário" value={participante.email2} index={3} />
+                                            <InfoCard icon={<HashIcon size={24} />} label="Telefone" value={participante.telefone} index={4} />
+                                            <InfoCard icon={<UserIcon size={24} />} label="Curso" value={participante.curso} index={5} />
+                                        </div>
+                                    )
                                 )}
 
                                 {activeTab === "palestras" && (
@@ -411,6 +486,61 @@ const formatarTipoCompetencia = (tipo) => {
     return "Sem tipo";
 };
 
+const EditParticipanteForm = ({ form, saving, onChange, onSubmit }) => (
+    <motion.form
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        onSubmit={onSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-accent/5 p-8 rounded-3xl border border-accent/10"
+    >
+        <h2 className="text-2xl font-primary text-primary font-bold md:col-span-2">Editar Dados do Participante</h2>
+
+        <Field label="Nome Completo">
+            <input required className={inputClass} value={form.nome || ""} onChange={(e) => onChange("nome", e.target.value)} />
+        </Field>
+
+        <Field label="CPF">
+            <input required maxLength={14} inputMode="numeric" className={inputClass} value={form.cpf || ""} onChange={(e) => onChange("cpf", formatCpf(e.target.value))} />
+        </Field>
+
+        <Field label="RA">
+            <input className={inputClass} value={form.ra || ""} onChange={(e) => onChange("ra", e.target.value)} />
+        </Field>
+
+        <Field label="E-mail Principal">
+            <input required type="email" className={inputClass} value={form.email || ""} onChange={(e) => onChange("email", e.target.value)} />
+        </Field>
+
+        <Field label="E-mail Secundário">
+            <input type="email" className={inputClass} value={form.email2 || ""} onChange={(e) => onChange("email2", e.target.value)} />
+        </Field>
+
+        <Field label="Telefone">
+            <input className={inputClass} value={form.telefone || ""} onChange={(e) => onChange("telefone", e.target.value)} />
+        </Field>
+
+        <Field label="Curso" className="md:col-span-2">
+            <input className={inputClass} value={form.curso || ""} onChange={(e) => onChange("curso", e.target.value)} />
+        </Field>
+
+        <button
+            disabled={saving}
+            type="submit"
+            className="md:col-span-2 w-full py-4 bg-accent text-primary rounded-xl font-primary font-bold flex items-center justify-center gap-2 hover:bg-accent/80 transition-all cursor-pointer disabled:opacity-50"
+        >
+            {saving ? <CircleNotchIcon size={24} className="animate-spin" /> : <><CheckCircleIcon size={24} /> Salvar Alterações</>}
+        </button>
+    </motion.form>
+);
+
+const Field = ({ label, children, className = "" }) => (
+    <div className={`flex flex-col gap-2 ${className}`}>
+        <label className="text-sm font-secondary font-bold text-primary/60 uppercase">{label}</label>
+        {children}
+    </div>
+);
+
+const inputClass = "w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary placeholder:text-primary/30 focus:outline-none focus:border-accent";
 
 const InfoCard = ({ icon, label, value, index }) => (
     <motion.div 

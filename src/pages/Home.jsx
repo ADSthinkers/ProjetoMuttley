@@ -54,7 +54,7 @@ const Home = () => {
                     ...e,
                     tipo: "Evento",
                     ...formatItemDate(e.dataInicio),
-                    descricao: e.local || e.descricao || "Evento cadastrado",
+                    descricao: e.descricao || e.categoria || "Evento cadastrado",
                     link: `/evento/${e.id}`
                 }));
 

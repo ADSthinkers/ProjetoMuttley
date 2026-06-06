@@ -1,5 +1,5 @@
 import Textura from "../assets/textura.webp"
-import { LecternIcon, CalendarStarIcon, CaretRightIcon, ClockIcon, UsersIcon } from "@phosphor-icons/react"
+import { LecternIcon, CalendarStarIcon, CaretRightIcon, ClockIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react"
 import { useNavigate } from "react-router-dom";
 import { getPalestraStatusBadgeClass, getPalestraStatusLabel } from "../utils/palestraStatus";
 
@@ -75,7 +75,12 @@ const CardFull = ({ item, navegarItem }) => (
 
             <div className="grid grid-cols-2 gap-2 mt-auto">
                 <MetaPill icon={<ClockIcon size={15} />} label="Horário" value={formatarHora(item.inicio) || "-"} />
-                <MetaPill icon={<UsersIcon size={15} />} label="Vagas" value={item.vagas ?? "Livre"} />
+                {item.tipo?.toLowerCase() === "palestra" && (
+                    <MetaPill icon={<UsersIcon size={15} />} label="Capacidade" value={item.vagas ?? "Livre"} />
+                )}
+                {item.tipo?.toLowerCase() === "palestra" && item.localNome && (
+                    <MetaPill icon={<MapPinIcon size={15} />} label="Local" value={item.localNome} />
+                )}
                 {item.tipo?.toLowerCase() === "evento" && (
                     <MetaPill icon={<CalendarStarIcon size={15} />} label="Fim" value={formatarData(item.fim) || "-"} />
                 )}

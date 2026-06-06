@@ -145,6 +145,16 @@ const Novo = () => {
                     break;
                 case "evento":
                     endpoint = "/eventos";
+                    data = {
+                        titulo: data.titulo,
+                        descricao: data.descricao,
+                        dataInicio: data.dataInicio,
+                        dataFim: data.dataFim || null,
+                        categoria: data.categoria,
+                        modalidade: data.modalidade || null,
+                        banner: data.banner,
+                        patrocinadorId: data.patrocinadorId || null
+                    };
                     break;
                 case "competência":
                     endpoint = "/competencias";

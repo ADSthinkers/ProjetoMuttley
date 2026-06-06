@@ -49,6 +49,8 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const [competenciaIds, setCompetenciaIds] = useState(objeto?.competenciaIds || []);
     const [evento, setEvento] = useState(objeto?.evento || "");
     const [eventoId, setEventoId] = useState(objeto?.eventoId || "");
+    const [local, setLocal] = useState(objeto?.local || "");
+    const [localId, setLocalId] = useState(objeto?.localId || "");
     const [data, setData] = useState(objeto?.data || "");
     const [inicio, setInicio] = useState(objeto?.inicio ? objeto.inicio.split('T')[1].substring(0,5) : "");
     const [fim, setFim] = useState(objeto?.fim ? objeto.fim.split('T')[1].substring(0,5) : "");
@@ -63,22 +65,25 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
+    const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [compRes, palRes, eveRes, patrocinadoresRes] = await Promise.all([
+                const [compRes, palRes, eveRes, locaisRes, patrocinadoresRes] = await Promise.all([
                     api.get('/competencias'),
                     api.get('/palestrantes'),
                     api.get('/eventos'),
+                    api.get('/locais'),
                     api.get('/patrocinadores')
                 ]);
 
                 setCompetenciasDisponiveis(compRes.data.map(c => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palRes.data.map(p => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eveRes.data.map(e => ({ value: e.id, label: e.titulo, date: e.dataInicio })));
+                setLocaisDisponiveis(locaisRes.data.map(l => ({ value: l.id, label: l.nome, capacidade: l.capacidade })));
                 setPatrocinadoresDisponiveis(
                     patrocinadoresRes.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
                 );
@@ -109,6 +114,11 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
             return;
         }
 
+        if (!localId) {
+            setFormError("Selecione um local para cadastrar a palestra.");
+            return;
+        }
+
         setFormError("");
         
         // Combinando data com horários para LocalDateTime esperado no back
@@ -125,6 +135,8 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
             competencias, // Nomes para exibição na revisão
             evento, // Nome
             eventoId: eventoId || null,
+            local,
+            localId,
             data,
             inicio: startDateTime,
             fim: endDateTime,
@@ -194,12 +206,30 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Field label="Vagas">
+                        <Field label="Local / Sala" required>
+                            <Select
+                                isLoading={loading}
+                                options={locaisDisponiveis}
+                                value={locaisDisponiveis.find(l => l.value === localId)}
+                                unstyled
+                                isClearable
+                                onChange={(selectedOption) => {
+                                    setLocal(selectedOption ? selectedOption.label : "");
+                                    setLocalId(selectedOption ? selectedOption.value : "");
+                                    setVagas(selectedOption?.capacidade ?? "");
+                                    setFormError("");
+                                }}
+                                placeholder="Selecione um local"
+                                classNames={selectClasses}
+                            />
+                        </Field>
+
+                        <Field label="Capacidade">
                             <input
-                                min="0"
+                                min="1"
                                 type="number"
                                 className={inputClass}
-                                placeholder="Quantidade de vagas"
+                                placeholder="Capacidade da palestra"
                                 value={vagas}
                                 onChange={(e) => setVagas(e.target.value)}
                             />
@@ -358,10 +388,10 @@ const selectClasses = {
     option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`
 };
 
-const Field = ({ label, children }) => (
+const Field = ({ label, children, required = false }) => (
     <div className="flex flex-col gap-2">
         <label className="text-base font-secondary font-semibold text-primary">
-            {label} <span className="font-normal text-primary/40">(opcional)</span>
+            {label}{required ? "*" : <span className="font-normal text-primary/40"> (opcional)</span>}
         </label>
         {children}
     </div>

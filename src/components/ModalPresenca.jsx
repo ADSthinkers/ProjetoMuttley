@@ -4,6 +4,47 @@ import Dropzone from 'react-dropzone'
 import toast, { Toaster } from 'react-hot-toast';
 import Avatar from "../utils/Avatar";
 
+const participantes = [
+    {
+        id: 1,
+        nome: "Manon Katseye",
+        cpf: "213.465.879-10",
+        email: "manon.katseye@fatec.sp.gov.br",
+        email2: "ilikethedrama@gameboy.com",
+        checked: true
+    },
+    {
+        id: 2,
+        nome: "Rebecca Black",
+        cpf: "157.143.271-20",
+        email: "rebecca.black@fatec.sp.gov.br",
+        email2: "rebecca@friday.com",
+        checked: false
+    },
+    {
+        id: 3,
+        nome: "Charlingtonglaevionbeecheknavare dos Anjos Mendonça",
+        cpf: "321.654.987-00",
+        email: "charlingtonglaevionbeecheknavare@fatec.sp.gov.br",
+        email2: "charlingtonglaevionbeecheknavare@gmail.com",
+        checked: true
+    },{
+        id: 4,
+        nome: "Miguel Victor",
+        cpf: "123.456.789-10",
+        email: "miguel.victor@fatec.sp.gov.br",
+        email2: "miguel.balbo@yahoo.com.br",
+        checked: false
+    }
+];
+
+const getInitialSelectedIds = (presencaLancada) => {
+    const selecionados = presencaLancada
+        ? participantes.filter((participante) => participante.checked)
+        : participantes;
+
+    return new Set(selecionados.map((participante) => participante.id));
+};
 
 const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) => {
     
@@ -22,49 +63,16 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
         presencaLancada ? null : setTimeout(() => setStepPresenca(1), 300);
     };
 
-    // Mock de participantes para o Passo 3
-    const participantes = [
-        {
-            id: 1,
-            nome: "Manon Katseye",
-            cpf: "213.465.879-10",
-            email: "manon.katseye@fatec.sp.gov.br",
-            email2: "ilikethedrama@gameboy.com",
-            checked: true
-        },
-        {
-            id: 2,
-            nome: "Rebecca Black",
-            cpf: "157.143.271-20",
-            email: "rebecca.black@fatec.sp.gov.br",
-            email2: "rebecca@friday.com",
-            checked: false
-        },
-        {
-            id: 3,
-            nome: "Charlingtonglaevionbeecheknavare dos Anjos Mendonça",
-            cpf: "321.654.987-00",
-            email: "charlingtonglaevionbeecheknavare@fatec.sp.gov.br",
-            email2: "charlingtonglaevionbeecheknavare@gmail.com",
-            checked: true
-        },{
-            id: 4,
-            nome: "Miguel Victor",
-            cpf: "123.456.789-10",
-            email: "miguel.victor@fatec.sp.gov.br",
-            email2: "miguel.balbo@yahoo.com.br",
-            checked: false
-        }
-    ]
-
     // Controle de passos do modal de presença (1, 2 ou 3)
     const [stepPresenca, setStepPresenca] = useState(presencaLancada ? 3 : 1);
+    const [participantesSelecionados, setParticipantesSelecionados] = useState(() => getInitialSelectedIds(presencaLancada));
 
     //Arquivo de presença
     const [filePresenca, setFilePresenca] = useState();
 
     useEffect(() => {
         setStepPresenca(presencaLancada ? 3 : 1);
+        setParticipantesSelecionados(getInitialSelectedIds(presencaLancada));
     }, [presencaLancada]);
 
     //busca de participantes
@@ -77,6 +85,37 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
         p.email2.toLowerCase().includes(busca.toLowerCase()) ||
         p.cpf.toLowerCase().includes(busca.toLowerCase())
     )
+
+    const selecionarTodos = () => {
+        setParticipantesSelecionados(new Set(participantes.map((participante) => participante.id)));
+    };
+
+    const selecionarTodosFiltrados = () => {
+        setParticipantesSelecionados((selecionadosAtuais) => {
+            const proximosSelecionados = new Set(selecionadosAtuais);
+            participantesFiltrados.forEach((participante) => proximosSelecionados.add(participante.id));
+            return proximosSelecionados;
+        });
+    };
+
+    const alternarParticipante = (participanteId) => {
+        setParticipantesSelecionados((selecionadosAtuais) => {
+            const proximosSelecionados = new Set(selecionadosAtuais);
+            if (proximosSelecionados.has(participanteId)) {
+                proximosSelecionados.delete(participanteId);
+            } else {
+                proximosSelecionados.add(participanteId);
+            }
+            return proximosSelecionados;
+        });
+    };
+
+    const abrirSelecaoManual = () => {
+        if (!presencaLancada) {
+            selecionarTodos();
+        }
+        setStepPresenca(3);
+    };
 
 
     return (
@@ -136,7 +175,7 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
                                     </div>
                                     <span className="font-secondary text-primary text-base">Digitar manualmente</span>
                                 </div>
-                                <button onClick={() => setStepPresenca(3)} className="bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary text-sm py-2 px-6 rounded-lg cursor-pointer">
+                                <button onClick={abrirSelecaoManual} className="bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary text-sm py-2 px-6 rounded-lg cursor-pointer">
                                     Digitar manualmente
                                 </button>
                             </div>
@@ -162,6 +201,10 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
                                 setFilePresenca(arquivoSelecionado); 
                                 console.log("Arquivo aceito:", arquivoSelecionado.name);
                                 
+                                if (!presencaLancada) {
+                                    selecionarTodos();
+                                }
+
                                 // Avança para a tela 3 do modal de presença
                                 setStepPresenca(3); 
                             }
@@ -172,7 +215,7 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
                             toast.error("Arquivo inválido. Por favor, envie um CSV ou Excel.")
                         }}
                         
-                        onDrop={acceptedFiles => console.log(acceptedFiles)}>
+                        >
                             {({getRootProps, getInputProps}) => (
                                 <section>
                                     <div {...getRootProps()} className="w-full border-2 border-dashed border-accent/40 bg-accent/5 rounded-xl p-16 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-accent/10 transition-colors">
@@ -192,7 +235,30 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
                         <div className="flex flex-col gap-4">
                             {/* Input de Busca */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-secondary text-primary">Buscar</label>
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div>
+                                        <label className="text-sm font-secondary text-primary">Buscar</label>
+                                        <p className="font-secondary text-xs text-primary/50">{participantesSelecionados.size} de {participantes.length} participantes selecionados</p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {busca.trim() && (
+                                            <button
+                                                type="button"
+                                                onClick={selecionarTodosFiltrados}
+                                                className="bg-accent/20 hover:bg-accent/30 transition-colors text-primary font-secondary text-xs font-medium py-2 px-4 rounded-lg cursor-pointer"
+                                            >
+                                                Selecionar filtrados
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={selecionarTodos}
+                                            className="bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary text-xs font-medium py-2 px-4 rounded-lg cursor-pointer"
+                                        >
+                                            Selecionar todos
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="relative">
                                     <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)}
                                         placeholder="Digite um nome, CPF ou email aqui" 
@@ -207,7 +273,12 @@ const ModalPresenca = ( { notificacao, presencaLancada, setPresencaLancada} ) =>
                                 {participantesFiltrados.map((participante) => (
                                     <div key={participante.id} className="w-full bg-accent/30 rounded-xl p-4 flex items-center justify-between">
                                         <div className="flex items-center gap-4 overflow-hidden">
-                                            <input type="checkbox" defaultChecked={participante.checked} className="checkbox checkbox-sm checkbox-accent text-primary border-primary/20 rounded-sm" />
+                                            <input
+                                                type="checkbox"
+                                                checked={participantesSelecionados.has(participante.id)}
+                                                onChange={() => alternarParticipante(participante.id)}
+                                                className="checkbox checkbox-sm checkbox-accent text-primary border-primary/20 rounded-sm"
+                                            />
                                             <Avatar email={participante.email} nome={participante.nome} />
                                             <div className="flex flex-col truncate">
                                                 <span className="font-secondary text-primary text-sm font-medium truncate">{participante.nome}</span>
