@@ -20,6 +20,8 @@ import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
 import { isAdmin, isPalestrante } from "../utils/auth";
+import CategoriaEventoSelect from "../components/CategoriaEventoSelect";
+import { categoriaSelectClasses } from "../utils/selectStyles";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -44,6 +46,12 @@ const formatarPatrocinadorLabel = (patrocinador) => (
     (patrocinador?.id ? `Patrocinador #${patrocinador.id}` : "-")
 );
 
+const formatarCategoriaLabel = (categoria) => (
+    categoria?.nome ||
+    categoria?.label ||
+    (categoria?.id ? `Categoria #${categoria.id}` : "-")
+);
+
 const EventoDetalhe = () => {
     const { idEvento } = useParams();
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -65,13 +73,14 @@ const EventoDetalhe = () => {
     const [error, setError] = useState(null);
     const [eventData, setEventData] = useState(null);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
+    const [categoriasDisponiveis, setCategoriasDisponiveis] = useState([]);
 
     const [form, setForm] = useState({
         titulo: "",
         descricao: "",
         dataInicio: "",
         dataFim: "",
-        categoria: "",
+        categoriaId: "",
         modalidade: "",
         banner: "",
         patrocinadorId: ""
@@ -82,9 +91,10 @@ const EventoDetalhe = () => {
             if (!idEvento) return;
 
             try {
-                const [eventoRes, patrocinadoresRes] = await Promise.all([
+                const [eventoRes, patrocinadoresRes, categoriasRes] = await Promise.all([
                     api.get(`/eventos/${idEvento}`),
-                    api.get("/patrocinadores")
+                    api.get("/patrocinadores"),
+                    api.get("/categorias-evento")
                 ]);
 
                 const evento = eventoRes.data;
@@ -95,12 +105,13 @@ const EventoDetalhe = () => {
 
                 setEventData(evento);
                 setPatrocinadoresDisponiveis(patrocinadores);
+                setCategoriasDisponiveis(categoriasRes.data);
                 setForm({
                     titulo: evento.titulo || "",
                     descricao: evento.descricao || "",
                     dataInicio: evento.dataInicio || "",
                     dataFim: evento.dataFim || "",
-                    categoria: evento.categoria || "",
+                    categoriaId: evento.categoriaId || "",
                     modalidade: evento.modalidade || "",
                     banner: evento.banner || "",
                     patrocinadorId: evento.patrocinadorId || ""
@@ -117,6 +128,8 @@ const EventoDetalhe = () => {
     }, [api, idEvento]);
 
     const patrocinadorSelecionado = patrocinadoresDisponiveis.find((patrocinador) => patrocinador.value === form.patrocinadorId);
+    const categoriaEvento = categoriasDisponiveis.find((categoria) => categoria.id === eventData?.categoriaId);
+    const categoriaNome = eventData?.categoria || formatarCategoriaLabel(categoriaEvento);
 
     const houveAlteracao = useMemo(() => {
         if (!eventData) return false;
@@ -125,7 +138,7 @@ const EventoDetalhe = () => {
             form.descricao !== (eventData.descricao || "") ||
             form.dataInicio !== (eventData.dataInicio || "") ||
             form.dataFim !== (eventData.dataFim || "") ||
-            form.categoria !== (eventData.categoria || "") ||
+            form.categoriaId !== (eventData.categoriaId || "") ||
             form.modalidade !== (eventData.modalidade || "") ||
             form.banner !== (eventData.banner || "") ||
             form.patrocinadorId !== (eventData.patrocinadorId || "");
@@ -144,7 +157,7 @@ const EventoDetalhe = () => {
             descricao: form.descricao,
             dataInicio: form.dataInicio,
             dataFim: form.dataFim || null,
-            categoria: form.categoria,
+            categoriaId: form.categoriaId || null,
             modalidade: form.modalidade || null,
             banner: form.banner,
             patrocinadorId: form.patrocinadorId || null
@@ -158,7 +171,7 @@ const EventoDetalhe = () => {
                 descricao: response.data.descricao || "",
                 dataInicio: response.data.dataInicio || "",
                 dataFim: response.data.dataFim || "",
-                categoria: response.data.categoria || "",
+                categoriaId: response.data.categoriaId || "",
                 modalidade: response.data.modalidade || "",
                 banner: response.data.banner || "",
                 patrocinadorId: response.data.patrocinadorId || ""
@@ -264,7 +277,7 @@ const EventoDetalhe = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <SummaryPill icon={<CalendarStarIcon size={18} />} label="Início" value={formatarData(eventData?.dataInicio)} />
-                            <SummaryPill icon={<TagIcon size={18} />} label="Categoria" value={eventData?.categoria || "-"} />
+                            <SummaryPill icon={<TagIcon size={18} />} label="Categoria" value={categoriaNome} />
                             <SummaryPill icon={<SlidersHorizontalIcon size={18} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
                         </div>
                     </motion.div>
@@ -295,6 +308,8 @@ const EventoDetalhe = () => {
                             <EventoEditForm
                                 form={form}
                                 updateForm={updateForm}
+                                api={api}
+                                setCategoriasDisponiveis={setCategoriasDisponiveis}
                                 patrocinadoresDisponiveis={patrocinadoresDisponiveis}
                                 modalidades={modalidades}
                                 saving={saving}
@@ -302,7 +317,7 @@ const EventoDetalhe = () => {
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} />
+                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} categoriaNome={categoriaNome} />
                         )
                     )}
 
@@ -357,7 +372,7 @@ const EventoDetalhe = () => {
     );
 };
 
-const EventoEditForm = ({ form, updateForm, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
+const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título do evento*" className="lg:col-span-2">
@@ -377,7 +392,13 @@ const EventoEditForm = ({ form, updateForm, patrocinadoresDisponiveis, modalidad
             </Field>
 
             <Field label="Categoria" optional>
-                <input className="w-full p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80 text-sm" value={form.categoria} onChange={(e) => updateForm("categoria", e.target.value)} />
+                <CategoriaEventoSelect
+                    api={api}
+                    value={form.categoriaId}
+                    onChange={(value) => updateForm("categoriaId", value)}
+                    onCategoriesChange={setCategoriasDisponiveis}
+                    classNames={categoriaSelectClasses}
+                />
             </Field>
 
             <Field label="Modalidade" optional>
@@ -421,14 +442,14 @@ const EventoEditForm = ({ form, updateForm, patrocinadoresDisponiveis, modalidad
     </motion.form>
 );
 
-const EventoDetails = ({ eventData, patrocinadorNome }) => (
+const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome }) => (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de início" value={formatarData(eventData?.dataInicio)} />
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de fim" value={formatarData(eventData?.dataFim)} />
-                <DetailCard icon={<TagIcon size={24} />} label="Categoria" value={eventData?.categoria} />
+                <DetailCard icon={<TagIcon size={24} />} label="Categoria" value={categoriaNome} />
             </div>
             <div className="flex flex-col gap-2">
                 <span className="text-xs font-secondary text-primary/50 uppercase">Descrição</span>

@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import Select from 'react-select';
 import axios from 'axios';
+import CategoriaEventoSelect from "./CategoriaEventoSelect";
+import { categoriaSelectClasses } from "../utils/selectStyles";
 
 const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -19,7 +21,7 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const [descricao, setDescricao] = useState(objeto?.descricao || "");
     const [dataInicio, setDataInicio] = useState(objeto?.dataInicio || "");
     const [dataFim, setDataFim] = useState(objeto?.dataFim || "");
-    const [categoria, setCategoria] = useState(objeto?.categoria || "");
+    const [categoriaId, setCategoriaId] = useState(objeto?.categoriaId || "");
     const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
     const [banner, setBanner] = useState(objeto?.banner || "");
     const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
@@ -63,7 +65,7 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
             descricao,
             dataInicio,
             dataFim: dataFim || null,
-            categoria,
+            categoriaId: categoriaId || null,
             modalidade: modalidade || null,
             banner,
             patrocinadorId: patrocinadorId || null
@@ -122,12 +124,11 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-secondary text-primary font-semibold">Categoria <span className="font-normal text-primary/40">(opcional)</span></label>
-                        <input
-                            type="text"
-                            className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
-                            placeholder="Ex: Semana acadêmica"
-                            value={categoria}
-                            onChange={(e) => setCategoria(e.target.value)}
+                        <CategoriaEventoSelect
+                            api={api}
+                            value={categoriaId}
+                            onChange={setCategoriaId}
+                            classNames={categoriaSelectClasses}
                         />
                     </div>
 

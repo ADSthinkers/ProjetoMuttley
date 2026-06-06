@@ -150,7 +150,7 @@ const Novo = () => {
                         descricao: data.descricao,
                         dataInicio: data.dataInicio,
                         dataFim: data.dataFim || null,
-                        categoria: data.categoria,
+                        categoriaId: data.categoriaId || null,
                         modalidade: data.modalidade || null,
                         banner: data.banner,
                         patrocinadorId: data.patrocinadorId || null
