@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Participação</title>
+    <title>Registrar Inscrição</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -24,7 +24,7 @@
 <body>
     <div class="card">
         <div style="text-align:center;">
-            <span class="evento-badge">Registro de Presença</span>
+            <span class="evento-badge">Inscrição</span>
         </div>
         <h2 th:text="${palestra.titulo}">Palestra</h2>
         <p class="palestra-titulo" th:text="${palestra.descricao}"></p>
@@ -40,7 +40,7 @@
                 <label>E-mail</label>
                 <input type="email" name="email" placeholder="seu@email.com" required>
             </div>
-            <button type="submit" class="btn">Confirmar Presença</button>
+            <button type="submit" class="btn">Confirmar Inscrição</button>
         </form>
 
         <p class="divider">Primeira vez? Preencha e clique para se cadastrar automaticamente.</p>

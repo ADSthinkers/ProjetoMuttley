@@ -2,12 +2,12 @@ package com.fateczl.muttley.qrcode;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
+import com.fateczl.muttley.inscricao.Inscricao;
+import com.fateczl.muttley.inscricao.InscricaoDTO;
 import com.fateczl.muttley.inscricao.InscricaoService;
+import com.fateczl.muttley.inscricao.StatusInscricao;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
-import com.fateczl.muttley.participacao.ParticipacaoDTO;
-import com.fateczl.muttley.participacao.ParticipacaoRepository;
-import com.fateczl.muttley.participacao.ParticipacaoService;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteDTO;
 import com.fateczl.muttley.participante.ParticipanteService;
@@ -17,35 +17,27 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.temporal.ChronoUnit;
-
-// controlador responsável pelo fluxo de check-in via QR Code, identificação e cadastro de participantes
+// controlador responsável pelo fluxo de inscrição via QR Code, identificação e cadastro de participantes
 @Controller
 @RequestMapping("/participar")
 public class QrRegistroController {
 
     private final PalestraService palestraService;
     private final ParticipanteService participanteService;
-    private final ParticipacaoService participacaoService;
-    private final ParticipacaoRepository participacaoRepository;
     private final InscricaoService inscricaoService;
     private final AuditoriaService auditoriaService;
 
     public QrRegistroController(PalestraService palestraService,
                                   ParticipanteService participanteService,
-                                  ParticipacaoService participacaoService,
-                                  ParticipacaoRepository participacaoRepository,
                                   InscricaoService inscricaoService,
                                   AuditoriaService auditoriaService) {
         this.palestraService = palestraService;
         this.participanteService = participanteService;
-        this.participacaoService = participacaoService;
-        this.participacaoRepository = participacaoRepository;
         this.inscricaoService = inscricaoService;
         this.auditoriaService = auditoriaService;
     }
 
-    // exibe a página de identificação do participante ao escanear o QR Code da palestra
+    // exibe a página de identificação do participante ao escanear o QR Code de inscrição da palestra
     @GetMapping("/{token}")
     public String mostrarIdentificacao(@PathVariable String token, Model model) {
         Palestra palestra = palestraService.findByQrCodeToken(token).orElse(null);
@@ -58,7 +50,7 @@ public class QrRegistroController {
         return "qrcode/identificacao";
     }
 
-    // verifica a identidade pelo CPF e e-mail e registra a presença ou redireciona para o cadastro
+    // verifica a identidade pelo CPF e e-mail e registra a inscrição ou redireciona para o cadastro
     @PostMapping("/{token}")
     public String verificarIdentidade(@PathVariable String token,
                                        @RequestParam String cpf,
@@ -85,10 +77,12 @@ public class QrRegistroController {
             return "redirect:/participar/" + token + "/cadastro";
         }
 
-        if (participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
+        Inscricao inscricao = inscricaoService.buscarPorParticipanteEPalestra(participante.getId(), palestra.getId())
+                .orElse(null);
+        if (inscricao != null && inscricao.getStatus() != StatusInscricao.CANCELADA) {
             model.addAttribute("palestra", palestra);
             model.addAttribute("token", token);
-            model.addAttribute("aviso", "Presença já registrada nesta palestra, " + participante.getNome() + "!");
+            model.addAttribute("aviso", "Inscrição já registrada nesta palestra, " + participante.getNome() + "!");
             return "qrcode/identificacao";
         }
 
@@ -99,7 +93,7 @@ public class QrRegistroController {
             return "qrcode/identificacao";
         }
 
-        registrarPresenca(participante, palestra);
+        registrarInscricao(participante, palestra);
 
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
         redirectAttributes.addFlashAttribute("palestraTitulo", palestra.getTitulo());
@@ -119,7 +113,7 @@ public class QrRegistroController {
         return "qrcode/cadastro";
     }
 
-    // cadastra um novo participante via QR Code e registra a presença na palestra
+    // cadastra um novo participante via QR Code e registra a inscrição na palestra
     @PostMapping("/{token}/cadastro")
     public String cadastrar(@PathVariable String token,
                              @RequestParam String nome,
@@ -148,14 +142,16 @@ public class QrRegistroController {
             participante = participanteService.salvarOuAtualizar(novoDto);
         }
 
-        if (!participacaoRepository.existsByParticipanteIdAndPalestraId(participante.getId(), palestra.getId())) {
+        Inscricao inscricao = inscricaoService.buscarPorParticipanteEPalestra(participante.getId(), palestra.getId())
+                .orElse(null);
+        if (inscricao == null || inscricao.getStatus() == StatusInscricao.CANCELADA) {
             if (!inscricaoService.temVagaDisponivel(palestra.getId(), palestra.getVagas())) {
                 model.addAttribute("palestra", palestra);
                 model.addAttribute("token", token);
                 model.addAttribute("erro", "A capacidade máxima desta palestra já foi atingida.");
                 return "qrcode/cadastro";
             }
-            registrarPresenca(participante, palestra);
+            registrarInscricao(participante, palestra);
         }
 
         redirectAttributes.addFlashAttribute("nomeParticipante", participante.getNome());
@@ -163,29 +159,25 @@ public class QrRegistroController {
         return "redirect:/participar/" + token + "/sucesso";
     }
 
-    // exibe a página de sucesso após o check-in ser realizado com êxito
+    // exibe a página de sucesso após a inscrição ser realizada com êxito
     @GetMapping("/{token}/sucesso")
     public String sucesso(@PathVariable String token, Model model) {
         return "qrcode/sucesso";
     }
 
-    // registra a participação, confirma a inscrição e gera entrada de auditoria de check-in
-    private void registrarPresenca(Participante participante, Palestra palestra) {
-        float horas = calcularHoras(palestra);
-        participacaoService.salvarOuAtualizar(
-                new ParticipacaoDTO(null, horas, participante.getId(), palestra.getId()));
+    // registra a inscrição pendente e gera entrada de auditoria
+    private void registrarInscricao(Participante participante, Palestra palestra) {
+        inscricaoService.inscrever(new InscricaoDTO(
+                null,
+                participante.getId(),
+                palestra.getId(),
+                null,
+                StatusInscricao.PENDENTE,
+                null
+        ));
 
-        inscricaoService.confirmarPresenca(participante.getId(), palestra.getId());
-
-        auditoriaService.registrar(AcaoAuditoria.CHECK_IN, "Palestra", palestra.getId(),
-                "Check-in de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
+        auditoriaService.registrar(AcaoAuditoria.INSCRICAO_CRIADA, "Palestra", palestra.getId(),
+                "Inscrição via QR Code de " + participante.getNome() + " na palestra: " + palestra.getTitulo(),
                 participante.getNome());
-    }
-
-    // calcula a duração da palestra em horas com mínimo de 1 hora
-    private float calcularHoras(Palestra palestra) {
-        if (palestra.getInicio() == null || palestra.getFim() == null) return 1f;
-        long horas = ChronoUnit.HOURS.between(palestra.getInicio(), palestra.getFim());
-        return Math.max(1f, (float) horas);
     }
 }

@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface PalestraRepository extends JpaRepository<Palestra, Long> {
 
     Optional<Palestra> findByQrCodeToken(String qrCodeToken);
+
+    Optional<Palestra> findByQrCodeCheckinToken(String qrCodeCheckinToken);
 }

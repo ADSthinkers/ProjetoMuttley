@@ -36,6 +36,7 @@ public record PalestraDTO(
     LocalDateTime fim,
 
     String qrCodeToken,
+    String qrCodeCheckinToken,
     TipoPalestra tipo,
     Modalidade modalidade,
     Float cargaHoraria,

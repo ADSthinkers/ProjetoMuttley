@@ -8,5 +8,7 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
 
     Optional<Participante> findByCpfAndEmail(String cpf, String email);
 
+    Optional<Participante> findByCpf(String cpf);
+
     boolean existsByCpf(String cpf);
 }

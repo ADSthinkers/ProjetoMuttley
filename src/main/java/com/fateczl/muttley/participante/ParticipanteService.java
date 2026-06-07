@@ -45,6 +45,10 @@ public class ParticipanteService {
         return repository.findByCpfAndEmail(cpf, email);
     }
 
+    public Optional<Participante> buscarPorCpf(String cpf) {
+        return repository.findByCpf(cpf);
+    }
+
     // remove um participante pelo seu identificador
     public void deletar(Long id) {
         repository.deleteById(id);

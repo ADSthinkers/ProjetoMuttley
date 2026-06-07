@@ -74,18 +74,34 @@ public class PalestraService {
         return palestraRepository.findById(id);
     }
 
-    // busca uma palestra pelo seu token QR Code para identificação no check-in
+    // busca uma palestra pelo seu token QR Code de inscrição
     public Optional<Palestra> findByQrCodeToken(String token) {
         return palestraRepository.findByQrCodeToken(token);
     }
 
-    // garante que a palestra possua um token QR Code, gerando um novo caso não tenha
+    // busca uma palestra pelo seu token QR Code de check-in
+    public Optional<Palestra> findByQrCodeCheckinToken(String token) {
+        return palestraRepository.findByQrCodeCheckinToken(token);
+    }
+
+    // garante que a palestra possua um token QR Code de inscrição, gerando um novo caso não tenha
      
     public Palestra garantirToken(Long id) {
         Palestra palestra = palestraRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
         if (palestra.getQrCodeToken() == null) {
             palestra.setQrCodeToken(UUID.randomUUID().toString());
+            palestra = palestraRepository.save(palestra);
+        }
+        return palestra;
+    }
+
+    // garante que a palestra possua um token QR Code de check-in, gerando um novo caso não tenha
+    public Palestra garantirCheckinToken(Long id) {
+        Palestra palestra = palestraRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+        if (palestra.getQrCodeCheckinToken() == null) {
+            palestra.setQrCodeCheckinToken(UUID.randomUUID().toString());
             palestra = palestraRepository.save(palestra);
         }
         return palestra;
@@ -177,6 +193,7 @@ public class PalestraService {
             nova.setPatrocinador(patrocinador);
             nova.setCargaHoraria(cargaHoraria);
             nova.setQrCodeToken(UUID.randomUUID().toString());
+            nova.setQrCodeCheckinToken(UUID.randomUUID().toString());
             nova.setStatus(StatusPalestra.PENDENTE);
             return palestraRepository.save(nova);
         }

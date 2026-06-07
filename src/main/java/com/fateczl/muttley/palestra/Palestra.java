@@ -70,6 +70,9 @@ public class Palestra {
     @Column(unique = true)
     private String qrCodeToken;
 
+    @Column(unique = true)
+    private String qrCodeCheckinToken;
+
     @ManyToOne
     @JoinColumn(name = "patrocinador_id")
     private Patrocinador patrocinador;

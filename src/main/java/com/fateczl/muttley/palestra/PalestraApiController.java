@@ -35,8 +35,10 @@ public class PalestraApiController {
     // busca uma palestra pelo seu identificador
     @GetMapping("/{id}")
     public ResponseEntity<PalestraDTO> buscarPorId(@PathVariable Long id) {
-        return service.findById(id).map(mapper::toDto).map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+        service.garantirToken(id);
+        Palestra palestra = service.garantirCheckinToken(id);
+        return ResponseEntity.ok(mapper.toDto(palestra));
     }
 
     // cria uma nova palestra e registra a ação no log de auditoria
@@ -56,7 +58,7 @@ public class PalestraApiController {
                                                   HttpServletRequest request) {
         PalestraDTO dtoComId = new PalestraDTO(
                 id, dto.titulo(), dto.descricao(), dto.competenciaIds(), dto.palestranteIds(),
-                dto.eventoId(), dto.localId(), dto.inicio(), dto.fim(), null,
+                dto.eventoId(), dto.localId(), dto.inicio(), dto.fim(), null, null,
                 dto.tipo(), dto.modalidade(), dto.cargaHoraria(), dto.vagas(), dto.banner(),
                 dto.patrocinadorId(), dto.status());
         Palestra salva = service.saveOrUpdate(dtoComId);

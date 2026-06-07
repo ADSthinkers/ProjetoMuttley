@@ -23,6 +23,7 @@ public interface PalestraMapper {
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "local", ignore = true)
     @Mapping(target = "qrCodeToken", ignore = true)
+    @Mapping(target = "qrCodeCheckinToken", ignore = true)
     @Mapping(target = "patrocinador", ignore = true)
     Palestra toEntity(PalestraDTO dto);
 
@@ -32,6 +33,7 @@ public interface PalestraMapper {
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "local", ignore = true)
     @Mapping(target = "qrCodeToken", ignore = true)
+    @Mapping(target = "qrCodeCheckinToken", ignore = true)
     @Mapping(target = "patrocinador", ignore = true)
     void updateEntityFromDto(PalestraDTO dto, @MappingTarget Palestra palestra);
 

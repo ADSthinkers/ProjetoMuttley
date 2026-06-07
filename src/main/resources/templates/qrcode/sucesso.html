@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presença Registrada</title>
+    <title>Inscrição Registrada</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -19,18 +19,18 @@
 <body>
     <div class="card">
         <div class="check-icon">✅</div>
-        <h2>Presença Registrada!</h2>
+        <h2>Inscrição Registrada!</h2>
 
         <p class="nome" th:if="${nomeParticipante != null}">
             Olá, <strong th:text="${nomeParticipante}">Participante</strong>!
         </p>
         <p class="palestra" th:if="${palestraTitulo != null}">
-            Sua presença em <strong th:text="${palestraTitulo}">Palestra</strong> foi registrada com sucesso.
+            Sua inscrição em <strong th:text="${palestraTitulo}">Palestra</strong> foi registrada com sucesso.
         </p>
 
         <div class="info-box">
             <strong>Tudo certo por aqui!</strong>
-            Seu certificado e medalha serão emitidos pelo palestrante ao encerramento da palestra.
+            Use o QR Code de check-in da palestra para confirmar presença e receber o certificado por e-mail.
         </div>
     </div>
 </body>

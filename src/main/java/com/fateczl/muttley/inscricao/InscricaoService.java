@@ -54,24 +54,14 @@ public class InscricaoService {
         return repository.save(inscricao);
     }
 
-    // confirma a presença do participante na palestra, criando inscrição se ainda não existir
+    // confirma a presença do participante na palestra somente se a inscrição já existir
     public Inscricao confirmarPresenca(Long participanteId, Long palestraId) {
         return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
                 .map(i -> {
                     i.setStatus(StatusInscricao.CONFIRMADA);
                     return repository.save(i);
                 })
-                .orElseGet(() -> {
-                    Participante p = participanteRepository.findById(participanteId)
-                            .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
-                    Palestra palestra = palestraRepository.findById(palestraId)
-                            .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
-                    Inscricao nova = new Inscricao();
-                    nova.setParticipante(p);
-                    nova.setPalestra(palestra);
-                    nova.setStatus(StatusInscricao.CONFIRMADA);
-                    return repository.save(nova);
-                });
+                .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
     }
 
     // lista todas as inscrições de uma palestra específica
