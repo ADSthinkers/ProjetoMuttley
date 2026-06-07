@@ -12,6 +12,7 @@ const tiposCompetencia = [
 ];
 
 const formatarTipo = (tipo) => tiposCompetencia.find((t) => t.value === tipo)?.label || "Sem tipo";
+const formatarHorasEvolucao = (horas) => `${Number(horas || 5)}h por nível`;
 
 const getApiErrorMessage = (err) => {
     const data = err.response?.data;
@@ -42,7 +43,7 @@ const Competencias = () => {
     const [deleting, setDeleting] = useState(false);
     const [competenciaEditando, setCompetenciaEditando] = useState(null);
     const [competenciaExcluindo, setCompetenciaExcluindo] = useState(null);
-    const [form, setForm] = useState({ nome: "", tipo: "" });
+    const [form, setForm] = useState({ nome: "", tipo: "", horasParaEvoluir: "5" });
 
     const fetchData = async () => {
         if (!dbURL || !dbKEY) {
@@ -82,7 +83,11 @@ const Competencias = () => {
 
     const abrirEdicao = (competencia) => {
         setCompetenciaEditando(competencia);
-        setForm({ nome: competencia.nome || "", tipo: competencia.tipo || "" });
+        setForm({
+            nome: competencia.nome || "",
+            tipo: competencia.tipo || "",
+            horasParaEvoluir: String(competencia.horasParaEvoluir || 5)
+        });
     };
 
     const salvarEdicao = async (e) => {
@@ -93,7 +98,8 @@ const Competencias = () => {
         try {
             const response = await api.put(`/competencias/${competenciaEditando.id}`, {
                 nome: form.nome,
-                tipo: form.tipo || null
+                tipo: form.tipo || null,
+                horasParaEvoluir: Number(form.horasParaEvoluir) || 5
             });
 
             setCompetencias((current) => (current || []).map((competencia) => (
@@ -205,6 +211,9 @@ const Competencias = () => {
                                         <span className="badge bg-accent/60 border-0 text-primary rounded-xl font-secondary w-fit">
                                             {formatarTipo(c.tipo)}
                                         </span>
+                                        <span className="badge bg-base-100/60 border-0 text-primary rounded-xl font-secondary w-fit">
+                                            {formatarHorasEvolucao(c.horasParaEvoluir)}
+                                        </span>
                                         {c.atribuida !== undefined && (
                                             <span className="text-xs font-secondary text-primary/60 underline underline-offset-2 decoration-primary/20 group-hover:decoration-primary/60 transition-colors">
                                                 Atribuído a {c.atribuida} palestras
@@ -274,6 +283,18 @@ const Competencias = () => {
                                     <option key={tipo.value} value={tipo.value}>{tipo.label}</option>
                                 ))}
                             </select>
+                        </Field>
+
+                        <Field label="Horas para evoluir de nível*">
+                            <input
+                                required
+                                min="1"
+                                step="1"
+                                type="number"
+                                className={inputClass}
+                                value={form.horasParaEvoluir}
+                                onChange={(e) => setForm((current) => ({ ...current, horasParaEvoluir: e.target.value }))}
+                            />
                         </Field>
 
                         <button disabled={saving} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary">

@@ -3,6 +3,7 @@ import { useState } from "react";
 const CompetenciaForm = ({ setObjeto, setEtapa }) => {
     const [nome, setNome] = useState("");
     const [tipo, setTipo] = useState("");
+    const [horasParaEvoluir, setHorasParaEvoluir] = useState("5");
 
     const tiposCompetencia = [
         { value: "HARD_SKILL", label: "Hard Skill" },
@@ -13,7 +14,8 @@ const CompetenciaForm = ({ setObjeto, setEtapa }) => {
         e.preventDefault();
         setObjeto({
             nome: nome,
-            tipo: tipo || null
+            tipo: tipo || null,
+            horasParaEvoluir: Number(horasParaEvoluir) || 5
         });
         setEtapa(3);
     };
@@ -45,6 +47,20 @@ const CompetenciaForm = ({ setObjeto, setEtapa }) => {
                             <option key={opcao.value} value={opcao.value}>{opcao.label}</option>
                         ))}
                     </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Horas para evoluir de nível*</label>
+                    <input
+                        required
+                        type="number"
+                        min="1"
+                        step="1"
+                        className="w-full text-sm p-4 bg-accent/30 border border-accent/20 rounded-xl font-secondary text-primary/80"
+                        placeholder="Ex: 3"
+                        value={horasParaEvoluir}
+                        onChange={(e) => setHorasParaEvoluir(e.target.value)}
+                    />
                 </div>
             </div>
 

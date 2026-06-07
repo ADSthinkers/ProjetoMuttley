@@ -373,7 +373,7 @@ const CompetenciasXp = ({ participante }) => {
             {competenciasComXp.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {competenciasComXp.map((competencia, index) => {
-                        const nivel = calcularNivel(competencia.horas);
+                        const nivel = calcularNivel(competencia.horas, competencia.horasParaEvoluir);
                         return (
                             <motion.div
                                 key={competencia.id || index}
@@ -396,6 +396,8 @@ const CompetenciasXp = ({ participante }) => {
                                 <div className="grid grid-cols-2 gap-3">
                                     <XpMetric label="Nível" value={nivel.nivel} />
                                     <XpMetric label="Horas totais" value={`${formatarHoras(competencia.horas)}h`} />
+                                    <XpMetric label="Horas por nível" value={`${formatarHoras(competencia.horasParaEvoluir || 5)}h`} />
+                                    <XpMetric label="Próximo nível" value={`${formatarHoras(nivel.horasRestantes)}h`} />
                                 </div>
                             </motion.div>
                         );
@@ -421,6 +423,7 @@ const montarCompetenciasComXp = (participante) => {
         id: competencia.id,
         nome: competencia.nome,
         tipo: competencia.tipo,
+        horasParaEvoluir: competencia.horasParaEvoluir || 5,
         horas: horasPorCompetenciaId.get(competencia.id) || 0
     }));
 
@@ -430,6 +433,7 @@ const montarCompetenciasComXp = (participante) => {
             id: xp.competenciaId,
             nome: `Competência #${xp.competenciaId}`,
             tipo: null,
+            horasParaEvoluir: 5,
             horas: Number(xp.horas || 0)
         }));
 
@@ -440,22 +444,24 @@ const montarCompetenciasComXp = (participante) => {
             return {
                 ...competencia,
                 nome: competenciaCadastrada?.nome || competencia.nome,
-                tipo: competenciaCadastrada?.tipo || competencia.tipo
+                tipo: competenciaCadastrada?.tipo || competencia.tipo,
+                horasParaEvoluir: competenciaCadastrada?.horasParaEvoluir || competencia.horasParaEvoluir || 5
             };
         })
         .sort((a, b) => b.horas - a.horas || a.nome.localeCompare(b.nome));
 };
 
-const calcularNivel = (horas) => {
+const calcularNivel = (horas, horasPorNivel = 5) => {
     const total = Math.max(0, Number(horas || 0));
-    const nivel = Math.floor(total / 5) + 1;
-    const progresso = ((total % 5) / 5) * 100;
-    const horasRestantes = progresso === 0 && total > 0 ? 5 : 5 - (total % 5);
+    const meta = Math.max(1, Number(horasPorNivel || 5));
+    const nivel = Math.floor(total / meta) + 1;
+    const progresso = ((total % meta) / meta) * 100;
+    const horasRestantes = progresso === 0 && total > 0 ? meta : meta - (total % meta);
 
     return {
         nivel,
         progresso,
-        horasRestantes: Math.min(5, horasRestantes)
+        horasRestantes: Math.min(meta, horasRestantes)
     };
 };
 
