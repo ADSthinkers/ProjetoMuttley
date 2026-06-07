@@ -82,11 +82,9 @@ const PalestraDetalhe = () => {
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
     const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [inscricoesPresenca, setInscricoesPresenca] = useState([]);
-    const [inscricoesSelecionadas, setInscricoesSelecionadas] = useState([]);
     const [buscaParticipante, setBuscaParticipante] = useState("");
-    const [isConcluido, setIsConcluido] = useState(false);
-    const [presencaLancada, setPresencaLancada] = useState(false);
     const [qrAberto, setQrAberto] = useState(false);
+    const [qrTipo, setQrTipo] = useState("inscricao");
     const [qrDataUrl, setQrDataUrl] = useState("");
 
     const [form, setForm] = useState({
@@ -121,16 +119,12 @@ const PalestraDetalhe = () => {
                 ]);
 
                 const palestra = palRes.data;
-                const status = palestra.status || "PENDENTE";
                 setPalestraData(palestra);
-                setIsConcluido(status !== "PENDENTE");
-                setPresencaLancada(status === "CERTIFICADOS_EMITIDOS");
                 setCompetenciasDisponiveis(compRes.data.map((c) => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palestrantesRes.data.map((p) => ({ value: p.id, label: p.nome })));
                 setEventosDisponiveis(eventosRes.data.map((e) => ({ value: e.id, label: e.titulo })));
                 setLocaisDisponiveis(locaisRes.data.map((local) => ({ value: local.id, label: local.nome, capacidade: local.capacidade })));
                 setInscricoesPresenca(inscricoesRes.data);
-                setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
                 setForm({
                     titulo: palestra.titulo || "",
                     descricao: palestra.descricao || "",
@@ -180,8 +174,10 @@ const PalestraDetalhe = () => {
     const palestranteNomes = palestrantesDisponiveis.filter((p) => (palestraData?.palestranteIds || []).includes(p.value)).map((p) => p.label);
     const eventoNome = eventosDisponiveis.find((e) => e.value === palestraData?.eventoId)?.label;
     const localNome = locaisDisponiveis.find((local) => local.value === palestraData?.localId)?.label || palestraData?.localNome;
-    const publicQrUrl = palestraData?.qrCodeToken ? `${window.location.origin}/qrcode/${palestraData.qrCodeToken}` : "";
-    const qrFileName = `qrcode-${(palestraData?.titulo || "palestra").toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.png`;
+    const publicInscricaoQrUrl = palestraData?.qrCodeToken ? `${window.location.origin}/inscricao/qrcode/${palestraData.qrCodeToken}` : "";
+    const publicCheckinQrUrl = palestraData?.qrCodeCheckinToken ? `${window.location.origin}/checkin/qrcode/${palestraData.qrCodeCheckinToken}` : "";
+    const publicQrUrl = qrTipo === "checkin" ? publicCheckinQrUrl : publicInscricaoQrUrl;
+    const qrFileName = `qrcode-${qrTipo}-${(palestraData?.titulo || "palestra").toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.png`;
 
     const updateForm = (field, value) => {
         setForm((current) => ({ ...current, [field]: value }));
@@ -189,6 +185,7 @@ const PalestraDetalhe = () => {
 
     useEffect(() => {
         if (!qrAberto || !publicQrUrl) return;
+        setQrDataUrl("");
 
         QRCode.toDataURL(publicQrUrl, {
             width: 280,
@@ -233,9 +230,6 @@ const PalestraDetalhe = () => {
         try {
             const response = await api.put(`/palestras/${idPal}`, payload);
             setPalestraData(response.data);
-            const status = response.data.status || "PENDENTE";
-            setIsConcluido(status !== "PENDENTE");
-            setPresencaLancada(status === "CERTIFICADOS_EMITIDOS");
             setIsEditing(false);
             toast.success("Palestra atualizada com sucesso.");
         } catch (err) {
@@ -257,34 +251,25 @@ const PalestraDetalhe = () => {
         }
     };
 
-    const abrirPresenca = () => {
-        setIsConcluido(true);
+    const abrirPresenca = async () => {
+        try {
+            const inscricoesRes = await api.get(`/inscricoes/palestra/${idPal}`);
+            setInscricoesPresenca(inscricoesRes.data);
+        } catch (err) {
+            console.error("Erro ao atualizar lista de presença:", err);
+            toast.error("Não foi possível atualizar a lista de presença.");
+        }
         document.getElementById("modal_lancar_presenca").showModal();
     };
 
-    const confirmarPresenca = async () => {
-        if (inscricoesSelecionadas.length === 0) {
-            toast.error("Selecione pelo menos um check-in.");
+    const abrirQr = (tipo) => {
+        const url = tipo === "checkin" ? publicCheckinQrUrl : publicInscricaoQrUrl;
+        if (!url) {
+            toast.error("Token de QR Code indisponível para esta palestra.");
             return;
         }
-
-        try {
-            const response = await api.post(`/inscricoes/palestra/${idPal}/confirmar-presencas`, {
-                inscricaoIds: inscricoesSelecionadas
-            });
-            const inscricoesRes = await api.get(`/inscricoes/palestra/${idPal}`);
-            setInscricoesPresenca(inscricoesRes.data);
-            setInscricoesSelecionadas(inscricoesRes.data.filter((i) => i.status === "CONFIRMADA").map((i) => i.id));
-            setPresencaLancada(true);
-            setIsConcluido(true);
-            setPalestraData((current) => current ? { ...current, status: "CERTIFICADOS_EMITIDOS" } : current);
-            updateForm("status", "CERTIFICADOS_EMITIDOS");
-            toast.success(response.data?.mensagem || "Presença lançada com sucesso.");
-            document.getElementById("modal_lancar_presenca").close();
-        } catch (err) {
-            console.error("Erro ao lançar presença:", err);
-            toast.error("Erro ao lançar presença.");
-        }
+        setQrTipo(tipo);
+        setQrAberto(true);
     };
 
     const participantesFiltrados = inscricoesPresenca.filter((inscricao) => {
@@ -407,20 +392,27 @@ const PalestraDetalhe = () => {
                     )}
 
                     {activeTab === "acoes" && (
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
                             <ActionCard
                                 icon={<CheckCircleIcon size={44} />}
-                                title={isConcluido ? "Palestra concluída" : "Concluir palestra"}
-                                description="Ao concluir, a lista de check-ins será aberta para confirmação das presenças."
-                                buttonLabel={isConcluido ? (presencaLancada ? "Editar presença" : "Lançar presença") : "Concluir e lançar presença"}
+                                title="Lista de presença"
+                                description={`${inscricoesPresenca.length} participante(s) inscrito(s). A lista é apenas consulta; check-in é feito pelo QR Code.`}
+                                buttonLabel="Consultar presença"
                                 onClick={abrirPresenca}
                             />
                             <ActionCard
                                 icon={<QrCodeIcon size={44} />}
-                                title="Gerar QR Code"
-                                description="Gera o QR Code público para check-in externo na lista de presença."
-                                buttonLabel="Abrir QR Code"
-                                onClick={() => setQrAberto(true)}
+                                title="QR de inscrição"
+                                description="Link público para o participante se inscrever na palestra usando CPF."
+                                buttonLabel="Abrir QR de inscrição"
+                                onClick={() => abrirQr("inscricao")}
+                            />
+                            <ActionCard
+                                icon={<QrCodeIcon size={44} />}
+                                title="QR de check-in"
+                                description="Link público para confirmar presença apenas de participantes já inscritos."
+                                buttonLabel="Abrir QR de check-in"
+                                onClick={() => abrirQr("checkin")}
                             />
                             <ActionCard
                                 danger
@@ -441,8 +433,8 @@ const PalestraDetalhe = () => {
                         <button className="btn btn-sm btn-ghost btn-circle absolute right-5 top-5 bg-accent/30 border-none text-primary hover:bg-accent/50 shadow-none">x</button>
                     </form>
                     <div>
-                        <h3 className="text-3xl font-primary text-primary font-bold">{presencaLancada ? "Editar presença" : "Confirmar presença"}</h3>
-                        <p className="text-sm font-secondary text-primary/60">Confirme os participantes que fizeram check-in pelo QR Code.</p>
+                        <h3 className="text-3xl font-primary text-primary font-bold">Lista de presença</h3>
+                        <p className="text-sm font-secondary text-primary/60">Consulta dos participantes inscritos e dos check-ins confirmados pelo QR Code.</p>
                     </div>
                     <input
                         type="text"
@@ -454,40 +446,26 @@ const PalestraDetalhe = () => {
                     <div className="flex flex-col gap-3 max-h-[45vh] overflow-y-auto pr-1">
                         {participantesFiltrados.length === 0 && (
                             <div className="bg-accent/10 rounded-2xl p-6 text-center text-sm font-secondary text-primary/50">
-                                Nenhum check-in encontrado para esta palestra.
+                                Nenhuma inscrição encontrada para esta palestra.
                             </div>
                         )}
-                        {participantesFiltrados.map((inscricao) => {
-                            const checked = inscricoesSelecionadas.includes(inscricao.id);
-                            return (
-                                <label key={inscricao.id} className="bg-accent/20 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-accent/30 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox checkbox-sm checkbox-accent border-primary/20 rounded-sm"
-                                        checked={checked}
-                                        onChange={() => {
-                                            setInscricoesSelecionadas((current) => checked
-                                                ? current.filter((id) => id !== inscricao.id)
-                                                : [...current, inscricao.id]
-                                            );
-                                        }}
-                                    />
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-primary font-bold text-primary truncate">{inscricao.participanteNome}</p>
-                                            <span className={`badge badge-sm border-0 font-secondary ${inscricao.status === "CONFIRMADA" ? "bg-right/20 text-primary" : "bg-warning/20 text-primary"}`}>
-                                                {inscricao.status === "CONFIRMADA" ? "Confirmada" : "Pendente"}
-                                            </span>
-                                        </div>
-                                        <p className="font-secondary text-xs text-primary/60 truncate">{inscricao.email} | CPF: {inscricao.cpf}</p>
+                        {participantesFiltrados.map((inscricao) => (
+                            <div key={inscricao.id} className="bg-accent/20 rounded-2xl p-4 flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${inscricao.status === "CONFIRMADA" ? "bg-right/20 text-right" : "bg-warning/20 text-primary"}`}>
+                                    <CheckCircleIcon size={22} weight={inscricao.status === "CONFIRMADA" ? "fill" : "regular"} />
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-primary font-bold text-primary truncate">{inscricao.participanteNome}</p>
+                                        <span className={`badge badge-sm border-0 font-secondary ${inscricao.status === "CONFIRMADA" ? "bg-right/20 text-primary" : "bg-warning/20 text-primary"}`}>
+                                            {inscricao.status === "CONFIRMADA" ? "Check-in confirmado" : "Inscrito"}
+                                        </span>
                                     </div>
-                                </label>
-                            );
-                        })}
+                                    <p className="font-secondary text-xs text-primary/60 truncate">{inscricao.email} | CPF: {inscricao.cpf}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <button onClick={confirmarPresenca} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary">
-                        Confirmar presença
-                    </button>
                 </div>
                 <form method="dialog" className="modal-backdrop"><button>close</button></form>
             </dialog>
@@ -516,8 +494,10 @@ const PalestraDetalhe = () => {
                     <div className="bg-base-100 rounded-3xl p-7 max-w-sm w-full flex flex-col gap-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <h3 className="text-2xl font-primary font-bold text-primary">QR Code da palestra</h3>
-                                <p className="text-sm font-secondary text-primary/60">Participantes externos podem acessar a rota pública.</p>
+                                <h3 className="text-2xl font-primary font-bold text-primary">QR Code de {qrTipo === "checkin" ? "check-in" : "inscrição"}</h3>
+                                <p className="text-sm font-secondary text-primary/60">
+                                    {qrTipo === "checkin" ? "Confirma presença de participantes já inscritos." : "Registra inscrições para a palestra."}
+                                </p>
                             </div>
                             <button className="btn btn-sm btn-circle border-0 bg-accent/30 text-primary" onClick={() => setQrAberto(false)}>x</button>
                         </div>
@@ -634,7 +614,8 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
                 <DetailCard icon={<CheckCircleIcon size={24} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
                 <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={palestraData?.cargaHoraria ? `${palestraData.cargaHoraria}h` : "-"} />
                 <DetailCard icon={<UsersIcon size={24} />} label="Capacidade" value={palestraData?.vagas} />
-                <DetailCard icon={<QrCodeIcon size={24} />} label="Token QR" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />
+                <DetailCard icon={<QrCodeIcon size={24} />} label="QR inscrição" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />
+                <DetailCard icon={<QrCodeIcon size={24} />} label="QR check-in" value={palestraData?.qrCodeCheckinToken ? "Disponível" : "-"} />
             </div>
         </div>
     </motion.div>

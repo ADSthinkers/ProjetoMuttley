@@ -7,17 +7,17 @@ import {
     CertificateIcon,
     CheckCircleIcon,
     CircleNotchIcon,
-    IdentificationCardIcon,
     WarningCircleIcon
 } from "@phosphor-icons/react";
 import MuttleyLogo from "../assets/muttley_logo.svg";
-import { formatCpf } from "../utils/formatters";
+import { formatCpf, isValidCpf } from "../utils/formatters";
 
-const QrCode = () => {
+const QrCode = ({ tipo = "inscricao" }) => {
     const { token: tokenParam } = useParams();
     const [searchParams] = useSearchParams();
     const token = tokenParam || searchParams.get("token") || "";
     const isScannerMode = !token;
+    const isCheckin = tipo === "checkin";
 
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const api = useMemo(() => axios.create({
@@ -33,8 +33,8 @@ const QrCode = () => {
     const [submitting, setSubmitting] = useState(false);
     const [palestra, setPalestra] = useState(null);
     const [erro, setErro] = useState("");
-    const [aviso, setAviso] = useState("");
     const [sucesso, setSucesso] = useState(null);
+    const [participante, setParticipante] = useState(null);
     const [cpf, setCpf] = useState("");
     const [email, setEmail] = useState("");
     const [nome, setNome] = useState("");
@@ -42,6 +42,9 @@ const QrCode = () => {
     const [scannerInfo, setScannerInfo] = useState("");
     const videoRef = useRef(null);
     const streamRef = useRef(null);
+
+    const endpointBase = isCheckin ? `/qrcode/checkin/${token}` : `/qrcode/${token}`;
+    const flowLabel = isCheckin ? "Check-in" : "Inscrição";
 
     useEffect(() => {
         const fetchPalestra = async () => {
@@ -57,7 +60,7 @@ const QrCode = () => {
             }
 
             try {
-                const response = await api.get(`/qrcode/${token}`);
+                const response = await api.get(endpointBase);
                 setPalestra(response.data);
             } catch (error) {
                 setErro(error.response?.data?.erro || "Este QR Code não é válido ou a palestra não foi encontrada.");
@@ -67,7 +70,7 @@ const QrCode = () => {
         };
 
         fetchPalestra();
-    }, [api, dbURL, isScannerMode, token]);
+    }, [api, dbURL, endpointBase, isScannerMode, token]);
 
     useEffect(() => {
         if (!isScannerMode || loading) return;
@@ -152,32 +155,61 @@ const QrCode = () => {
         };
     }, [isScannerMode, loading]);
 
+    const validarCpfAtual = () => {
+        if (!isValidCpf(cpf)) {
+            setErro("Informe um CPF válido.");
+            return false;
+        }
+        return true;
+    };
+
     const handleIdentificacao = async (e) => {
         e.preventDefault();
-        setSubmitting(true);
-        setAviso("");
         setErro("");
+        setParticipante(null);
+        if (!validarCpfAtual()) return;
 
+        setSubmitting(true);
         try {
-            const response = await api.post(`/qrcode/${token}/identificar`, { cpf, email });
+            const response = await api.post(`${endpointBase}/identificar`, { cpf });
             const data = response.data;
 
             if (data.status === "CADASTRO_NECESSARIO") {
+                if (isCheckin) {
+                    setErro("Participante não encontrado. Faça a inscrição antes do check-in.");
+                    return;
+                }
                 setCpf(formatCpf(data.cpf || cpf));
-                setEmail(data.email || email);
                 setStep("cadastro");
                 return;
             }
 
-            if (data.status === "JA_REGISTRADO") {
-                setAviso(data.mensagem);
+            if (data.status === "PARTICIPANTE_ENCONTRADO") {
+                setParticipante(data);
+                setStep("confirmacao");
                 return;
             }
 
             setSucesso(data);
             setStep("sucesso");
         } catch (error) {
-            setErro(error.response?.data?.erro || "Não foi possível registrar sua presença.");
+            setErro(error.response?.data?.erro || `Não foi possível concluir a identificação de ${flowLabel.toLowerCase()}.`);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleConfirmacao = async () => {
+        setErro("");
+        if (!validarCpfAtual()) return;
+
+        setSubmitting(true);
+        try {
+            const response = await api.post(`${endpointBase}/confirmar`, { cpf });
+            setSucesso(response.data);
+            setStep("sucesso");
+        } catch (error) {
+            setErro(error.response?.data?.erro || `Não foi possível confirmar ${flowLabel.toLowerCase()}.`);
         } finally {
             setSubmitting(false);
         }
@@ -185,9 +217,10 @@ const QrCode = () => {
 
     const handleCadastro = async (e) => {
         e.preventDefault();
-        setSubmitting(true);
         setErro("");
+        if (!validarCpfAtual()) return;
 
+        setSubmitting(true);
         try {
             const response = await api.post(`/qrcode/${token}/cadastro`, { nome, cpf, email });
             setSucesso(response.data);
@@ -199,6 +232,13 @@ const QrCode = () => {
         }
     };
 
+    const resetCpf = () => {
+        setParticipante(null);
+        setErro("");
+        setCpf("");
+        setStep("identificacao");
+    };
+
     return (
         <main className="min-h-screen bg-base-100 flex items-center justify-center px-4 py-8 font-secondary">
             <div className="w-full max-w-md">
@@ -206,7 +246,7 @@ const QrCode = () => {
                     <QrShell>
                         <div className="flex flex-col items-center gap-5 py-12">
                             <CircleNotchIcon size={36} className="animate-spin text-primary/60" />
-                            <p className="text-sm text-primary/50">Carregando registro de presença...</p>
+                            <p className="text-sm text-primary/50">Carregando {flowLabel.toLowerCase()}...</p>
                         </div>
                     </QrShell>
                 ) : isScannerMode ? (
@@ -246,16 +286,16 @@ const QrCode = () => {
                     <QrShell>
                         <StateIcon tone="success" icon={<CheckCircleIcon size={52} weight="fill" />} />
                         <div className="text-center">
-                            <h1 className="text-3xl font-primary font-bold text-primary">Check-in registrado</h1>
+                            <h1 className="text-3xl font-primary font-bold text-primary">{isCheckin ? "Check-in confirmado" : "Inscrição registrada"}</h1>
                             <p className="text-sm text-primary/60 mt-2">
-                                Olá, <span className="font-bold text-primary">{sucesso?.nomeParticipante}</span>. Seu nome entrou na lista de presença.
+                                Olá, <span className="font-bold text-primary">{sucesso?.nomeParticipante}</span>.
                             </p>
                         </div>
 
                         <div className="bg-right/10 border border-right/15 rounded-2xl p-4 flex items-center gap-3 text-primary">
                             <CheckCircleIcon size={24} weight="fill" className="text-right shrink-0" />
                             <span className="text-sm">
-                                {sucesso?.mensagem || "Aguarde a confirmação do palestrante ou administrador. Depois disso, o certificado será enviado por e-mail."}
+                                {sucesso?.mensagem || (isCheckin ? "Sua presença foi confirmada." : "Sua inscrição foi registrada.")}
                             </span>
                         </div>
                     </QrShell>
@@ -263,7 +303,7 @@ const QrCode = () => {
                     <QrShell palestra={palestra} badge="Primeiro acesso">
                         <div className="text-center">
                             <h1 className="text-2xl font-primary font-bold text-primary">Complete seu cadastro</h1>
-                            <p className="text-sm text-primary/60 mt-1">Informe seu nome para entrar na lista de presença.</p>
+                            <p className="text-sm text-primary/60 mt-1">Informe seus dados para concluir a inscrição.</p>
                         </div>
 
                         {erro && <Alert tone="error">{erro}</Alert>}
@@ -279,7 +319,7 @@ const QrCode = () => {
                                 <input required type="email" className={inputClass} placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                             </Field>
                             <button disabled={submitting} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary min-h-13">
-                                {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : "Cadastrar e fazer check-in"}
+                                {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : "Cadastrar e inscrever"}
                             </button>
                         </form>
 
@@ -288,27 +328,48 @@ const QrCode = () => {
                             Voltar
                         </button>
                     </QrShell>
+                ) : step === "confirmacao" ? (
+                    <QrShell palestra={palestra} badge={flowLabel}>
+                        <div className="text-center">
+                            <h1 className="text-2xl font-primary font-bold text-primary">Este cadastro é seu?</h1>
+                            <p className="text-sm text-primary/60 mt-2">
+                                Encontramos <span className="font-bold text-primary">{participante?.nomeParticipante}</span> para o CPF informado.
+                            </p>
+                        </div>
+
+                        {erro && <Alert tone="error">{erro}</Alert>}
+
+                        <div className="grid grid-cols-1 gap-3">
+                            <button type="button" disabled={submitting} onClick={handleConfirmacao} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary min-h-13">
+                                {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : (
+                                    <>
+                                        Sim, sou eu
+                                        <ArrowRightIcon size={18} weight="bold" />
+                                    </>
+                                )}
+                            </button>
+                            <button type="button" onClick={resetCpf} className="btn border-0 rounded-xl bg-accent/20 text-primary font-secondary min-h-13">
+                                Digitar outro CPF
+                            </button>
+                        </div>
+                    </QrShell>
                 ) : (
-                    <QrShell palestra={palestra} badge="Registro de presença">
+                    <QrShell palestra={palestra} badge={flowLabel}>
                         <div className="text-center">
                             <h1 className="text-2xl font-primary font-bold text-primary">{palestra?.titulo}</h1>
                             {palestra?.descricao && <p className="text-sm text-primary/60 mt-2">{palestra.descricao}</p>}
                         </div>
 
-                        {aviso && <Alert tone="warning">{aviso}</Alert>}
                         {erro && <Alert tone="error">{erro}</Alert>}
 
                         <form className="flex flex-col gap-4" onSubmit={handleIdentificacao}>
                             <Field label="CPF*">
                                 <input required type="text" className={inputClass} placeholder="000.000.000-00" value={cpf} maxLength={14} inputMode="numeric" onChange={(e) => setCpf(formatCpf(e.target.value))} />
                             </Field>
-                            <Field label="E-mail*">
-                                <input required type="email" className={inputClass} placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                            </Field>
                             <button disabled={submitting} className="btn border-0 rounded-xl bg-accent hover:bg-accent/80 text-primary font-secondary min-h-13">
                                 {submitting ? <CircleNotchIcon size={22} className="animate-spin" /> : (
                                     <>
-                                        Fazer check-in
+                                        Continuar
                                         <ArrowRightIcon size={18} weight="bold" />
                                     </>
                                 )}
@@ -316,7 +377,7 @@ const QrCode = () => {
                         </form>
 
                         <p className="text-xs text-primary/45 text-center">
-                            Primeira vez? Informe CPF e e-mail para abrir o cadastro automaticamente.
+                            {isCheckin ? "O check-in só é permitido para participantes já inscritos nesta palestra." : "Se seu CPF ainda não existir, o cadastro será aberto automaticamente."}
                         </p>
                     </QrShell>
                 )}

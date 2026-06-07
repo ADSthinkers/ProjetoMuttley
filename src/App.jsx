@@ -44,6 +44,8 @@ function App() {
           <Route path="/certificado/validar/:codigo" element={<ValidarCertificado />} />
           <Route path="/qrcode" element={<QrCode />} />
           <Route path="/qrcode/:token" element={<QrCode />} />
+          <Route path="/inscricao/qrcode/:token" element={<QrCode tipo="inscricao" />} />
+          <Route path="/checkin/qrcode/:token" element={<QrCode tipo="checkin" />} />
           <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/competencias" element={<PrivateRoute><Competencias /></PrivateRoute>} />
           <Route path="/participantes" element={<PrivateRoute><Participantes /></PrivateRoute>} />
