@@ -6,6 +6,20 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion } from "framer-motion"
 import axios from 'axios';
 import { PALESTRA_STATUS } from "../utils/palestraStatus";
+import { getActivityStatus } from "../utils/activityStatus";
+
+const tiposFiltro = [
+    { value: "todos", label: "Todos" },
+    { value: "Evento", label: "Eventos" },
+    { value: "Palestra", label: "Palestras" }
+];
+
+const situacoesFiltro = [
+    { value: "todos", label: "Todas" },
+    { value: "ativos", label: "Ativos" },
+    { value: "CANCELADO", label: "Cancelados" },
+    { value: "ARQUIVADO", label: "Arquivados" }
+];
 
 const EventoPalestra = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -71,32 +85,32 @@ const EventoPalestra = () => {
     const ordens = ["Nome (A-Z)", "Nome (Z-A)", "Data (Crescente)", "Data (Decrescente)"]
 
     const [filtros, setFiltros] = useState({
-        eventos: false,
-        palestras: false,
-        status: {}
+        tipo: "todos",
+        statusPalestra: "todos",
+        situacao: "todos"
     });
 
     const resetarFiltros = () => {
-        setFiltros({ eventos: false, palestras: false, status: {} });
+        setFiltros({ tipo: "todos", statusPalestra: "todos", situacao: "todos" });
         setBusca("");
     };
 
     const evePalFiltrados = (itens || [])
         .filter(item => (item.titulo || item.nome || "").toLowerCase().includes(busca.toLowerCase()))
         .filter(item => {
-            const filtroTipoAtivo = filtros.eventos || filtros.palestras;
-            if (filtroTipoAtivo) {
-                if (filtros.eventos && item.tipo === "Evento") return true;
-                if (filtros.palestras && item.tipo === "Palestra") return true;
-                return false;
-            }
-            return true;
+            if (filtros.tipo === "todos") return true;
+            return item.tipo === filtros.tipo;
         })
         .filter(item => {
-            const statusSelecionados = Object.entries(filtros.status).filter(([, ativo]) => ativo).map(([status]) => status);
-            if (statusSelecionados.length > 0 && item.tipo === "Palestra") return statusSelecionados.includes(item.status || "PENDENTE");
-            if (statusSelecionados.length > 0 && item.tipo !== "Palestra") return false;
-            return true;
+            if (filtros.statusPalestra === "todos") return true;
+            if (item.tipo !== "Palestra") return false;
+            return (item.status || "PENDENTE") === filtros.statusPalestra;
+        })
+        .filter(item => {
+            const situacao = getActivityStatus(item, item.tipo?.toLowerCase());
+            if (filtros.situacao === "todos") return true;
+            if (filtros.situacao === "ativos") return !situacao;
+            return situacao === filtros.situacao;
         })
         .sort((a, b) => {
             const titA = a.titulo || a.nome || "";
@@ -154,36 +168,32 @@ const EventoPalestra = () => {
                             </div>
                         </div>
                         
-                        <div className="flex flex-col xl:flex-row bg-base-100/45 border border-accent/10 gap-3 p-3 rounded-2xl xl:items-center">
-                            <p className="text-sm font-secondary text-primary/60 font-semibold px-2 shrink-0">Filtros</p>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 2xl:flex 2xl:flex-row w-full gap-2">
-                                <label className={`flex-1 btn border rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.eventos ? "bg-accent text-primary font-bold border-accent" : "bg-accent/10 border-transparent text-primary/70 hover:bg-accent/20"}`}>
-                                    <input type="checkbox" className="hidden" checked={filtros.eventos} onChange={() => setFiltros(f => ({...f, eventos: !f.eventos}))} />
-                                    <CalendarStarIcon size={20} />
-                                    Eventos
-                                </label>
-
-                                <label className={`flex-1 btn border rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.palestras ? "bg-accent text-primary font-bold border-accent" : "bg-accent/10 border-transparent text-primary/70 hover:bg-accent/20"}`}>
-                                    <input type="checkbox" className="hidden" checked={filtros.palestras} onChange={() => setFiltros(f => ({...f, palestras: !f.palestras}))} />
-                                    <LecternIcon size={20} />
-                                    Palestras
-                                </label>
-
-                                {PALESTRA_STATUS.map((status) => (
-                                    <label key={status.value} className={`flex-1 btn border rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all ${filtros.status[status.value] ? "bg-accent text-primary font-bold border-accent" : "bg-accent/10 border-transparent text-primary/70 hover:bg-accent/20"}`}>
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={Boolean(filtros.status[status.value])}
-                                            onChange={() => setFiltros(f => ({...f, status: {...f.status, [status.value]: !f.status[status.value]}}))}
-                                        />
-                                        {status.value === "PENDENTE" ? <ClockIcon size={20} /> : <CheckCircleIcon size={20} />}
-                                        {status.label}
-                                    </label>
-                                ))}
-
-                                <button onClick={resetarFiltros} className="2xl:w-20 btn bg-accent/10 hover:bg-error/20 hover:text-error border-0 text-primary/75 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all">
+                        <div className="bg-base-100/45 border border-accent/10 p-3 rounded-2xl">
+                            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-3 items-end">
+                                <FilterSelect
+                                    label="Tipo"
+                                    icon={<CalendarStarIcon size={16} />}
+                                    value={filtros.tipo}
+                                    onChange={(value) => setFiltros((current) => ({ ...current, tipo: value }))}
+                                    options={tiposFiltro}
+                                />
+                                <FilterSelect
+                                    label="Status da palestra"
+                                    icon={<ClockIcon size={16} />}
+                                    value={filtros.statusPalestra}
+                                    onChange={(value) => setFiltros((current) => ({ ...current, statusPalestra: value }))}
+                                    options={[{ value: "todos", label: "Todos" }, ...PALESTRA_STATUS]}
+                                />
+                                <FilterSelect
+                                    label="Situação"
+                                    icon={<CheckCircleIcon size={16} />}
+                                    value={filtros.situacao}
+                                    onChange={(value) => setFiltros((current) => ({ ...current, situacao: value }))}
+                                    options={situacoesFiltro}
+                                />
+                                <button onClick={resetarFiltros} className="btn h-12 bg-accent/10 hover:bg-error/20 hover:text-error border-0 text-primary/75 rounded-xl shadow-none font-secondary font-normal cursor-pointer transition-all">
                                     <XIcon size={20} />
+                                    <span className="md:hidden">Limpar</span>
                                 </button>
                             </div>
                         </div>
@@ -230,6 +240,27 @@ const MetricCard = ({ icon, label, value }) => (
         </div>
         <p className="text-2xl font-primary font-bold text-primary mt-1">{value}</p>
     </div>
+);
+
+const FilterSelect = ({ label, icon, value, onChange, options }) => (
+    <label className="flex flex-col gap-1.5 min-w-0">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-secondary uppercase text-primary/45 px-1">
+            {icon}
+            {label}
+        </span>
+        <div className="relative">
+            <select
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="appearance-none w-full h-12 bg-accent/10 border border-transparent rounded-xl pl-4 pr-10 text-sm font-secondary text-primary cursor-pointer outline-none hover:bg-accent/20 focus:border-accent transition-colors"
+            >
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+            </select>
+            <CaretDownIcon size={16} weight="light" className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/50 pointer-events-none" />
+        </div>
+    </label>
 );
 
 export default EventoPalestra;

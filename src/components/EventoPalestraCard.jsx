@@ -2,6 +2,7 @@ import Textura from "../assets/textura.webp"
 import { LecternIcon, CalendarStarIcon, CaretRightIcon, ClockIcon, MapPinIcon, UsersIcon } from "@phosphor-icons/react"
 import { useNavigate } from "react-router-dom";
 import { getPalestraStatusBadgeClass, getPalestraStatusLabel } from "../utils/palestraStatus";
+import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, isArchived, isCanceled } from "../utils/activityStatus";
 
 
 /**
@@ -35,6 +36,15 @@ const Badge = ({ tipo }) => (
 )
 
 const StatusBadge = ({ item }) => {
+    const operationalStatus = getActivityStatus(item, item.tipo?.toLowerCase());
+    if (operationalStatus) {
+        return (
+            <span className={`px-3 py-1.5 rounded-full w-fit text-xs font-secondary font-medium ${getOperationalStatusBadgeClass(operationalStatus)}`}>
+                {getOperationalStatusLabel(operationalStatus)}
+            </span>
+        );
+    }
+
     if (item.tipo?.toLowerCase() !== "palestra") return null;
 
     return (
@@ -47,9 +57,13 @@ const StatusBadge = ({ item }) => {
 const getImagem = (item) => item.banner || item.imagem || Textura;
 
 // ── Variante FULL (com imagem) ────────────────────────────────────────────────
-const CardFull = ({ item, navegarItem }) => (
+const CardFull = ({ item, navegarItem }) => {
+    const type = item.tipo?.toLowerCase();
+    const canceled = isCanceled(item, type);
+    const archived = isArchived(item, type);
 
-    <div onClick={navegarItem} className="flex flex-col rounded-3xl overflow-hidden bg-accent/25 hover:bg-accent/35 border border-accent/15 transition-all group w-full min-h-[430px] cursor-pointer">
+    return (
+    <div onClick={navegarItem} className={`flex flex-col rounded-3xl overflow-hidden bg-accent/25 hover:bg-accent/35 border transition-all group w-full min-h-[430px] cursor-pointer ${canceled ? "opacity-45 border-error/20" : archived ? "opacity-70 grayscale border-primary/15" : "border-accent/15"}`}>
         <div className="h-52 overflow-hidden relative bg-accent/20">
             <img src={getImagem(item)} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
             <div className="absolute inset-0 bg-linear-to-t from-primary/40 via-transparent to-transparent" />
@@ -95,13 +109,19 @@ const CardFull = ({ item, navegarItem }) => (
             </div>
         </div>
     </div>
-)
+    );
+};
 
 
 
 // ── Variante COMPACT (sem imagem) ─────────────────────────────────────────────
-const CardCompact = ({ item, navegarItem}) => (
-    <div onClick={navegarItem} className="flex items-center gap-4 bg-accent/25 hover:bg-accent/35 border border-accent/15 rounded-2xl px-5 py-4 transition-all group w-full cursor-pointer">
+const CardCompact = ({ item, navegarItem}) => {
+    const type = item.tipo?.toLowerCase();
+    const canceled = isCanceled(item, type);
+    const archived = isArchived(item, type);
+
+    return (
+    <div onClick={navegarItem} className={`flex items-center gap-4 bg-accent/25 hover:bg-accent/35 border rounded-2xl px-5 py-4 transition-all group w-full cursor-pointer ${canceled ? "opacity-45 border-error/20" : archived ? "opacity-70 grayscale border-primary/15" : "border-accent/15"}`}>
         <div className="w-18 h-18 rounded-2xl overflow-hidden bg-accent/30 shrink-0">
             <img src={getImagem(item)} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
@@ -128,7 +148,8 @@ const CardCompact = ({ item, navegarItem}) => (
             <CaretRightIcon size={18} weight="light" />
         </div>
     </div>
-)
+    );
+};
 
 const MetaPill = ({ icon, label, value }) => (
     <div className="bg-base-100/55 border border-accent/10 rounded-2xl px-3 py-2 min-w-0">

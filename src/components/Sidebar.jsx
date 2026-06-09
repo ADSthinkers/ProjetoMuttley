@@ -5,21 +5,29 @@ import MuttleyLogoRed from "../assets/muttley_logo_red.svg"
 import { motion, AnimatePresence } from "framer-motion"
 import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarSimpleIcon, UserIcon, MicrophoneStageIcon, MapPinIcon, BuildingsIcon, SunIcon, MoonIcon } from "@phosphor-icons/react"
 import { clearAuthCookie, isAdmin, isPalestrante } from "../utils/auth";
+import { getInitialTheme, getResolvedTheme, saveTheme } from "../utils/theme";
 
 const Sidebar = ({ className, compact }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const largura = window.innerWidth > 1200
     const [isExpanded, setIsExpanded] = useState(compact ? false : largura);
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+    const [theme, setTheme] = useState(getInitialTheme);
+    const resolvedTheme = getResolvedTheme(theme);
 
     useEffect(() => {
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+        const handleThemeChange = (event) => {
+            setTheme(event.detail || getInitialTheme());
+        };
+
+        window.addEventListener("muttley-theme-change", handleThemeChange);
+        return () => window.removeEventListener("muttley-theme-change", handleThemeChange);
+    }, []);
 
     const toggleTheme = () => {
-        setTheme(prev => prev === "light" ? "dark" : "light");
+        const nextTheme = resolvedTheme === "light" ? "dark" : "light";
+        setTheme(nextTheme);
+        saveTheme(nextTheme);
     };
 
     const navegarPara = (link) => {
@@ -142,7 +150,7 @@ const Sidebar = ({ className, compact }) => {
                         className="flex items-center gap-4 px-4 py-3 h-14 rounded-2xl text-base transition-all relative group text-primary/80 hover:bg-accent/20 cursor-pointer"
                     >
                         <span className="shrink-0">
-                            {theme === "light" ? <MoonIcon size={28} weight="light" /> : <SunIcon size={28} weight="light" />}
+                            {resolvedTheme === "light" ? <MoonIcon size={28} weight="light" /> : <SunIcon size={28} weight="light" />}
                         </span>
                         <AnimatePresence>
                             {isExpanded && (
@@ -152,13 +160,13 @@ const Sidebar = ({ className, compact }) => {
                                     exit={{ opacity: 0, x: -10 }}
                                     className="whitespace-nowrap ml-2 font-secondary"
                                 > 
-                                    Modo {theme === "light" ? "Escuro" : "Claro"}
+                                    Modo {resolvedTheme === "light" ? "Escuro" : "Claro"}
                                 </motion.span>
                             )}
                         </AnimatePresence>
                         {!isExpanded && (
                             <div className="absolute left-full ml-4 px-3 py-2 bg-primary text-accent text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
-                                Modo {theme === "light" ? "Escuro" : "Claro"}
+                                Modo {resolvedTheme === "light" ? "Escuro" : "Claro"}
                             </div>
                         )}
                     </button>

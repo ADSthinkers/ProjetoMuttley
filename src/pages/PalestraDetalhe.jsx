@@ -3,6 +3,7 @@ import Select from "react-select";
 import QRCode from "qrcode";
 import {
     ArrowLeftIcon,
+    ArchiveIcon,
     CalendarIcon,
     CheckCircleIcon,
     CircleNotchIcon,
@@ -26,6 +27,7 @@ import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
 import { getPalestraStatusLabel, PALESTRA_STATUS } from "../utils/palestraStatus";
+import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, isInactive, setStoredActivityStatus } from "../utils/activityStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -56,6 +58,7 @@ const formatarHora = (value) => {
 
 const toDateInput = (value) => value ? new Date(value).toISOString().split("T")[0] : "";
 const toTimeInput = (value) => value ? new Date(value).toTimeString().substring(0, 5) : "";
+const toNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
 
 const PalestraDetalhe = () => {
     const { idPal } = useParams();
@@ -178,6 +181,24 @@ const PalestraDetalhe = () => {
     const publicCheckinQrUrl = palestraData?.qrCodeCheckinToken ? `${window.location.origin}/checkin/qrcode/${palestraData.qrCodeCheckinToken}` : "";
     const publicQrUrl = qrTipo === "checkin" ? publicCheckinQrUrl : publicInscricaoQrUrl;
     const qrFileName = `qrcode-${qrTipo}-${(palestraData?.titulo || "palestra").toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.png`;
+    const operationalStatus = getActivityStatus(palestraData, "palestra");
+    const eventOperationalStatus = getActivityStatus({ id: palestraData?.eventoId }, "evento");
+    const inactive = isInactive(palestraData, "palestra") || eventOperationalStatus === "CANCELADO" || eventOperationalStatus === "ARQUIVADO";
+    const inscricoesAtivas = inscricoesPresenca.filter((inscricao) => inscricao.status !== "CANCELADA");
+    const fallbackInscricoesCount = Math.max(
+        toNumber(palestraData?.inscritos),
+        toNumber(palestraData?.totalInscritos),
+        toNumber(palestraData?.quantidadeInscritos),
+        toNumber(palestraData?.inscricoesCount),
+        Array.isArray(palestraData?.inscricoes) ? palestraData.inscricoes.filter((inscricao) => inscricao.status !== "CANCELADA").length : 0
+    );
+    const inscricoesAtivasCount = Math.max(inscricoesAtivas.length, fallbackInscricoesCount);
+    const hasInscricoes = inscricoesAtivasCount > 0;
+    const hasCheckins = inscricoesAtivas.some((inscricao) => inscricao.status === "CONFIRMADA");
+    const hasCertificados = palestraData?.status === "CERTIFICADOS_EMITIDOS" || hasCheckins;
+    const canDelete = !hasInscricoes && !hasCertificados && !operationalStatus;
+    const canCancel = hasInscricoes && !hasCertificados && !operationalStatus;
+    const canArchive = hasCertificados && !operationalStatus;
 
     const updateForm = (field, value) => {
         setForm((current) => ({ ...current, [field]: value }));
@@ -251,6 +272,22 @@ const PalestraDetalhe = () => {
         }
     };
 
+    const updateOperationalStatus = (status) => {
+        setStoredActivityStatus("palestra", idPal, status);
+        setPalestraData((current) => current ? { ...current, statusOperacional: status } : current);
+        toast.success(status === "CANCELADO" ? "Palestra cancelada." : "Palestra arquivada.");
+    };
+
+    const handleCancel = () => {
+        if (!window.confirm("Cancelar esta palestra? Esta ação é irreversível e bloqueará novos QRs.")) return;
+        updateOperationalStatus("CANCELADO");
+    };
+
+    const handleArchive = () => {
+        if (!window.confirm("Arquivar esta palestra? Esta ação é irreversível e bloqueará novos QRs.")) return;
+        updateOperationalStatus("ARQUIVADO");
+    };
+
     const abrirPresenca = async () => {
         try {
             const inscricoesRes = await api.get(`/inscricoes/palestra/${idPal}`);
@@ -263,6 +300,10 @@ const PalestraDetalhe = () => {
     };
 
     const abrirQr = (tipo) => {
+        if (inactive) {
+            toast.error(eventOperationalStatus ? "O evento desta palestra está inativo." : "Esta palestra está inativa.");
+            return;
+        }
         const url = tipo === "checkin" ? publicCheckinQrUrl : publicInscricaoQrUrl;
         if (!url) {
             toast.error("Token de QR Code indisponível para esta palestra.");
@@ -352,7 +393,7 @@ const PalestraDetalhe = () => {
                             <SummaryPill icon={<CalendarIcon size={18} />} label="Data" value={formatarData(palestraData?.inicio)} />
                             <SummaryPill icon={<ClockIcon size={18} />} label="Horário" value={`${formatarHora(palestraData?.inicio)} - ${formatarHora(palestraData?.fim)}`} />
                             <SummaryPill icon={<UserIcon size={18} />} label="Palestrantes" value={palestranteNomes.join(", ") || "-"} />
-                            <SummaryPill icon={<CheckCircleIcon size={18} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
+                            <SummaryPill icon={<CheckCircleIcon size={18} />} label="Status" value={operationalStatus ? getOperationalStatusLabel(operationalStatus) : getPalestraStatusLabel(palestraData?.status)} />
                         </div>
                     </motion.div>
 
@@ -396,32 +437,64 @@ const PalestraDetalhe = () => {
                             <ActionCard
                                 icon={<CheckCircleIcon size={44} />}
                                 title="Lista de presença"
-                                description={`${inscricoesPresenca.length} participante(s) inscrito(s). A lista é apenas consulta; check-in é feito pelo QR Code.`}
+                                description={`${inscricoesAtivasCount} participante(s) inscrito(s). A lista é apenas consulta; check-in é feito pelo QR Code.`}
                                 buttonLabel="Consultar presença"
                                 onClick={abrirPresenca}
                             />
                             <ActionCard
                                 icon={<QrCodeIcon size={44} />}
                                 title="QR de inscrição"
-                                description="Link público para o participante se inscrever na palestra usando CPF."
-                                buttonLabel="Abrir QR de inscrição"
+                                description={inactive ? "Bloqueado para palestra ou evento cancelado/arquivado." : "Link público para o participante se inscrever na palestra usando CPF."}
+                                buttonLabel={inactive ? "QR bloqueado" : "Abrir QR de inscrição"}
                                 onClick={() => abrirQr("inscricao")}
+                                disabled={inactive}
                             />
                             <ActionCard
                                 icon={<QrCodeIcon size={44} />}
                                 title="QR de check-in"
-                                description="Link público para confirmar presença apenas de participantes já inscritos."
-                                buttonLabel="Abrir QR de check-in"
+                                description={inactive ? "Bloqueado para palestra ou evento cancelado/arquivado." : "Link público para confirmar presença apenas de participantes já inscritos."}
+                                buttonLabel={inactive ? "QR bloqueado" : "Abrir QR de check-in"}
                                 onClick={() => abrirQr("checkin")}
+                                disabled={inactive}
                             />
-                            <ActionCard
-                                danger
-                                icon={<TrashSimpleIcon size={44} />}
-                                title="Apagar palestra"
-                                description="Remove esta palestra permanentemente do sistema."
-                                buttonLabel="Apagar permanentemente"
-                                onClick={() => document.getElementById("modal_confirmar_apagar_palestra").showModal()}
-                            />
+                            {canDelete && (
+                                <ActionCard
+                                    danger
+                                    icon={<TrashSimpleIcon size={44} />}
+                                    title="Apagar palestra"
+                                    description="Remove esta palestra permanentemente do sistema."
+                                    buttonLabel="Apagar permanentemente"
+                                    onClick={() => document.getElementById("modal_confirmar_apagar_palestra").showModal()}
+                                />
+                            )}
+                            {canCancel && (
+                                <ActionCard
+                                    danger
+                                    icon={<XIcon size={44} />}
+                                    title="Cancelar palestra"
+                                    description="Bloqueia inscrições e check-ins. A ação é irreversível."
+                                    buttonLabel="Cancelar palestra"
+                                    onClick={handleCancel}
+                                />
+                            )}
+                            {canArchive && (
+                                <ActionCard
+                                    icon={<ArchiveIcon size={44} />}
+                                    title="Arquivar palestra"
+                                    description="Palestras com check-ins ou certificados não podem ser canceladas."
+                                    buttonLabel="Arquivar palestra"
+                                    onClick={handleArchive}
+                                />
+                            )}
+                            {operationalStatus && (
+                                <ActionCard
+                                    disabled
+                                    icon={operationalStatus === "ARQUIVADO" ? <ArchiveIcon size={44} /> : <XIcon size={44} />}
+                                    title={getOperationalStatusLabel(operationalStatus)}
+                                    description="Este estado é irreversível."
+                                    buttonLabel="Sem ações disponíveis"
+                                />
+                            )}
                         </div>
                     )}
                 </div>
@@ -587,7 +660,10 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
     </motion.form>
 );
 
-const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome, localNome }) => (
+const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome, localNome }) => {
+    const operationalStatus = getActivityStatus(palestraData, "palestra");
+
+    return (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
@@ -611,7 +687,12 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
             <SectionTitle title="Operação" />
             <div className="grid grid-cols-1 gap-4">
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarEnum(palestraData?.modalidade)} />
-                <DetailCard icon={<CheckCircleIcon size={24} />} label="Status" value={getPalestraStatusLabel(palestraData?.status)} />
+                <DetailCard
+                    icon={<CheckCircleIcon size={24} />}
+                    label="Status"
+                    value={operationalStatus ? getOperationalStatusLabel(operationalStatus) : getPalestraStatusLabel(palestraData?.status)}
+                    badgeClass={operationalStatus ? getOperationalStatusBadgeClass(operationalStatus) : ""}
+                />
                 <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={palestraData?.cargaHoraria ? `${palestraData.cargaHoraria}h` : "-"} />
                 <DetailCard icon={<UsersIcon size={24} />} label="Capacidade" value={palestraData?.vagas} />
                 <DetailCard icon={<QrCodeIcon size={24} />} label="QR inscrição" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />
@@ -619,7 +700,8 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
             </div>
         </div>
     </motion.div>
-);
+    );
+};
 
 const Field = ({ label, optional, className = "", children }) => (
     <div className={`flex flex-col gap-2 ${className}`}>
@@ -630,12 +712,12 @@ const Field = ({ label, optional, className = "", children }) => (
     </div>
 );
 
-const DetailCard = ({ icon, label, value }) => (
+const DetailCard = ({ icon, label, value, badgeClass = "" }) => (
     <div className="bg-accent/20 rounded-2xl p-5 flex items-start gap-4 min-h-24">
         <div className="w-11 h-11 rounded-xl bg-accent/40 flex items-center justify-center text-primary shrink-0">{icon}</div>
         <div className="flex flex-col gap-1 min-w-0">
             <span className="text-xs font-secondary text-primary/50 uppercase">{label}</span>
-            <span className="text-lg font-primary font-bold text-primary break-words">{value || "-"}</span>
+            <span className={`text-lg font-primary font-bold break-words ${badgeClass ? `${badgeClass} rounded-xl px-3 py-1 w-fit` : "text-primary"}`}>{value || "-"}</span>
         </div>
     </div>
 );
@@ -652,14 +734,14 @@ const SummaryPill = ({ icon, label, value }) => (
 
 const SectionTitle = ({ title }) => <h2 className="text-xl font-primary font-bold text-primary">{title}</h2>;
 
-const ActionCard = ({ icon, title, description, buttonLabel, onClick, danger }) => (
-    <div className={`rounded-3xl p-7 flex flex-col gap-5 border ${danger ? "bg-error/10 border-error/20" : "bg-accent/10 border-accent/15"}`}>
+const ActionCard = ({ icon, title, description, buttonLabel, onClick, danger, disabled }) => (
+    <div className={`rounded-3xl p-7 flex flex-col gap-5 border ${disabled ? "opacity-60 bg-primary/5 border-primary/10" : danger ? "bg-error/10 border-error/20" : "bg-accent/10 border-accent/15"}`}>
         <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${danger ? "bg-error/20 text-error" : "bg-accent/30 text-primary"}`}>{icon}</div>
         <div className="flex flex-col gap-1">
             <h2 className="text-2xl font-primary font-bold text-primary">{title}</h2>
             <p className="text-sm font-secondary text-primary/60">{description}</p>
         </div>
-        <button type="button" onClick={onClick} className={`w-full text-sm font-secondary py-4 rounded-xl cursor-pointer transition-colors ${danger ? "bg-error/80 hover:bg-error text-secondary" : "bg-accent hover:bg-accent/80 text-primary"}`}>
+        <button type="button" disabled={disabled} onClick={onClick} className={`w-full text-sm font-secondary py-4 rounded-xl transition-colors ${disabled ? "bg-primary/10 text-primary/45 cursor-not-allowed" : danger ? "bg-error/80 hover:bg-error text-secondary cursor-pointer" : "bg-accent hover:bg-accent/80 text-primary cursor-pointer"}`}>
             {buttonLabel}
         </button>
     </div>

@@ -5,6 +5,7 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion } from "framer-motion"
 import axios from 'axios';
 import { getPalestraStatusBadgeClass, getPalestraStatusLabel } from "../utils/palestraStatus";
+import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, isArchived, isCanceled } from "../utils/activityStatus";
 
 const filtros = ["Todos", "Palestra", "Evento"];
 
@@ -215,12 +216,18 @@ const FilterTabs = ({ filtro, onChange }) => (
     </div>
 );
 
-const ActivityCard = ({ item, muted }) => (
+const ActivityCard = ({ item, muted }) => {
+    const type = item.tipo?.toLowerCase();
+    const operationalStatus = getActivityStatus(item, type);
+    const canceled = isCanceled(item, type);
+    const archived = isArchived(item, type);
+
+    return (
     <motion.a
         href={item.link}
         whileHover={{ y: -3, scale: 1.005 }}
         whileTap={{ scale: 0.99 }}
-        className={`bg-base-100/70 border border-accent/15 rounded-3xl p-4 flex items-stretch gap-4 hover:bg-accent/45 transition-all group w-full shrink-0 ${muted ? "opacity-90" : ""}`}
+        className={`bg-base-100/70 border rounded-3xl p-4 flex items-stretch gap-4 hover:bg-accent/45 transition-all group w-full shrink-0 ${canceled ? "opacity-45 border-error/20" : archived ? "opacity-70 grayscale border-primary/15" : muted ? "opacity-90 border-accent/15" : "border-accent/15"}`}
     >
         <div className="flex flex-col items-center justify-center w-17 rounded-2xl bg-accent/55 text-primary font-primary shrink-0">
             <span className="text-3xl font-bold leading-none">{item.dia}</span>
@@ -231,7 +238,11 @@ const ActivityCard = ({ item, muted }) => (
             <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <TypeBadge tipo={item.tipo} />
-                    {item.tipo === "Palestra" && (
+                    {operationalStatus ? (
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-secondary font-semibold ${getOperationalStatusBadgeClass(operationalStatus)}`}>
+                            {getOperationalStatusLabel(operationalStatus)}
+                        </span>
+                    ) : item.tipo === "Palestra" && (
                         <span className={`px-2.5 py-1 rounded-full text-[11px] font-secondary font-semibold ${getPalestraStatusBadgeClass(item.status || "PENDENTE")}`}>
                             {getPalestraStatusLabel(item.status)}
                         </span>
@@ -254,7 +265,8 @@ const ActivityCard = ({ item, muted }) => (
             </div>
         </div>
     </motion.a>
-);
+    );
+};
 
 const TypeBadge = ({ tipo }) => (
     <span className="inline-flex items-center gap-1.5 self-start bg-primary/10 text-primary font-secondary text-xs font-medium px-3 py-1 rounded-full">

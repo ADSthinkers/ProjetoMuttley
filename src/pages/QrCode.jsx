@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import MuttleyLogo from "../assets/muttley_logo.svg";
 import { formatCpf, isValidCpf } from "../utils/formatters";
+import { getActivityStatus, getOperationalStatusLabel, isInactive } from "../utils/activityStatus";
 
 const QrCode = ({ tipo = "inscricao" }) => {
     const { token: tokenParam } = useParams();
@@ -45,6 +46,8 @@ const QrCode = ({ tipo = "inscricao" }) => {
 
     const endpointBase = isCheckin ? `/qrcode/checkin/${token}` : `/qrcode/${token}`;
     const flowLabel = isCheckin ? "Check-in" : "Inscrição";
+    const inactive = isInactive(palestra, "palestra");
+    const inactiveLabel = getOperationalStatusLabel(getActivityStatus(palestra, "palestra"));
 
     useEffect(() => {
         const fetchPalestra = async () => {
@@ -62,6 +65,9 @@ const QrCode = ({ tipo = "inscricao" }) => {
             try {
                 const response = await api.get(endpointBase);
                 setPalestra(response.data);
+                if (isInactive(response.data, "palestra")) {
+                    setErro(`Esta palestra está ${getOperationalStatusLabel(getActivityStatus(response.data, "palestra")).toLowerCase()}. ${flowLabel} bloqueado.`);
+                }
             } catch (error) {
                 setErro(error.response?.data?.erro || "Este QR Code não é válido ou a palestra não foi encontrada.");
             } finally {
@@ -167,6 +173,10 @@ const QrCode = ({ tipo = "inscricao" }) => {
         e.preventDefault();
         setErro("");
         setParticipante(null);
+        if (inactive) {
+            setErro(`Esta palestra está ${inactiveLabel.toLowerCase()}. ${flowLabel} bloqueado.`);
+            return;
+        }
         if (!validarCpfAtual()) return;
 
         setSubmitting(true);
@@ -201,6 +211,10 @@ const QrCode = ({ tipo = "inscricao" }) => {
 
     const handleConfirmacao = async () => {
         setErro("");
+        if (inactive) {
+            setErro(`Esta palestra está ${inactiveLabel.toLowerCase()}. ${flowLabel} bloqueado.`);
+            return;
+        }
         if (!validarCpfAtual()) return;
 
         setSubmitting(true);
@@ -218,6 +232,10 @@ const QrCode = ({ tipo = "inscricao" }) => {
     const handleCadastro = async (e) => {
         e.preventDefault();
         setErro("");
+        if (inactive) {
+            setErro(`Esta palestra está ${inactiveLabel.toLowerCase()}. Inscrição bloqueada.`);
+            return;
+        }
         if (!validarCpfAtual()) return;
 
         setSubmitting(true);
@@ -281,6 +299,14 @@ const QrCode = ({ tipo = "inscricao" }) => {
                         <StateIcon tone="error" icon={<WarningCircleIcon size={44} weight="fill" />} />
                         <h1 className="text-2xl font-primary font-bold text-primary text-center">Link inválido</h1>
                         <p className="text-sm text-primary/60 text-center">{erro}</p>
+                    </QrShell>
+                ) : inactive ? (
+                    <QrShell palestra={palestra} badge={flowLabel}>
+                        <StateIcon tone="error" icon={<WarningCircleIcon size={52} weight="fill" />} />
+                        <h1 className="text-2xl font-primary font-bold text-primary text-center">{flowLabel} bloqueado</h1>
+                        <Alert tone="error">
+                            Esta palestra está {inactiveLabel.toLowerCase()}. Não é possível registrar novas inscrições ou check-ins.
+                        </Alert>
                     </QrShell>
                 ) : step === "sucesso" ? (
                     <QrShell>

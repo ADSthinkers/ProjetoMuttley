@@ -196,7 +196,7 @@ const Competencias = () => {
                                 <motion.div 
                                     key={c.id || index} 
                                     variants={itemVariants}
-                                    whileHover={{ y: -4, backgroundColor: "rgba(252, 209, 96, 0.7)" }}
+                                    whileHover={{ y: -4 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="relative overflow-hidden bg-accent/25 hover:bg-accent/35 rounded-3xl p-5 flex flex-col justify-between gap-5 min-h-44 transition-all group cursor-default border border-accent/15"
                                 >

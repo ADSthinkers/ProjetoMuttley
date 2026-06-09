@@ -5,9 +5,10 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { getAuthUser } from "../utils/auth";
-import { applyTheme, getInitialTheme, setThemeCookie } from "../utils/theme";
+import { applyTheme, getInitialTheme, getResolvedTheme, saveTheme } from "../utils/theme";
 import {
     CircleNotchIcon,
+    DesktopIcon,
     EyeClosedIcon,
     EyeIcon,
     FloppyDiskIcon,
@@ -84,6 +85,7 @@ const Configuracoes = () => {
     }), [dbURL, dbKEY, authUser?.login]);
 
     const [theme, setTheme] = useState(getInitialTheme);
+    const [resolvedTheme, setResolvedTheme] = useState(() => getResolvedTheme(getInitialTheme()));
     const [admins, setAdmins] = useState([]);
     const [auditorias, setAuditorias] = useState([]);
     const [loadingAdmins, setLoadingAdmins] = useState(true);
@@ -96,8 +98,29 @@ const Configuracoes = () => {
 
     useEffect(() => {
         applyTheme(theme);
-        setThemeCookie(theme);
+        setResolvedTheme(getResolvedTheme(theme));
     }, [theme]);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+        if (!mediaQuery) return;
+
+        const handleSystemThemeChange = () => {
+            if (theme === "system") {
+                applyTheme("system");
+                setResolvedTheme(getResolvedTheme("system"));
+            }
+        };
+
+        mediaQuery.addEventListener("change", handleSystemThemeChange);
+        return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    }, [theme]);
+
+    const updateTheme = (nextTheme) => {
+        setTheme(nextTheme);
+        saveTheme(nextTheme);
+        setResolvedTheme(getResolvedTheme(nextTheme));
+    };
 
     const fetchAdmins = async () => {
         setLoadingAdmins(true);
@@ -203,14 +226,22 @@ const Configuracoes = () => {
                         </div>
                         <div className="inline-flex items-center gap-2 bg-accent/30 rounded-2xl p-1 w-fit">
                             <button
-                                onClick={() => setTheme("light")}
+                                onClick={() => updateTheme("system")}
+                                className={`flex items-center gap-2 h-11 px-4 rounded-xl font-secondary text-sm transition-all cursor-pointer ${theme === "system" ? "bg-accent text-primary shadow-sm" : "text-primary/70 hover:text-primary"}`}
+                                title={`Usando modo ${resolvedTheme === "dark" ? "escuro" : "claro"} do computador`}
+                            >
+                                <DesktopIcon size={18} weight="light" />
+                                Sistema
+                            </button>
+                            <button
+                                onClick={() => updateTheme("light")}
                                 className={`flex items-center gap-2 h-11 px-4 rounded-xl font-secondary text-sm transition-all cursor-pointer ${theme === "light" ? "bg-accent text-primary shadow-sm" : "text-primary/70 hover:text-primary"}`}
                             >
                                 <SunIcon size={18} weight="light" />
                                 Claro
                             </button>
                             <button
-                                onClick={() => setTheme("dark")}
+                                onClick={() => updateTheme("dark")}
                                 className={`flex items-center gap-2 h-11 px-4 rounded-xl font-secondary text-sm transition-all cursor-pointer ${theme === "dark" ? "bg-accent text-primary shadow-sm" : "text-primary/70 hover:text-primary"}`}
                             >
                                 <MoonIcon size={18} weight="light" />

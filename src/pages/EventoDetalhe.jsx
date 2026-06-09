@@ -2,6 +2,7 @@ import Sidebar from "../components/Sidebar";
 import Select from "react-select";
 import {
     ArrowLeftIcon,
+    ArchiveIcon,
     CalendarStarIcon,
     CircleNotchIcon,
     HandshakeIcon,
@@ -22,6 +23,7 @@ import { motion } from "framer-motion";
 import { isAdmin, isPalestrante } from "../utils/auth";
 import CategoriaEventoSelect from "../components/CategoriaEventoSelect";
 import { categoriaSelectClasses } from "../utils/selectStyles";
+import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, setStoredActivityStatus } from "../utils/activityStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -74,6 +76,7 @@ const EventoDetalhe = () => {
     const [eventData, setEventData] = useState(null);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [categoriasDisponiveis, setCategoriasDisponiveis] = useState([]);
+    const [palestrasDoEvento, setPalestrasDoEvento] = useState([]);
 
     const [form, setForm] = useState({
         titulo: "",
@@ -91,10 +94,11 @@ const EventoDetalhe = () => {
             if (!idEvento) return;
 
             try {
-                const [eventoRes, patrocinadoresRes, categoriasRes] = await Promise.all([
+                const [eventoRes, patrocinadoresRes, categoriasRes, palestrasRes] = await Promise.all([
                     api.get(`/eventos/${idEvento}`),
                     api.get("/patrocinadores"),
-                    api.get("/categorias-evento")
+                    api.get("/categorias-evento"),
+                    api.get("/palestras")
                 ]);
 
                 const evento = eventoRes.data;
@@ -106,6 +110,16 @@ const EventoDetalhe = () => {
                 setEventData(evento);
                 setPatrocinadoresDisponiveis(patrocinadores);
                 setCategoriasDisponiveis(categoriasRes.data);
+                const palestrasVinculadas = palestrasRes.data.filter((palestra) => String(palestra.eventoId) === String(idEvento));
+                const palestrasComInscricoes = await Promise.all(palestrasVinculadas.map(async (palestra) => {
+                    try {
+                        const inscricoesRes = await api.get(`/inscricoes/palestra/${palestra.id}`);
+                        return { ...palestra, inscricoes: inscricoesRes.data };
+                    } catch {
+                        return { ...palestra, inscricoes: [] };
+                    }
+                }));
+                setPalestrasDoEvento(palestrasComInscricoes);
                 setForm({
                     titulo: evento.titulo || "",
                     descricao: evento.descricao || "",
@@ -130,6 +144,15 @@ const EventoDetalhe = () => {
     const patrocinadorSelecionado = patrocinadoresDisponiveis.find((patrocinador) => patrocinador.value === form.patrocinadorId);
     const categoriaEvento = categoriasDisponiveis.find((categoria) => categoria.id === eventData?.categoriaId);
     const categoriaNome = eventData?.categoria || formatarCategoriaLabel(categoriaEvento);
+    const operationalStatus = getActivityStatus(eventData, "evento");
+    const hasPalestras = palestrasDoEvento.length > 0;
+    const hasCheckinsOrCertificates = palestrasDoEvento.some((palestra) => (
+        palestra.status === "CERTIFICADOS_EMITIDOS" ||
+        (palestra.inscricoes || []).some((inscricao) => inscricao.status === "CONFIRMADA")
+    ));
+    const canDelete = !hasPalestras && !operationalStatus;
+    const canCancel = hasPalestras && !hasCheckinsOrCertificates && !operationalStatus;
+    const canArchive = hasPalestras && hasCheckinsOrCertificates && !operationalStatus;
 
     const houveAlteracao = useMemo(() => {
         if (!eventData) return false;
@@ -195,6 +218,24 @@ const EventoDetalhe = () => {
             console.error("Erro ao remover evento:", err);
             toast.error("Erro ao remover evento.");
         }
+    };
+
+    const updateOperationalStatus = (status) => {
+        setStoredActivityStatus("evento", idEvento, status);
+        palestrasDoEvento.forEach((palestra) => setStoredActivityStatus("palestra", palestra.id, status));
+        setEventData((current) => current ? { ...current, statusOperacional: status } : current);
+        setPalestrasDoEvento((current) => current.map((palestra) => ({ ...palestra, statusOperacional: status })));
+        toast.success(status === "CANCELADO" ? "Evento cancelado." : "Evento arquivado.");
+    };
+
+    const handleCancel = () => {
+        if (!window.confirm("Cancelar este evento? Esta ação é irreversível e bloqueará os QRs das palestras vinculadas.")) return;
+        updateOperationalStatus("CANCELADO");
+    };
+
+    const handleArchive = () => {
+        if (!window.confirm("Arquivar este evento? Esta ação é irreversível e bloqueará os QRs das palestras vinculadas.")) return;
+        updateOperationalStatus("ARQUIVADO");
     };
 
     if (loading) {
@@ -278,7 +319,7 @@ const EventoDetalhe = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <SummaryPill icon={<CalendarStarIcon size={18} />} label="Início" value={formatarData(eventData?.dataInicio)} />
                             <SummaryPill icon={<TagIcon size={18} />} label="Categoria" value={categoriaNome} />
-                            <SummaryPill icon={<SlidersHorizontalIcon size={18} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
+                            <SummaryPill icon={<SlidersHorizontalIcon size={18} />} label="Status" value={operationalStatus ? getOperationalStatusLabel(operationalStatus) : formatarModalidade(eventData?.modalidade)} />
                         </div>
                     </motion.div>
 
@@ -317,12 +358,12 @@ const EventoDetalhe = () => {
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} categoriaNome={categoriaNome} />
+                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} categoriaNome={categoriaNome} palestrasCount={palestrasDoEvento.length} />
                         )
                     )}
 
                     {activeTab === "acoes" && (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                             <ActionCard
                                 icon={<ArrowLeftIcon size={44} />}
                                 title="Voltar"
@@ -330,14 +371,44 @@ const EventoDetalhe = () => {
                                 buttonLabel="Voltar"
                                 onClick={() => window.history.back()}
                             />
-                            <ActionCard
-                                danger
-                                icon={<TrashSimpleIcon size={44} />}
-                                title="Apagar evento"
-                                description="Remove este evento permanentemente do sistema."
-                                buttonLabel="Apagar permanentemente"
-                                onClick={() => document.getElementById("modal_confirmar_apagar_evento").showModal()}
-                            />
+                            {canDelete && (
+                                <ActionCard
+                                    danger
+                                    icon={<TrashSimpleIcon size={44} />}
+                                    title="Apagar evento"
+                                    description="Remove este evento permanentemente do sistema."
+                                    buttonLabel="Apagar permanentemente"
+                                    onClick={() => document.getElementById("modal_confirmar_apagar_evento").showModal()}
+                                />
+                            )}
+                            {canCancel && (
+                                <ActionCard
+                                    danger
+                                    icon={<XIcon size={44} />}
+                                    title="Cancelar evento"
+                                    description="Bloqueia inscrições e check-ins das palestras vinculadas. A ação é irreversível."
+                                    buttonLabel="Cancelar evento"
+                                    onClick={handleCancel}
+                                />
+                            )}
+                            {canArchive && (
+                                <ActionCard
+                                    icon={<ArchiveIcon size={44} />}
+                                    title="Arquivar evento"
+                                    description="Eventos com check-ins ou certificados não podem ser cancelados."
+                                    buttonLabel="Arquivar evento"
+                                    onClick={handleArchive}
+                                />
+                            )}
+                            {operationalStatus && (
+                                <ActionCard
+                                    disabled
+                                    icon={operationalStatus === "ARQUIVADO" ? <ArchiveIcon size={44} /> : <XIcon size={44} />}
+                                    title={getOperationalStatusLabel(operationalStatus)}
+                                    description="Este estado é irreversível."
+                                    buttonLabel="Sem ações disponíveis"
+                                />
+                            )}
                         </div>
                     )}
                 </div>
@@ -442,7 +513,10 @@ const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patro
     </motion.form>
 );
 
-const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome }) => (
+const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome, palestrasCount }) => {
+    const operationalStatus = getActivityStatus(eventData, "evento");
+
+    return (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
         <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-6">
             <SectionTitle title="Informações principais" />
@@ -450,6 +524,7 @@ const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome }) => (
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de início" value={formatarData(eventData?.dataInicio)} />
                 <DetailCard icon={<CalendarStarIcon size={24} />} label="Data de fim" value={formatarData(eventData?.dataFim)} />
                 <DetailCard icon={<TagIcon size={24} />} label="Categoria" value={categoriaNome} />
+                <DetailCard icon={<CalendarStarIcon size={24} />} label="Palestras" value={palestrasCount} />
             </div>
             <div className="flex flex-col gap-2">
                 <span className="text-xs font-secondary text-primary/50 uppercase">Descrição</span>
@@ -463,6 +538,12 @@ const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome }) => (
             <SectionTitle title="Operação" />
             <div className="grid grid-cols-1 gap-4">
                 <DetailCard icon={<SlidersHorizontalIcon size={24} />} label="Modalidade" value={formatarModalidade(eventData?.modalidade)} />
+                <DetailCard
+                    icon={<SlidersHorizontalIcon size={24} />}
+                    label="Status"
+                    value={operationalStatus ? getOperationalStatusLabel(operationalStatus) : "Ativo"}
+                    badgeClass={operationalStatus ? getOperationalStatusBadgeClass(operationalStatus) : ""}
+                />
                 <DetailCard icon={<HandshakeIcon size={24} />} label="Patrocinador" value={patrocinadorNome || eventData?.patrocinadorNome} />
                 <DetailCard icon={<ImageSquareIcon size={24} />} label="Banner" value={eventData?.banner} />
             </div>
@@ -477,7 +558,8 @@ const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome }) => (
             )}
         </div>
     </motion.div>
-);
+    );
+};
 
 const Field = ({ label, optional, className = "", children }) => (
     <div className={`flex flex-col gap-2 ${className}`}>
@@ -488,14 +570,14 @@ const Field = ({ label, optional, className = "", children }) => (
     </div>
 );
 
-const DetailCard = ({ icon, label, value }) => (
+const DetailCard = ({ icon, label, value, badgeClass = "" }) => (
     <div className="bg-accent/20 rounded-2xl p-5 flex items-start gap-4 min-h-24">
         <div className="w-11 h-11 rounded-xl bg-accent/40 flex items-center justify-center text-primary shrink-0">
             {icon}
         </div>
         <div className="flex flex-col gap-1 min-w-0">
             <span className="text-xs font-secondary text-primary/50 uppercase">{label}</span>
-            <span className="text-lg font-primary font-bold text-primary break-words">{value || "-"}</span>
+            <span className={`text-lg font-primary font-bold break-words ${badgeClass ? `${badgeClass} rounded-xl px-3 py-1 w-fit` : "text-primary"}`}>{value || "-"}</span>
         </div>
     </div>
 );
@@ -514,8 +596,8 @@ const SectionTitle = ({ title }) => (
     <h2 className="text-xl font-primary font-bold text-primary">{title}</h2>
 );
 
-const ActionCard = ({ icon, title, description, buttonLabel, onClick, danger }) => (
-    <div className={`rounded-3xl p-7 flex flex-col gap-5 border ${danger ? "bg-error/10 border-error/20" : "bg-accent/10 border-accent/15"}`}>
+const ActionCard = ({ icon, title, description, buttonLabel, onClick, danger, disabled }) => (
+    <div className={`rounded-3xl p-7 flex flex-col gap-5 border ${disabled ? "opacity-60 bg-primary/5 border-primary/10" : danger ? "bg-error/10 border-error/20" : "bg-accent/10 border-accent/15"}`}>
         <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${danger ? "bg-error/20 text-error" : "bg-accent/30 text-primary"}`}>
             {icon}
         </div>
@@ -526,7 +608,8 @@ const ActionCard = ({ icon, title, description, buttonLabel, onClick, danger }) 
         <button
             type="button"
             onClick={onClick}
-            className={`w-full text-sm font-secondary py-4 rounded-xl cursor-pointer transition-colors ${danger ? "bg-error/80 hover:bg-error text-secondary" : "bg-accent hover:bg-accent/80 text-primary"}`}
+            disabled={disabled}
+            className={`w-full text-sm font-secondary py-4 rounded-xl transition-colors ${disabled ? "bg-primary/10 text-primary/45 cursor-not-allowed" : danger ? "bg-error/80 hover:bg-error text-secondary cursor-pointer" : "bg-accent hover:bg-accent/80 text-primary cursor-pointer"}`}
         >
             {buttonLabel}
         </button>
