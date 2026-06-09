@@ -2,6 +2,7 @@ package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
+import com.fateczl.muttley.palestra.PalestraRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,17 @@ public class EventoService {
     private final EventoMapper mapper;
     private final PatrocinadorRepository patrocinadorRepository;
     private final CategoriaEventoRepository categoriaEventoRepository;
+    private final PalestraRepository palestraRepository;
 
     public EventoService(EventoRepository repository, EventoMapper mapper,
                          PatrocinadorRepository patrocinadorRepository,
-                         CategoriaEventoRepository categoriaEventoRepository) {
+                         CategoriaEventoRepository categoriaEventoRepository,
+                         PalestraRepository palestraRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.patrocinadorRepository = patrocinadorRepository;
         this.categoriaEventoRepository = categoriaEventoRepository;
+        this.palestraRepository = palestraRepository;
     }
 
     // cria ou atualiza um evento resolvendo a associação de patrocinador pelo id
@@ -67,6 +71,12 @@ public class EventoService {
 
     // remove um evento pelo seu identificador
     public void deletar(Long id) {
+        if (!repository.existsById(id)) {
+            throw new EntityNotFoundException("Evento não encontrado");
+        }
+        if (palestraRepository.existsByEventoId(id)) {
+            throw new IllegalStateException("Evento não pode ser excluído porque possui palestras atribuídas");
+        }
         repository.deleteById(id);
     }
 }

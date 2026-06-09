@@ -11,4 +11,6 @@ public interface PalestraRepository extends JpaRepository<Palestra, Long> {
     Optional<Palestra> findByQrCodeToken(String qrCodeToken);
 
     Optional<Palestra> findByQrCodeCheckinToken(String qrCodeCheckinToken);
+
+    boolean existsByEventoId(Long eventoId);
 }

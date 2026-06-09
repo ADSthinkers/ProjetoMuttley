@@ -48,6 +48,6 @@ public class Evento {
     @JoinColumn(name = "patrocinador_id")
     private Patrocinador patrocinador;
 
-    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "evento")
     private List<Palestra> palestras;
 }

@@ -2,6 +2,7 @@ package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -65,9 +66,15 @@ public class EventoApiController {
     // remove um evento pelo id após registrar a exclusão no log de auditoria
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            service.deletar(id);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
         auditoriaService.registrar(AcaoAuditoria.DELETADO, "Evento", id,
                 "Evento " + id + " excluído", ator(request));
-        service.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
