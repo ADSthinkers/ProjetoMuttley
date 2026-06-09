@@ -75,6 +75,7 @@ const EventoDetalhe = () => {
     const [error, setError] = useState(null);
     const [eventData, setEventData] = useState(null);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
+    const [assinantesDisponiveis, setAssinantesDisponiveis] = useState([]);
     const [categoriasDisponiveis, setCategoriasDisponiveis] = useState([]);
     const [palestrasDoEvento, setPalestrasDoEvento] = useState([]);
 
@@ -86,7 +87,8 @@ const EventoDetalhe = () => {
         categoriaId: "",
         modalidade: "",
         banner: "",
-        patrocinadorId: ""
+        patrocinadorId: "",
+        assinanteIds: []
     });
 
     useEffect(() => {
@@ -94,9 +96,10 @@ const EventoDetalhe = () => {
             if (!idEvento) return;
 
             try {
-                const [eventoRes, patrocinadoresRes, categoriasRes, palestrasRes] = await Promise.all([
+                const [eventoRes, patrocinadoresRes, assinantesRes, categoriasRes, palestrasRes] = await Promise.all([
                     api.get(`/eventos/${idEvento}`),
                     api.get("/patrocinadores"),
+                    api.get("/assinantes"),
                     api.get("/categorias-evento"),
                     api.get("/palestras")
                 ]);
@@ -106,9 +109,14 @@ const EventoDetalhe = () => {
                     value: patrocinador.id,
                     label: formatarPatrocinadorLabel(patrocinador)
                 }));
+                const assinantes = assinantesRes.data.map((assinante) => ({
+                    value: assinante.id,
+                    label: `${assinante.nome} - ${assinante.cargo}`
+                }));
 
                 setEventData(evento);
                 setPatrocinadoresDisponiveis(patrocinadores);
+                setAssinantesDisponiveis(assinantes);
                 setCategoriasDisponiveis(categoriasRes.data);
                 const palestrasVinculadas = palestrasRes.data.filter((palestra) => String(palestra.eventoId) === String(idEvento));
                 const palestrasComInscricoes = await Promise.all(palestrasVinculadas.map(async (palestra) => {
@@ -128,7 +136,8 @@ const EventoDetalhe = () => {
                     categoriaId: evento.categoriaId || "",
                     modalidade: evento.modalidade || "",
                     banner: evento.banner || "",
-                    patrocinadorId: evento.patrocinadorId || ""
+                    patrocinadorId: evento.patrocinadorId || "",
+                    assinanteIds: evento.assinanteIds || []
                 });
             } catch (err) {
                 console.error("Erro ao buscar evento:", err);
@@ -164,7 +173,8 @@ const EventoDetalhe = () => {
             form.categoriaId !== (eventData.categoriaId || "") ||
             form.modalidade !== (eventData.modalidade || "") ||
             form.banner !== (eventData.banner || "") ||
-            form.patrocinadorId !== (eventData.patrocinadorId || "");
+            form.patrocinadorId !== (eventData.patrocinadorId || "") ||
+            JSON.stringify(form.assinanteIds || []) !== JSON.stringify(eventData.assinanteIds || []);
     }, [eventData, form]);
 
     const updateForm = (field, value) => {
@@ -183,7 +193,8 @@ const EventoDetalhe = () => {
             categoriaId: form.categoriaId || null,
             modalidade: form.modalidade || null,
             banner: form.banner,
-            patrocinadorId: form.patrocinadorId || null
+            patrocinadorId: form.patrocinadorId || null,
+            assinanteIds: form.assinanteIds || []
         };
 
         try {
@@ -197,7 +208,8 @@ const EventoDetalhe = () => {
                 categoriaId: response.data.categoriaId || "",
                 modalidade: response.data.modalidade || "",
                 banner: response.data.banner || "",
-                patrocinadorId: response.data.patrocinadorId || ""
+                patrocinadorId: response.data.patrocinadorId || "",
+                assinanteIds: response.data.assinanteIds || []
             });
             setIsEditing(false);
             toast.success("Evento atualizado com sucesso.");
@@ -352,6 +364,7 @@ const EventoDetalhe = () => {
                                 api={api}
                                 setCategoriasDisponiveis={setCategoriasDisponiveis}
                                 patrocinadoresDisponiveis={patrocinadoresDisponiveis}
+                                assinantesDisponiveis={assinantesDisponiveis}
                                 modalidades={modalidades}
                                 saving={saving}
                                 houveAlteracao={houveAlteracao}
@@ -443,7 +456,7 @@ const EventoDetalhe = () => {
     );
 };
 
-const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patrocinadoresDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
+const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patrocinadoresDisponiveis, assinantesDisponiveis, modalidades, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título do evento*" className="lg:col-span-2">
@@ -496,6 +509,21 @@ const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patro
                 />
             </Field>
 
+            <Field label="Assinantes*" className="lg:col-span-2">
+                <Select
+                    isMulti
+                    options={assinantesDisponiveis}
+                    value={assinantesDisponiveis.filter((assinante) => (form.assinanteIds || []).includes(assinante.value))}
+                    unstyled
+                    onChange={(selectedOptions) => updateForm("assinanteIds", (selectedOptions || []).map((option) => option.value))}
+                    placeholder="Selecione quem assina os certificados deste evento"
+                    classNames={selectClasses}
+                />
+                {(form.assinanteIds || []).length === 0 && (
+                    <span className="text-xs font-secondary text-primary/45">Selecione pelo menos um assinante.</span>
+                )}
+            </Field>
+
             <Field label="Banner" optional className="lg:col-span-2">
                 <input
                     type="url"
@@ -507,7 +535,7 @@ const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patro
             </Field>
         </div>
 
-        <button disabled={!houveAlteracao || saving} className={`w-full text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl flex items-center justify-center gap-2 ${houveAlteracao ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+        <button disabled={!houveAlteracao || saving || (form.assinanteIds || []).length === 0} className={`w-full text-sm bg-accent hover:bg-accent/80 transition-colors text-primary font-secondary py-4 rounded-xl flex items-center justify-center gap-2 ${houveAlteracao && (form.assinanteIds || []).length > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
             {saving ? <CircleNotchIcon size={20} className="animate-spin" /> : "Salvar alterações"}
         </button>
     </motion.form>
@@ -620,7 +648,10 @@ const selectClasses = {
     control: () => "basic-multi-select bg-accent/30 px-4 py-2 min-h-15 border border-accent/20 rounded-xl text-primary text-sm",
     menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
     placeholder: () => "text-primary/75 font-secondary text-sm",
-    option: ({ isFocused }) => `px-4 py-3 ${isFocused ? "bg-accent/50 rounded-xl" : ""}`
+    option: ({ isFocused }) => `px-4 py-3 ${isFocused ? "bg-accent/50 rounded-xl" : ""}`,
+    multiValue: () => "bg-accent/60 rounded-lg px-2 py-1 mr-1 mb-1",
+    multiValueLabel: () => "text-primary font-secondary text-xs",
+    multiValueRemove: () => "text-primary/50 hover:text-error ml-1"
 };
 
 export default EventoDetalhe;

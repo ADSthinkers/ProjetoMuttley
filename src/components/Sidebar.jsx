@@ -3,7 +3,7 @@ import { useState } from "react";
 import MuttleyLogo from "../assets/muttley_logo.svg"
 import MuttleyLogoRed from "../assets/muttley_logo_red.svg"
 import { motion, AnimatePresence } from "framer-motion"
-import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarSimpleIcon, UserIcon, MicrophoneStageIcon, MapPinIcon, BuildingsIcon } from "@phosphor-icons/react"
+import { HouseIcon, BookOpenIcon, UsersIcon, MedalIcon, MagnifyingGlassIcon, PlusIcon, GearIcon, SignOutIcon, SidebarSimpleIcon, UserIcon, MapPinIcon, BuildingsIcon } from "@phosphor-icons/react"
 import { clearAuthCookie, isAdmin } from "../utils/auth";
 
 const Sidebar = ({ className, compact }) => {
@@ -24,8 +24,7 @@ const Sidebar = ({ className, compact }) => {
     const entradasMenu = [
         {"nome": "Home", "icone": <HouseIcon size={28} weight="light" />, "link": "/home"},
         {"nome": "Eventos e Palestras", "icone": <BookOpenIcon size={28} weight="light" />, "link": "/evento-palestra"},
-        {"nome": "Participantes", "icone": <UsersIcon size={28} weight="light" />, "link": "/participantes"},
-        {"nome": "Palestrantes", "icone": <MicrophoneStageIcon size={28} weight="light" />, "link": "/palestrantes"},
+        {"nome": "Pessoas", "icone": <UsersIcon size={28} weight="light" />, "link": "/pessoas"},
         {"nome": "Locais", "icone": <MapPinIcon size={28} weight="light" />, "link": "/locais", adminOnly: true},
         {"nome": "Patrocinadores", "icone": <BuildingsIcon size={28} weight="light" />, "link": "/patrocinadores", adminOnly: true},
         {"nome": "Competências", "icone": <MedalIcon size={28} weight="light" />, "link": "/competencias"},

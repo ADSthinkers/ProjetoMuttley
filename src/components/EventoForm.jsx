@@ -25,7 +25,9 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const [modalidade, setModalidade] = useState(objeto?.modalidade || "");
     const [banner, setBanner] = useState(objeto?.banner || "");
     const [patrocinadorId, setPatrocinadorId] = useState(objeto?.patrocinadorId || "");
+    const [assinanteIds, setAssinanteIds] = useState(objeto?.assinanteIds || []);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
+    const [assinantesDisponiveis, setAssinantesDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
     const modalidades = [
         { value: "PRESENCIAL", label: "Presencial" },
@@ -44,10 +46,16 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
 
         const fetchOptions = async () => {
             try {
-                const patrocinadoresResponse = await api.get('/patrocinadores');
+                const [patrocinadoresResponse, assinantesResponse] = await Promise.all([
+                    api.get('/patrocinadores'),
+                    api.get('/assinantes')
+                ]);
 
                 setPatrocinadoresDisponiveis(
                     patrocinadoresResponse.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
+                );
+                setAssinantesDisponiveis(
+                    assinantesResponse.data.map(a => ({ value: a.id, label: `${a.nome} - ${a.cargo}` }))
                 );
             } catch (error) {
                 console.error("Erro ao buscar opções do evento:", error);
@@ -60,6 +68,8 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (assinanteIds.length === 0) return;
+
         setObjeto({
             titulo,
             descricao,
@@ -68,7 +78,8 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
             categoriaId: categoriaId || null,
             modalidade: modalidade || null,
             banner,
-            patrocinadorId: patrocinadorId || null
+            patrocinadorId: patrocinadorId || null,
+            assinanteIds
         });
         setEtapa(3);
     };
@@ -181,6 +192,31 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                             }}
                         />
                     </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-secondary text-primary font-semibold">Assinantes*</label>
+                    <Select
+                        isMulti
+                        isLoading={loading}
+                        options={assinantesDisponiveis}
+                        value={assinantesDisponiveis.filter(a => assinanteIds.includes(a.value))}
+                        unstyled
+                        onChange={(selectedOptions) => setAssinanteIds((selectedOptions || []).map(option => option.value))}
+                        placeholder="Selecione quem assina os certificados deste evento"
+                        classNames={{
+                            control: () => "basic-multi-select bg-accent/30 px-4 py-2 min-h-15 border border-accent/20 rounded-xl text-primary text-sm",
+                            menu: () => "bg-[color-mix(in_srgb,theme(colors.accent),white_70%)] text-primary rounded-xl mt-2 text-sm",
+                            placeholder: () => "text-primary/75 font-secondary text-sm",
+                            option: ({ isFocused }) => `px-4 py-3 ${isFocused ? 'bg-accent/50 rounded-xl' : ''}`,
+                            multiValue: () => "bg-accent/60 rounded-lg px-2 py-1 mr-1 mb-1",
+                            multiValueLabel: () => "text-primary font-secondary text-xs",
+                            multiValueRemove: () => "text-primary/50 hover:text-error ml-1"
+                        }}
+                    />
+                    {assinanteIds.length === 0 && (
+                        <span className="text-xs font-secondary text-primary/45">Selecione pelo menos um assinante.</span>
+                    )}
                 </div>
             </div>
 

@@ -24,6 +24,7 @@ import ParticipanteForm from "../components/ParticipanteForm"
 import PalestraForm from "../components/PalestraForm"
 import LocalForm from "../components/LocalForm"
 import PalestranteForm from "../components/PalestranteForm"
+import AssinanteForm from "../components/AssinanteForm"
 import PatrocinadorForm from "../components/PatrocinadorForm"
 import EventoForm from "../components/EventoForm"
 import CompetenciaForm from "../components/CompetenciaForm"
@@ -96,6 +97,7 @@ const Novo = () => {
         { id: "participante", label: "Participante", icon: <UsersIcon size={40} /> },
         { id: "local", label: "Local", icon: <MapPinIcon size={40} />, roles: ["ADMIN"] },
         { id: "palestrante", label: "Palestrante", icon: <MicrophoneStageIcon size={40} />, roles: ["ADMIN"] },
+        { id: "assinante", label: "Assinante", icon: <FileTextIcon size={40} />, roles: ["ADMIN"] },
         { id: "patrocinador", label: "Patrocinador", icon: <HandshakeIcon size={40} />, roles: ["ADMIN"] },
         { id: "competência", label: "Competência", icon: <MedalIcon size={40} /> },
     ].filter(cat => {
@@ -117,6 +119,7 @@ const Novo = () => {
             case "palestra": return <PalestraForm {...props} />;
             case "local": return <LocalForm {...props} />;
             case "palestrante": return <PalestranteForm {...props} />;
+            case "assinante": return <AssinanteForm {...props} />;
             case "patrocinador": return <PatrocinadorForm {...props} />;
             case "evento": return <EventoForm {...props} />;
             case "competência": return <CompetenciaForm {...props} />;
@@ -153,6 +156,16 @@ const Novo = () => {
                         foto: data.foto
                     };
                     break;
+                case "assinante":
+                    endpoint = "/assinantes";
+                    data = {
+                        nome: data.nome,
+                        cpf: data.cpf,
+                        email: data.email,
+                        cargo: data.cargo,
+                        assinatura: data.assinatura
+                    };
+                    break;
                 case "evento":
                     endpoint = "/eventos";
                     data = {
@@ -163,7 +176,8 @@ const Novo = () => {
                         categoriaId: data.categoriaId || null,
                         modalidade: data.modalidade || null,
                         banner: data.banner,
-                        patrocinadorId: data.patrocinadorId || null
+                        patrocinadorId: data.patrocinadorId || null,
+                        assinanteIds: data.assinanteIds || []
                     };
                     break;
                 case "competência":
@@ -345,19 +359,30 @@ const Novo = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:grid-cols-1">
                                             {Object.entries(objeto).map(([key, value]) => {
                                                 if (typeof value === 'object' && !Array.isArray(value)) return null;
+                                                if (key === "assinaturaPreview") return null;
                                                 
                                                 const label = key.replace(/([A-Z])/g, ' $1');
                                                 const isPassword = key.toLowerCase() === "senha";
+                                                const isSignature = key === "assinatura";
 
                                                 return (
                                                     <div key={key} className="flex flex-col gap-1 border-b border-accent/20 pb-2 print:border-black/10 relative">
                                                         <span className="text-[10px] uppercase tracking-widest text-primary/40 font-bold">{label}</span>
                                                         <div className="flex items-center justify-between gap-2">
-                                                            <span className="text-lg font-primary text-primary font-medium">
-                                                                {isPassword && !showPassword 
-                                                                    ? "••••••••" 
-                                                                    : (Array.isArray(value) ? value.join(", ") : String(value))}
-                                                            </span>
+                                                            {isSignature ? (
+                                                                <div className="flex flex-col gap-2">
+                                                                    {objeto.assinaturaPreview && (
+                                                                        <img src={objeto.assinaturaPreview} alt="Prévia da assinatura" className="max-h-24 max-w-full object-contain rounded-xl bg-white p-2" />
+                                                                    )}
+                                                                    <span className="text-sm font-secondary text-primary/60">Imagem da assinatura carregada</span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-lg font-primary text-primary font-medium break-words">
+                                                                    {isPassword && !showPassword 
+                                                                        ? "••••••••" 
+                                                                        : (Array.isArray(value) ? value.join(", ") : String(value))}
+                                                                </span>
+                                                            )}
                                                             {isPassword && (
                                                                 <button 
                                                                     type="button"

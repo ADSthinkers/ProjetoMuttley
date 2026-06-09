@@ -4,8 +4,8 @@ import { AnimatePresence } from "framer-motion";
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import Competencias from "./pages/Competencias.jsx";
-import Participantes from "./pages/Participantes.jsx";
 import PerfilParticipante from "./pages/PerfilParticipante.jsx";
+import Pessoas from "./pages/Pessoas.jsx";
 import EventoPalestra from "./pages/EventoPalestra.jsx";
 import Buscar from "./pages/Buscar.jsx";
 import PalestraDetalhe from "./pages/PalestraDetalhe.jsx";
@@ -14,8 +14,8 @@ import Novo from "./pages/Novo.jsx";
 import Configuracoes from "./pages/Configuracoes.jsx";
 import Perfil from "./pages/Perfil.jsx";
 import ValidarCertificado from "./pages/ValidarCertificado.jsx";
-import Palestrantes from "./pages/Palestrantes.jsx";
 import PerfilPalestrante from "./pages/PerfilPalestrante.jsx";
+import AssinanteDetalhe from "./pages/AssinanteDetalhe.jsx";
 import QrCode from "./pages/QrCode.jsx";
 import Locais from "./pages/Locais.jsx";
 import LocalDetalhe from "./pages/LocalDetalhe.jsx";
@@ -48,11 +48,13 @@ function App() {
           <Route path="/checkin/qrcode/:token" element={<QrCode tipo="checkin" />} />
           <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/competencias" element={<PrivateRoute><Competencias /></PrivateRoute>} />
-          <Route path="/participantes" element={<PrivateRoute><Participantes /></PrivateRoute>} />
+          <Route path="/pessoas" element={<PrivateRoute><Pessoas /></PrivateRoute>} />
+          <Route path="/participantes" element={<PrivateRoute><Pessoas /></PrivateRoute>} />
           <Route path="/participante/:id" element={<PrivateRoute><PerfilParticipante /></PrivateRoute>} />
           <Route path="/perfil" element={<PrivateRoute><Perfil /></PrivateRoute>} />
-          <Route path="/palestrantes" element={<PrivateRoute><Palestrantes /></PrivateRoute>} />
+          <Route path="/palestrantes" element={<PrivateRoute><Pessoas /></PrivateRoute>} />
           <Route path="/palestrante/:id" element={<PrivateRoute><PerfilPalestrante /></PrivateRoute>} />
+          <Route path="/assinante/:id" element={<AdminRoute><AssinanteDetalhe /></AdminRoute>} />
           <Route path="/locais" element={<AdminRoute><Locais /></AdminRoute>} />
           <Route path="/local/:idLocal" element={<AdminRoute><LocalDetalhe /></AdminRoute>} />
           <Route path="/patrocinadores" element={<AdminRoute><Patrocinadores /></AdminRoute>} />
