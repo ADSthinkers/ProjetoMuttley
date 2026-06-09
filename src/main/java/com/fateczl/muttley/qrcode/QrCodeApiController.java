@@ -17,6 +17,7 @@ import com.fateczl.muttley.participacao.ParticipacaoService;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteDTO;
 import com.fateczl.muttley.participante.ParticipanteService;
+import com.fateczl.muttley.xp.XpService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class QrCodeApiController {
     private final CertificadoService certificadoService;
     private final CertificadoPdfService certificadoPdfService;
     private final EmailService emailService;
+    private final XpService xpService;
 
     public QrCodeApiController(PalestraService palestraService,
                                ParticipanteService participanteService,
@@ -44,7 +46,8 @@ public class QrCodeApiController {
                                ParticipacaoService participacaoService,
                                CertificadoService certificadoService,
                                CertificadoPdfService certificadoPdfService,
-                               EmailService emailService) {
+                               EmailService emailService,
+                               XpService xpService) {
         this.palestraService = palestraService;
         this.participanteService = participanteService;
         this.inscricaoService = inscricaoService;
@@ -53,6 +56,7 @@ public class QrCodeApiController {
         this.certificadoService = certificadoService;
         this.certificadoPdfService = certificadoPdfService;
         this.emailService = emailService;
+        this.xpService = xpService;
     }
 
     @GetMapping("/palestras/{palestraId}/inscricao/imagem")
@@ -256,6 +260,7 @@ public class QrCodeApiController {
 
         inscricaoService.marcarPresente(inscricao.getId());
         participacaoService.registrarOuAtualizar(participante, palestra);
+        xpService.registrarParaPalestra(participante.getId(), palestra);
 
         Certificado certificado = certificadoService.emitirOuBuscar(participante.getId(), palestra.getId());
         enviarCertificadoPorEmail(certificado.getId(), httpRequest);

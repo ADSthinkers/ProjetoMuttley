@@ -25,14 +25,20 @@ public class CompetenciaService {
     // cria uma nova competência ou atualiza uma existente com base no id do DTO
      
     public Competencia saveOrAtualize(CompetenciaDTO dto) {
+        CompetenciaDTO dtoNormalizado = new CompetenciaDTO(
+                dto.id(),
+                dto.nome(),
+                dto.tipo(),
+                dto.horasParaEvoluir() != null ? dto.horasParaEvoluir() : 5
+        );
         
-    if (dto.id() != null) {    
-        Competencia existente = competenciaRepository.findById(dto.id())
-            .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada com ID: " + dto.id()));
-        competenciaMapper.updateEntityFromDto(dto, existente);
+    if (dtoNormalizado.id() != null) {
+        Competencia existente = competenciaRepository.findById(dtoNormalizado.id())
+            .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada com ID: " + dtoNormalizado.id()));
+        competenciaMapper.updateEntityFromDto(dtoNormalizado, existente);
         return competenciaRepository.save(existente);
     } else {
-        Competencia novaCompetencia = competenciaMapper.toEntityFromDTO(dto);
+        Competencia novaCompetencia = competenciaMapper.toEntityFromDTO(dtoNormalizado);
         
         return competenciaRepository.save(novaCompetencia);
     }

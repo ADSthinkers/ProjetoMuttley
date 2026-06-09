@@ -150,6 +150,7 @@
                     <tr>
                         <th>Nome da Competência</th>
                         <th>Tipo</th>
+                        <th>Horas para Evoluir</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -163,6 +164,7 @@
                             </span>
                             <span th:unless="${competencia.tipo != null}" style="color:#aaa;">—</span>
                         </td>
+                        <td th:text="${competencia.horasParaEvoluir != null ? competencia.horasParaEvoluir : '-'}"></td>
                         <td class="action-links">
                             <a th:href="@{/competencia/formulario/{id}(id=${competencia.id})}"
                                 class="icon-edit">Editar</a>

@@ -144,6 +144,12 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="horasParaEvoluir">Horas para Evoluir</label>
+                <input type="number" th:field="*{horasParaEvoluir}" min="1" step="1"
+                    placeholder="Ex: 3">
+            </div>
+
             <div class="actions">
                 <button type="submit" class="btn btn-submit">
                     <span th:text="${competencia.id != null} ? 'Atualizar' : 'Criar'"></span>

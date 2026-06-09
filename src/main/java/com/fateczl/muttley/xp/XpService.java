@@ -91,17 +91,22 @@ public class XpService {
 
     private void notificarEvolucaoSeNecessario(Participante participante, Competencia competencia,
                                                float horasAnteriores, float horasAtualizadas) {
-        int nivelAnterior = calcularNivelCompetencia(horasAnteriores);
-        int nivelAtual = calcularNivelCompetencia(horasAtualizadas);
+        int nivelAnterior = calcularNivelCompetencia(horasAnteriores, competencia);
+        int nivelAtual = calcularNivelCompetencia(horasAtualizadas, competencia);
 
         if (nivelAtual > nivelAnterior) {
             emailService.enviarEvolucaoCompetencia(participante, competencia, horasAtualizadas, nivelAtual);
         }
     }
 
-    private int calcularNivelCompetencia(float horas) {
-        if (horas <= 5f) return 1;
-        return ((int) Math.floor((horas - 0.0001f) / 5f)) + 1;
+    private int calcularNivelCompetencia(float horas, Competencia competencia) {
+        float horasParaEvoluir = competencia != null && competencia.getHorasParaEvoluir() != null
+                && competencia.getHorasParaEvoluir() > 0
+                ? competencia.getHorasParaEvoluir()
+                : 5f;
+
+        if (horas < horasParaEvoluir) return 1;
+        return ((int) Math.floor((horas + 0.0001f) / horasParaEvoluir)) + 1;
     }
 
     // lista todos os registros de XP ordenados pelo id

@@ -36,7 +36,7 @@ public class CompetenciaController {
                 .orElseThrow(() -> new EntityNotFoundException("Competencia não encontrada"));
             dto = competenciaMapper.toCompetenciaDTO(competencia);
         } else {
-            dto = new CompetenciaDTO(null, "", null);
+            dto = new CompetenciaDTO(null, "", null, 5);
         }
         model.addAttribute("competencia", dto);
         model.addAttribute("tipos", TipoCompetencia.values());
@@ -100,4 +100,4 @@ public class CompetenciaController {
     }
 
     
-} 
+}

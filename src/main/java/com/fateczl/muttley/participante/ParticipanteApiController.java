@@ -89,7 +89,7 @@ public class ParticipanteApiController {
     public ResponseEntity<List<CompetenciaDTO>> competenciasDoParticipante(@PathVariable Long id) {
         if (service.buscarPorId(id).isEmpty()) return ResponseEntity.notFound().build();
         List<CompetenciaDTO> competencias = participacaoService.competenciasDoParticipante(id).stream()
-                .map(c -> new CompetenciaDTO(c.getId(), c.getNome(), c.getTipo()))
+                .map(c -> new CompetenciaDTO(c.getId(), c.getNome(), c.getTipo(), c.getHorasParaEvoluir()))
                 .toList();
         return ResponseEntity.ok(competencias);
     }
