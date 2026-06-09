@@ -17,7 +17,7 @@ import {
     ImageSquareIcon
 } from "@phosphor-icons/react";
 import Avatar from "../utils/Avatar";
-import { getAuthUser, isAdmin, isPalestrante, setAuthCookie } from "../utils/auth";
+import { getAuthUser, isAdmin } from "../utils/auth";
 import PageTransition, { itemVariants } from "../components/PageTransition"
 import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios';
@@ -35,29 +35,7 @@ const toProfileForm = (data = {}) => ({
     instituicao: data.instituicao || "",
     linkedin: data.linkedin || "",
     foto: data.foto || "",
-    senha: "",
 });
-
-const toPalestrantePayload = (form) => {
-    const payload = {
-        id: form.id,
-        nome: form.nome,
-        cpf: form.cpf,
-        email: form.email,
-        miniCurriculo: form.miniCurriculo,
-        formacao: form.formacao,
-        areaAtuacao: form.areaAtuacao,
-        instituicao: form.instituicao,
-        linkedin: form.linkedin,
-        foto: form.foto,
-    };
-
-    if (form.senha?.trim()) {
-        payload.senha = form.senha;
-    }
-
-    return payload;
-};
 
 const Perfil = () => {
     const user = useMemo(() => getAuthUser(), []);
@@ -88,20 +66,11 @@ const Perfil = () => {
                 return;
             }
             try {
-                let response;
-                if (isPalestrante()) {
-                    response = await api.get(`/palestrantes/buscar?email=${encodeURIComponent(user.login)}`);
-                } else if (isAdmin()) {
-                    // Admins might not have a profile in the same way, but let's try to find if they are also speakers/participants
-                    // For now, let's assume they might not have a profile or they are just admins
+                if (isAdmin()) {
                     setLoading(false);
                     return;
                 }
-                
-                if (response) {
-                    setUserData(response.data);
-                    setForm(toProfileForm(response.data));
-                }
+
                 setLoading(false);
             } catch (err) {
                 console.error("Erro ao buscar perfil:", err);
@@ -116,20 +85,11 @@ const Perfil = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            let response;
-            if (isPalestrante()) {
-                response = await api.put(`/palestrantes/${userData.id}`, toPalestrantePayload(form));
-            }
+            const response = null;
             
             if (response) {
                 setUserData(response.data);
                 setForm(toProfileForm(response.data));
-                if (response.data.email && response.data.email !== user.login) {
-                    setAuthCookie(JSON.stringify({
-                        ...user,
-                        login: response.data.email,
-                    }));
-                }
                 setIsEditing(false);
                 toast.success("Perfil atualizado com sucesso!");
             }
@@ -224,7 +184,7 @@ const Perfil = () => {
                             </motion.div>
                             <div className="flex flex-col">
                                 <h1 className="text-4xl font-primary text-primary font-bold">{userData.nome}</h1>
-                                <p className="text-primary/60 font-secondary">{isPalestrante() ? "Palestrante" : "Usuário"}</p>
+                                <p className="text-primary/60 font-secondary">Usuário</p>
                             </div>
                         </div>
                         
@@ -263,32 +223,6 @@ const Perfil = () => {
                                     <input required type="email" className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.email || ""} onChange={e => updateForm("email", e.target.value)} />
                                 </Field>
 
-                                {isPalestrante() && (
-                                    <>
-                                        <Field label="Área de Atuação">
-                                            <input className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.areaAtuacao || ""} onChange={e => updateForm("areaAtuacao", e.target.value)} />
-                                        </Field>
-                                        <Field label="Instituição">
-                                            <input className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.instituicao || ""} onChange={e => updateForm("instituicao", e.target.value)} />
-                                        </Field>
-                                        <Field label="LinkedIn">
-                                            <input className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.linkedin || ""} onChange={e => updateForm("linkedin", e.target.value)} />
-                                        </Field>
-                                        <Field label="Foto (URL)">
-                                            <input className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.foto || ""} onChange={e => updateForm("foto", e.target.value)} />
-                                        </Field>
-                                        <Field label="Formação" className="md:col-span-2">
-                                            <input className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.formacao || ""} onChange={e => updateForm("formacao", e.target.value)} />
-                                        </Field>
-                                        <Field label="Mini Currículo" className="md:col-span-2">
-                                            <textarea className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary min-h-32" value={form.miniCurriculo || ""} onChange={e => updateForm("miniCurriculo", e.target.value)} />
-                                        </Field>
-                                        <Field label="Nova Senha (deixe em branco para não alterar)" className="md:col-span-2">
-                                            <input type="password" placeholder="••••••••" className="w-full p-4 bg-accent/20 border border-accent/20 rounded-xl font-secondary text-primary" value={form.senha || ""} onChange={e => updateForm("senha", e.target.value)} />
-                                        </Field>
-                                    </>
-                                )}
-
                                 <button 
                                     disabled={saving}
                                     type="submit"
@@ -309,35 +243,7 @@ const Perfil = () => {
                                     <InfoCard icon={<IdentificationCardIcon size={24} />} label="CPF" value={userData.cpf} />
                                     <InfoCard icon={<EnvelopeIcon size={24} />} label="E-mail" value={userData.email} />
                                     
-                                    {isPalestrante() && (
-                                        <>
-                                            <InfoCard icon={<TargetIcon size={24} />} label="Área de Atuação" value={userData.areaAtuacao} />
-                                            <InfoCard icon={<BuildingsIcon size={24} />} label="Instituição" value={userData.instituicao} />
-                                            <InfoCard icon={<LinkedinLogoIcon size={24} />} label="LinkedIn" value={userData.linkedin} />
-                                            <InfoCard icon={<ImageSquareIcon size={24} />} label="Foto" value={userData.foto} />
-                                        </>
-                                    )}
                                 </div>
-
-                                {isPalestrante() && (
-                                    <div className="bg-accent/5 p-8 rounded-3xl border border-accent/10 flex flex-col gap-6">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2 text-primary font-primary font-bold text-xl">
-                                                <GraduationCapIcon size={24} weight="bold" />
-                                                Formação Acadêmica
-                                            </div>
-                                            <p className="text-primary/80 font-secondary text-lg ml-8">{userData.formacao || "Não informada"}</p>
-                                        </div>
-
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2 text-primary font-primary font-bold text-xl">
-                                                <BriefcaseIcon size={24} weight="bold" />
-                                                Mini currículo
-                                            </div>
-                                            <p className="text-primary/80 font-secondary leading-relaxed ml-8">{userData.miniCurriculo || "Sem mini currículo disponível."}</p>
-                                        </div>
-                                    </div>
-                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>

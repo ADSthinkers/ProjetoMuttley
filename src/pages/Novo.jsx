@@ -31,7 +31,7 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios'
 import toast, { Toaster } from 'react-hot-toast';
-import { isAdmin, isPalestrante } from "../utils/auth";
+import { isAdmin } from "../utils/auth";
 
 const getApiErrorMessage = (err) => {
     if (!err.response) {
@@ -95,12 +95,11 @@ const Novo = () => {
         { id: "evento", label: "Evento", icon: <CalendarStarIcon size={40} />, roles: ["ADMIN"] },
         { id: "participante", label: "Participante", icon: <UsersIcon size={40} /> },
         { id: "local", label: "Local", icon: <MapPinIcon size={40} />, roles: ["ADMIN"] },
-        { id: "palestrante", label: "Palestrante", icon: <MicrophoneStageIcon size={40} /> },
+        { id: "palestrante", label: "Palestrante", icon: <MicrophoneStageIcon size={40} />, roles: ["ADMIN"] },
         { id: "patrocinador", label: "Patrocinador", icon: <HandshakeIcon size={40} />, roles: ["ADMIN"] },
         { id: "competência", label: "Competência", icon: <MedalIcon size={40} /> },
     ].filter(cat => {
         if (cat.roles && cat.roles.includes("ADMIN") && !isAdmin()) return false;
-        if (cat.id === "evento" && isPalestrante()) return false;
         return true;
     })
 
@@ -142,6 +141,17 @@ const Novo = () => {
                     break;
                 case "palestrante":
                     endpoint = "/palestrantes";
+                    data = {
+                        nome: data.nome,
+                        cpf: data.cpf,
+                        email: data.email,
+                        miniCurriculo: data.miniCurriculo,
+                        formacao: data.formacao,
+                        areaAtuacao: data.areaAtuacao,
+                        instituicao: data.instituicao,
+                        linkedin: data.linkedin,
+                        foto: data.foto
+                    };
                     break;
                 case "evento":
                     endpoint = "/eventos";

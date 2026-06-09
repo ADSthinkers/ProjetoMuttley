@@ -20,7 +20,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
-import { isAdmin, isPalestrante } from "../utils/auth";
+import { isAdmin } from "../utils/auth";
 import CategoriaEventoSelect from "../components/CategoriaEventoSelect";
 import { categoriaSelectClasses } from "../utils/selectStyles";
 import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, setStoredActivityStatus } from "../utils/activityStatus";
@@ -300,7 +300,7 @@ const EventoDetalhe = () => {
                                 </p>
                             </div>
 
-                            {isAdmin() && !isPalestrante() && (
+                            {isAdmin() && (
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -332,7 +332,7 @@ const EventoDetalhe = () => {
                             <InfoIcon size={20} />
                             Detalhes
                         </button>
-                        {isAdmin() && !isPalestrante() && (
+                        {isAdmin() && (
                             <button
                                 type="button"
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "acoes" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`}

@@ -24,7 +24,7 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios';
 import toast, { Toaster } from "react-hot-toast";
-import { getAuthUser, isAdmin, isPalestrante, setAuthCookie } from "../utils/auth";
+import { isAdmin } from "../utils/auth";
 
 const toPalestranteForm = (data = {}) => ({
     id: data.id,
@@ -37,33 +37,23 @@ const toPalestranteForm = (data = {}) => ({
     instituicao: data.instituicao || "",
     linkedin: data.linkedin || "",
     foto: data.foto || "",
-    senha: "",
 });
 
-const toPalestrantePayload = (form) => {
-    const payload = {
-        id: form.id,
-        nome: form.nome,
-        cpf: form.cpf,
-        email: form.email,
-        miniCurriculo: form.miniCurriculo,
-        formacao: form.formacao,
-        areaAtuacao: form.areaAtuacao,
-        instituicao: form.instituicao,
-        linkedin: form.linkedin,
-        foto: form.foto,
-    };
-
-    if (form.senha?.trim()) {
-        payload.senha = form.senha;
-    }
-
-    return payload;
-};
+const toPalestrantePayload = (form) => ({
+    id: form.id,
+    nome: form.nome,
+    cpf: form.cpf,
+    email: form.email,
+    miniCurriculo: form.miniCurriculo,
+    formacao: form.formacao,
+    areaAtuacao: form.areaAtuacao,
+    instituicao: form.instituicao,
+    linkedin: form.linkedin,
+    foto: form.foto,
+});
 
 const PerfilPalestrante = () => {
     const { id } = useParams();
-    const user = useMemo(() => getAuthUser(), []);
     const [activeTab, setActiveTab] = useState("dados");
 
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -125,12 +115,6 @@ const PerfilPalestrante = () => {
             const response = await api.put(`/palestrantes/${id}`, toPalestrantePayload(form));
             setPalestrante(response.data);
             setForm(toPalestranteForm(response.data));
-            if (isPalestrante() && response.data.email && response.data.email !== user?.login) {
-                setAuthCookie(JSON.stringify({
-                    ...user,
-                    login: response.data.email,
-                }));
-            }
             setIsEditing(false);
             toast.success("Palestrante atualizado com sucesso!");
         } catch (err) {
@@ -183,7 +167,7 @@ const PerfilPalestrante = () => {
     if (!palestrante) return null;
 
     const fotoPerfil = palestrante.foto?.trim();
-    const canEdit = isAdmin() || (isPalestrante() && user?.login?.toLowerCase() === palestrante.email?.toLowerCase());
+    const canEdit = isAdmin();
 
     return (
         <PageTransition>
@@ -417,10 +401,6 @@ const EditPalestranteForm = ({ form, saving, onChange, onSubmit }) => (
 
         <Field label="Mini Currículo" className="md:col-span-2">
             <textarea className={`${inputClass} min-h-32 resize-y`} value={form.miniCurriculo || ""} onChange={(e) => onChange("miniCurriculo", e.target.value)} />
-        </Field>
-
-        <Field label="Nova Senha" className="md:col-span-2">
-            <input type="password" placeholder="Deixe em branco para manter a senha atual" className={inputClass} value={form.senha || ""} onChange={(e) => onChange("senha", e.target.value)} />
         </Field>
 
         <button

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRightIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import { formatCpf } from "../utils/formatters";
 
@@ -13,8 +13,6 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
     const [instituicao, setInstituicao] = useState(objeto?.instituicao || "");
     const [linkedin, setLinkedin] = useState(objeto?.linkedin || "");
     const [foto, setFoto] = useState(objeto?.foto || "");
-    const [senha, setSenha] = useState(objeto?.senha || "");
-    const [showSenha, setShowSenha] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -28,8 +26,7 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
             areaAtuacao: areaAtuacao,
             instituicao: instituicao,
             linkedin: linkedin,
-            foto: foto,
-            senha: senha
+            foto: foto
         });
         setEtapa(3);
     };
@@ -143,28 +140,6 @@ const PalestranteForm = ({ setObjeto, setEtapa, objeto }) => {
                     />
                 </Field>
 
-                {/* Senha */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-primary font-bold text-primary ml-1">Senha de Acesso</label>
-                    <div className="relative">
-                        <input 
-                            required 
-                            type={showSenha ? "text" : "password"} 
-                            className="w-full text-base p-4 bg-white/50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl font-secondary text-primary transition-all outline-none shadow-sm pr-12" 
-                            placeholder="********" 
-                            value={senha} 
-                            onChange={(e) => setSenha(e.target.value)} 
-                        />
-                        <button 
-                            type="button" 
-                            onClick={() => setShowSenha(!showSenha)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/40 hover:text-primary transition-colors cursor-pointer"
-                        >
-                            {showSenha ? <EyeSlashIcon size={24} /> : <EyeIcon size={24} />}
-                        </button>
-                    </div>
-                    <p className="text-[10px] font-secondary text-primary/40 ml-1 italic">* Esta senha será usada pelo palestrante para acessar o sistema.</p>
-                </div>
             </div>
 
             <motion.button 
