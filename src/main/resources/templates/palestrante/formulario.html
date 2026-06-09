@@ -191,11 +191,6 @@
                 <input type="text" th:field="*{foto}" placeholder="https://...">
             </div>
 
-            <div class="form-group">
-                <label>Senha <span class="label-optional" th:if="${palestrante.id != null}">(deixe em branco para manter a atual)</span></label>
-                <input type="password" th:field="*{senha}" placeholder="Senha de acesso ao sistema">
-            </div>
-
             <div class="actions">
                 <button type="submit" class="btn btn-submit">
                     <span th:text="${palestrante.id != null} ? 'Atualizar' : 'Salvar'"></span>

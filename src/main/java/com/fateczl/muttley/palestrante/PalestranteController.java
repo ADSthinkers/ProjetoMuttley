@@ -38,13 +38,10 @@ public class PalestranteController {
         return "palestrante/formulario";
     }
 
-    // carrega o formulário de edição com os dados do palestrante sem expor a senha
+    // carrega o formulário de edição com os dados do palestrante
     @GetMapping("/formulario/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        service.buscarPorId(id).ifPresent(p -> {
-            p.setSenha(null); // não expõe o hash no formulário
-            model.addAttribute("palestrante", p);
-        });
+        service.buscarPorId(id).ifPresent(p -> model.addAttribute("palestrante", p));
         if (!model.containsAttribute("palestrante")) return "redirect:/palestrante";
         return "palestrante/formulario";
     }

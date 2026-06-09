@@ -46,14 +46,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // rotas públicas
                 .requestMatchers("/login", "/error", "/participar/**", "/api/**").permitAll()
-                // somente ADMIN
                 .requestMatchers(
                     "/admin/**", "/evento/**", "/local/**", "/patrocinador/**",
-                    "/competencia/**", "/medalha/**", "/xp/**",
+                    "/competencia/**", "/medalha/**", "/xp/**", "/palestra/**",
+                    "/palestrante/**", "/presencas/**",
                     "/participante/**", "/participacao/**", "/auditoria/**"
                 ).hasRole("ADMIN")
-                // qualquer usuário autenticado (ADMIN ou PALESTRANTE)
-                .anyRequest().authenticated()
+                .anyRequest().hasRole("ADMIN")
             )
             .formLogin(form -> form
                 .loginPage("/login")

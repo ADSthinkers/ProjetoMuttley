@@ -1,6 +1,5 @@
 package com.fateczl.muttley.config;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -14,11 +13,9 @@ public class LoginController {
         return "login";
     }
 
-    // redireciona o usuário para a página correta após login com base no seu papel (admin ou palestrante)
+    // redireciona administradores após login
     @GetMapping("/dashboard")
-    public String dashboard(Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        return isAdmin ? "redirect:/evento" : "redirect:/palestra";
+    public String dashboard() {
+        return "redirect:/evento";
     }
 }
