@@ -3,6 +3,7 @@ package com.fateczl.muttley.evento;
 import com.fateczl.muttley.tipo.Modalidade;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record EventoListagem(
     Long id,
@@ -13,5 +14,6 @@ public record EventoListagem(
     String categoria,
     Modalidade modalidade,
     String banner,
-    String patrocinadorNome
+    String patrocinadorNome,
+    List<String> assinantes
 ) {}

@@ -159,6 +159,14 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="assinanteIds">Assinantes</label>
+                <select multiple th:field="*{assinanteIds}" th:classappend="${#fields.hasErrors('assinanteIds')} ? 'is-invalid'">
+                    <option th:each="a : ${assinantes}" th:value="${a.id}" th:text="${a.nome + ' - ' + a.cargo}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('assinanteIds')}" th:errors="*{assinanteIds}" class="error-message"></span>
+            </div>
+
             <div class="row-2">
                 <div class="form-group">
                     <label for="dataInicio">Data de Início</label>

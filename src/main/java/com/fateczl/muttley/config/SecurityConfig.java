@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/admin/**", "/evento/**", "/local/**", "/patrocinador/**",
                     "/competencia/**", "/medalha/**", "/xp/**", "/palestra/**",
-                    "/palestrante/**", "/presencas/**",
+                    "/palestrante/**", "/assinante/**", "/presencas/**",
                     "/participante/**", "/participacao/**", "/auditoria/**"
                 ).hasRole("ADMIN")
                 .anyRequest().hasRole("ADMIN")

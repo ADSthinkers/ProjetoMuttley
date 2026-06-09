@@ -1,5 +1,7 @@
 package com.fateczl.muttley.evento;
 
+import com.fateczl.muttley.assinante.Assinante;
+import com.fateczl.muttley.assinante.AssinanteRepository;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.palestra.PalestraRepository;
@@ -19,16 +21,19 @@ public class EventoService {
     private final PatrocinadorRepository patrocinadorRepository;
     private final CategoriaEventoRepository categoriaEventoRepository;
     private final PalestraRepository palestraRepository;
+    private final AssinanteRepository assinanteRepository;
 
     public EventoService(EventoRepository repository, EventoMapper mapper,
                          PatrocinadorRepository patrocinadorRepository,
                          CategoriaEventoRepository categoriaEventoRepository,
-                         PalestraRepository palestraRepository) {
+                         PalestraRepository palestraRepository,
+                         AssinanteRepository assinanteRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.patrocinadorRepository = patrocinadorRepository;
         this.categoriaEventoRepository = categoriaEventoRepository;
         this.palestraRepository = palestraRepository;
+        this.assinanteRepository = assinanteRepository;
     }
 
     // cria ou atualiza um evento resolvendo a associação de patrocinador pelo id
@@ -43,6 +48,13 @@ public class EventoService {
             categoria = categoriaEventoRepository.findById(dto.categoriaId())
                     .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
         }
+        if (dto.assinanteIds() == null || dto.assinanteIds().isEmpty()) {
+            throw new IllegalArgumentException("Evento deve possuir pelo menos um assinante");
+        }
+        List<Assinante> assinantes = assinanteRepository.findAllById(dto.assinanteIds());
+        if (assinantes.size() != dto.assinanteIds().size()) {
+            throw new EntityNotFoundException("Um ou mais assinantes não encontrados");
+        }
 
         if (dto.id() != null) {
             Evento existente = repository.findById(dto.id())
@@ -50,11 +62,13 @@ public class EventoService {
             mapper.updateEntity(dto, existente);
             existente.setPatrocinador(patrocinador);
             existente.setCategoria(categoria);
+            existente.setAssinantes(assinantes);
             return repository.save(existente);
         } else {
             Evento novo = mapper.toEntity(dto);
             novo.setPatrocinador(patrocinador);
             novo.setCategoria(categoria);
+            novo.setAssinantes(assinantes);
             return repository.save(novo);
         }
     }

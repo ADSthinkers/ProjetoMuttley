@@ -153,6 +153,7 @@
                         <th>Início</th>
                         <th>Término</th>
                         <th>Patrocinador</th>
+                        <th>Assinantes</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -162,6 +163,14 @@
                         <td th:text="${evento.dataInicio != null ? #temporals.format(evento.dataInicio, 'dd/MM/yyyy') : '-'}"></td>
                         <td th:text="${evento.dataFim != null ? #temporals.format(evento.dataFim, 'dd/MM/yyyy') : '-'}"></td>
                         <td th:text="${evento.patrocinadorNome != null ? evento.patrocinadorNome : '-'}"></td>
+                        <td>
+                            <span th:if="${evento.assinantes != null and !evento.assinantes.isEmpty()}">
+                                <span th:each="nome, stat : ${evento.assinantes}">
+                                    <span th:text="${nome}"></span><span th:if="${!stat.last}">, </span>
+                                </span>
+                            </span>
+                            <span th:unless="${evento.assinantes != null and !evento.assinantes.isEmpty()}">-</span>
+                        </td>
                         <td class="action-links">
                             <a th:href="@{/evento/formulario/{id}(id=${evento.id})}" class="link-edit">Editar</a>
                             <a th:href="@{/evento/delete/{id}(id=${evento.id})}" class="link-delete"

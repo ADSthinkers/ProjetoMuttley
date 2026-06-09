@@ -1,5 +1,6 @@
 package com.fateczl.muttley.evento;
 
+import com.fateczl.muttley.assinante.AssinanteRepository;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.tipo.Modalidade;
 
@@ -22,14 +23,17 @@ public class EventoController {
     private final EventoMapper mapper;
     private final PatrocinadorRepository patrocinadorRepository;
     private final CategoriaEventoRepository categoriaEventoRepository;
+    private final AssinanteRepository assinanteRepository;
 
     public EventoController(EventoService service, EventoMapper mapper,
                              PatrocinadorRepository patrocinadorRepository,
-                             CategoriaEventoRepository categoriaEventoRepository) {
+                             CategoriaEventoRepository categoriaEventoRepository,
+                             AssinanteRepository assinanteRepository) {
         this.service = service;
         this.mapper = mapper;
         this.patrocinadorRepository = patrocinadorRepository;
         this.categoriaEventoRepository = categoriaEventoRepository;
+        this.assinanteRepository = assinanteRepository;
     }
 
     // exibe a listagem de todos os eventos cadastrados
@@ -44,7 +48,7 @@ public class EventoController {
     // exibe o formulário de criação de um novo evento
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null));
+        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null, List.of()));
         popularModel(model);
         return "evento/formulario";
     }
@@ -75,7 +79,7 @@ public class EventoController {
         try {
             service.salvarOuAtualizar(dto);
             redirectAttributes.addFlashAttribute("message", "Evento salvo com sucesso!");
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/evento";
@@ -98,5 +102,6 @@ public class EventoController {
         model.addAttribute("modalidades", Modalidade.values());
         model.addAttribute("patrocinadores", patrocinadorRepository.findAll());
         model.addAttribute("categorias", categoriaEventoRepository.findAll());
+        model.addAttribute("assinantes", assinanteRepository.findAll());
     }
 }

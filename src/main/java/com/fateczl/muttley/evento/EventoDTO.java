@@ -2,9 +2,11 @@ package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.tipo.Modalidade;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record EventoDTO(
     Long id,
@@ -15,5 +17,7 @@ public record EventoDTO(
     Long categoriaId,
     Modalidade modalidade,
     String banner,
-    Long patrocinadorId
+    Long patrocinadorId,
+    @NotEmpty(message = "Selecione pelo menos um assinante")
+    List<Long> assinanteIds
 ) {}

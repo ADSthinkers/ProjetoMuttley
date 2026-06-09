@@ -56,7 +56,8 @@ public class EventoApiController {
                                                 @RequestBody @Valid EventoDTO dto,
                                                 HttpServletRequest request) {
         EventoDTO dtoComId = new EventoDTO(id, dto.titulo(), dto.descricao(), dto.dataInicio(),
-                dto.dataFim(), dto.categoriaId(), dto.modalidade(), dto.banner(), dto.patrocinadorId());
+                dto.dataFim(), dto.categoriaId(), dto.modalidade(), dto.banner(),
+                dto.patrocinadorId(), dto.assinanteIds());
         Evento salvo = service.salvarOuAtualizar(dtoComId);
         auditoriaService.registrar(AcaoAuditoria.ALTERADO, "Evento", salvo.getId(),
                 "Evento alterado: " + salvo.getTitulo(), ator(request));
