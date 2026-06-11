@@ -13,6 +13,7 @@ import com.fateczl.muttley.inscricao.InscricaoService;
 import com.fateczl.muttley.inscricao.StatusInscricao;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
+import com.fateczl.muttley.status.StatusOperacional;
 import com.fateczl.muttley.participacao.ParticipacaoService;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteDTO;
@@ -81,12 +82,18 @@ public class QrCodeApiController {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code inválido ou palestra não encontrada."));
         }
 
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Inscrição bloqueada."));
+        }
+
         return ResponseEntity.ok(new QrPalestraResponse(
                 palestra.getId(),
                 palestra.getTitulo(),
                 palestra.getDescricao(),
                 palestra.getInicio(),
-                palestra.getFim()
+                palestra.getFim(),
+                palestra.getStatusOperacional()
         ));
     }
 
@@ -96,6 +103,11 @@ public class QrCodeApiController {
         Palestra palestra = palestraService.findByQrCodeToken(token).orElse(null);
         if (palestra == null) {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code inválido."));
+        }
+
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Inscrição bloqueada."));
         }
 
         String cpf = normalizar(request.cpf());
@@ -124,6 +136,11 @@ public class QrCodeApiController {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code inválido."));
         }
 
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Inscrição bloqueada."));
+        }
+
         String cpf = normalizar(request.cpf());
         Participante participante = participanteService.buscarPorCpf(cpf).orElse(null);
         if (participante == null) {
@@ -139,6 +156,11 @@ public class QrCodeApiController {
         Palestra palestra = palestraService.findByQrCodeToken(token).orElse(null);
         if (palestra == null) {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code inválido."));
+        }
+
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Inscrição bloqueada."));
         }
 
         String nome = normalizar(request.nome());
@@ -167,12 +189,18 @@ public class QrCodeApiController {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code de check-in inválido ou palestra não encontrada."));
         }
 
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Check-in bloqueado."));
+        }
+
         return ResponseEntity.ok(new QrPalestraResponse(
                 palestra.getId(),
                 palestra.getTitulo(),
                 palestra.getDescricao(),
                 palestra.getInicio(),
-                palestra.getFim()
+                palestra.getFim(),
+                palestra.getStatusOperacional()
         ));
     }
 
@@ -184,6 +212,11 @@ public class QrCodeApiController {
         Palestra palestra = palestraService.findByQrCodeCheckinToken(token).orElse(null);
         if (palestra == null) {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code de check-in inválido."));
+        }
+
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Check-in bloqueado."));
         }
 
         String cpf = normalizar(request.cpf());
@@ -209,6 +242,7 @@ public class QrCodeApiController {
                     "JA_CONFIRMADO",
                     participante.getNome(),
                     palestra.getTitulo(),
+                    inscricao.getDataCheckin(),
                     "Check-in já confirmado para esta palestra."
             ));
         }
@@ -231,6 +265,11 @@ public class QrCodeApiController {
             return ResponseEntity.status(404).body(new QrErroResponse("QR Code de check-in inválido."));
         }
 
+        StatusOperacional statusBloqueio = statusBloqueio(palestra);
+        if (statusBloqueio != null) {
+            return ResponseEntity.status(409).body(new QrErroResponse("Esta palestra está " + rotuloStatus(statusBloqueio) + ". Check-in bloqueado."));
+        }
+
         String cpf = normalizar(request.cpf());
         Participante participante = participanteService.buscarPorCpf(cpf).orElse(null);
         if (participante == null) {
@@ -254,11 +293,12 @@ public class QrCodeApiController {
                     "JA_CONFIRMADO",
                     participante.getNome(),
                     palestra.getTitulo(),
+                    inscricao.getDataCheckin(),
                     "Check-in já confirmado para esta palestra."
             ));
         }
 
-        inscricaoService.marcarPresente(inscricao.getId());
+        Inscricao checkin = inscricaoService.marcarPresente(inscricao.getId());
         participacaoService.registrarOuAtualizar(participante, palestra);
         xpService.registrarParaPalestra(participante.getId(), palestra);
 
@@ -275,6 +315,7 @@ public class QrCodeApiController {
                 "CHECKIN_CONFIRMADO",
                 participante.getNome(),
                 palestra.getTitulo(),
+                checkin.getDataCheckin(),
                 "Check-in confirmado. Seu certificado foi enviado por e-mail."
         ));
     }
@@ -293,6 +334,7 @@ public class QrCodeApiController {
                     participante.getId(),
                     palestra.getId(),
                     null,
+                    null,
                     StatusInscricao.PENDENTE,
                     null
             ));
@@ -307,6 +349,7 @@ public class QrCodeApiController {
                 inscricao.getStatus() == StatusInscricao.CONFIRMADA ? "JA_CONFIRMADO" : "AGUARDANDO_CONFIRMACAO",
                 participante.getNome(),
                 palestra.getTitulo(),
+                inscricao.getDataCheckin(),
                 "Inscrição registrada. Use o QR Code de check-in da palestra para confirmar presença e receber o certificado por e-mail."
         ));
     }
@@ -337,10 +380,33 @@ public class QrCodeApiController {
         return value == null ? "" : value.trim();
     }
 
-    public record QrPalestraResponse(Long id, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) {}
+    private StatusOperacional statusBloqueio(Palestra palestra) {
+        if (isStatusBloqueante(palestra.getStatusOperacional())) {
+            return palestra.getStatusOperacional();
+        }
+        if (palestra.getEvento() != null && isStatusBloqueante(palestra.getEvento().getStatusOperacional())) {
+            return palestra.getEvento().getStatusOperacional();
+        }
+        return null;
+    }
+
+    private boolean isStatusBloqueante(StatusOperacional status) {
+        return status == StatusOperacional.CANCELADO
+                || status == StatusOperacional.FINALIZADO
+                || status == StatusOperacional.ARQUIVADO;
+    }
+
+    private String rotuloStatus(StatusOperacional status) {
+        if (status == StatusOperacional.CANCELADO) return "cancelada";
+        if (status == StatusOperacional.FINALIZADO) return "finalizada";
+        if (status == StatusOperacional.ARQUIVADO) return "arquivada";
+        return "inativa";
+    }
+
+    public record QrPalestraResponse(Long id, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim, StatusOperacional statusOperacional) {}
     public record QrIdentificacaoRequest(String cpf) {}
     public record QrCadastroRequest(String nome, String cpf, String email) {}
     public record QrIdentificacaoResponse(String status, String cpf, String nomeParticipante, String mensagem) {}
-    public record QrSucessoResponse(String status, String nomeParticipante, String palestraTitulo, String mensagem) {}
+    public record QrSucessoResponse(String status, String nomeParticipante, String palestraTitulo, LocalDateTime dataCheckin, String mensagem) {}
     public record QrErroResponse(String erro) {}
 }

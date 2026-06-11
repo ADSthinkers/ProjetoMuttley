@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
                 .body(Map.of("erros", erros));
     }
 
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("erro", e.getMessage()));
+    }
+
     // captura qualquer exceção não tratada e retorna 500 com a mensagem do erro
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneric(Exception e) {

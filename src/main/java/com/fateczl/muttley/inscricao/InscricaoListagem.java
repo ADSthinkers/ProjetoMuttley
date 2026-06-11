@@ -7,5 +7,6 @@ public record InscricaoListagem(
     String participanteNome,
     String palestraTitulo,
     LocalDateTime dataInscricao,
+    LocalDateTime dataCheckin,
     StatusInscricao status
 ) {}

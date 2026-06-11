@@ -2,6 +2,7 @@ package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
+import com.fateczl.muttley.status.StatusOperacional;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -57,12 +58,24 @@ public class EventoApiController {
                                                 HttpServletRequest request) {
         EventoDTO dtoComId = new EventoDTO(id, dto.titulo(), dto.descricao(), dto.dataInicio(),
                 dto.dataFim(), dto.categoriaId(), dto.modalidade(), dto.banner(),
-                dto.patrocinadorId(), dto.assinanteIds());
+                dto.patrocinadorId(), dto.assinanteIds(), dto.statusOperacional());
         Evento salvo = service.salvarOuAtualizar(dtoComId);
         auditoriaService.registrar(AcaoAuditoria.ALTERADO, "Evento", salvo.getId(),
                 "Evento alterado: " + salvo.getTitulo(), ator(request));
         return ResponseEntity.ok(mapper.toAtualizacaoDto(salvo));
     }
+
+    @PatchMapping("/{id}/status-operacional")
+    public ResponseEntity<EventoDTO> atualizarStatusOperacional(@PathVariable Long id,
+                                                                 @RequestBody StatusOperacionalRequest body,
+                                                                 HttpServletRequest request) {
+        Evento salvo = service.atualizarStatusOperacional(id, body.statusOperacional());
+        auditoriaService.registrar(AcaoAuditoria.ALTERADO, "Evento", salvo.getId(),
+                "Status operacional do evento alterado para: " + salvo.getStatusOperacional(), ator(request));
+        return ResponseEntity.ok(mapper.toAtualizacaoDto(salvo));
+    }
+
+    public record StatusOperacionalRequest(StatusOperacional statusOperacional) {}
 
     // remove um evento pelo id após registrar a exclusão no log de auditoria
     @DeleteMapping("/{id}")

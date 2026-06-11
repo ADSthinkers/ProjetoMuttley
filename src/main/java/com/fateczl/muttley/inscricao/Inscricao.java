@@ -31,6 +31,8 @@ public class Inscricao {
 
     private LocalDateTime dataInscricao;
 
+    private LocalDateTime dataCheckin;
+
     @Enumerated(EnumType.STRING)
     private StatusInscricao status;
 

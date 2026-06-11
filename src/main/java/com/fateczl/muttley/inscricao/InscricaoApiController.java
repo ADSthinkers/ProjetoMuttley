@@ -19,8 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,7 +66,7 @@ public class InscricaoApiController {
                 .map(i -> new InscricaoListagem(i.getId(),
                         i.getParticipante() != null ? i.getParticipante().getNome() : null,
                         i.getPalestra() != null ? i.getPalestra().getTitulo() : null,
-                        i.getDataInscricao(), i.getStatus()))
+                        i.getDataInscricao(), i.getDataCheckin(), i.getStatus()))
                 .toList());
     }
 
@@ -88,20 +88,20 @@ public class InscricaoApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new InscricaoDTO(i.getId(), i.getParticipante().getId(),
                         i.getPalestra().getId(), i.getDataInscricao(),
-                        i.getStatus(), i.getQrCodeToken()));
+                        i.getDataCheckin(), i.getStatus(), i.getQrCodeToken()));
     }
 
     // atualiza parcialmente o status de uma inscrição e registra a mudança na auditoria
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Map<String, String>> atualizarStatus(@PathVariable Long id,
-                                                                @RequestBody Map<String, String> body,
-                                                                HttpServletRequest request) {
-        StatusInscricao status = StatusInscricao.valueOf(body.get("status"));
-        service.atualizarStatus(id, status);
+    public ResponseEntity<InscricaoStatusResponse> atualizarStatus(@PathVariable Long id,
+                                                                    @RequestBody InscricaoStatusRequest body,
+                                                                    HttpServletRequest request) {
+        StatusInscricao status = StatusInscricao.valueOf(body.status());
+        Inscricao inscricao = service.atualizarStatus(id, status);
         auditoriaService.registrar(AcaoAuditoria.STATUS_ATUALIZADO, "Inscricao", id,
                 "Status da inscrição " + id + " alterado para " + status.name(),
                 ator(request));
-        return ResponseEntity.ok(Map.of("status", status.name()));
+        return ResponseEntity.ok(new InscricaoStatusResponse(inscricao.getStatus(), inscricao.getDataCheckin()));
     }
 
     @PostMapping("/palestra/{palestraId}/confirmar-presencas")
@@ -117,13 +117,14 @@ public class InscricaoApiController {
 
         int countParticipantes = 0;
         int countPalestrantes = 0;
+        List<CheckinConfirmadoResponse> checkins = new ArrayList<>();
 
         List<Inscricao> selecionadas = service.listarPorPalestra(palestraId).stream()
                 .filter(i -> inscricaoIds.contains(i.getId()))
                 .toList();
 
         for (Inscricao inscricao : selecionadas) {
-            service.atualizarStatus(inscricao.getId(), StatusInscricao.CONFIRMADA);
+            inscricao = service.atualizarStatus(inscricao.getId(), StatusInscricao.CONFIRMADA);
             participacaoService.registrarOuAtualizar(inscricao.getParticipante(), palestra);
 
             Certificado cert = certificadoService.emitirOuBuscar(inscricao.getParticipante().getId(), palestraId);
@@ -136,6 +137,12 @@ public class InscricaoApiController {
 
             xpService.registrarParaPalestra(inscricao.getParticipante().getId(), palestra);
             enviarCertificadoPorEmail(cert.getId(), request);
+            checkins.add(new CheckinConfirmadoResponse(
+                    inscricao.getId(),
+                    inscricao.getParticipante().getId(),
+                    inscricao.getParticipante().getNome(),
+                    inscricao.getDataCheckin()
+            ));
             countParticipantes++;
         }
 
@@ -160,6 +167,7 @@ public class InscricaoApiController {
         return ResponseEntity.ok(new ConfirmacaoPresencaResponse(
                 countParticipantes,
                 countPalestrantes,
+                checkins,
                 "Presenças confirmadas. Certificados emitidos e e-mails enviados."
         ));
     }
@@ -201,13 +209,19 @@ public class InscricaoApiController {
                 inscricao.getParticipante() != null ? inscricao.getParticipante().getEmail() : null,
                 inscricao.getParticipante() != null ? inscricao.getParticipante().getEmail2() : null,
                 inscricao.getDataInscricao(),
+                inscricao.getDataCheckin(),
                 inscricao.getStatus()
         );
     }
 
     public record ConfirmacaoPresencaRequest(List<Long> inscricaoIds) {}
-    public record ConfirmacaoPresencaResponse(int certificadosParticipantes, int certificadosPalestrantes, String mensagem) {}
+    public record ConfirmacaoPresencaResponse(int certificadosParticipantes, int certificadosPalestrantes,
+                                              List<CheckinConfirmadoResponse> checkins, String mensagem) {}
+    public record CheckinConfirmadoResponse(Long inscricaoId, Long participanteId, String participanteNome,
+                                            java.time.LocalDateTime dataCheckin) {}
+    public record InscricaoStatusRequest(String status) {}
+    public record InscricaoStatusResponse(StatusInscricao status, java.time.LocalDateTime dataCheckin) {}
     public record InscricaoPresencaResponse(Long id, Long participanteId, String participanteNome, String cpf,
                                             String email, String email2, java.time.LocalDateTime dataInscricao,
-                                            StatusInscricao status) {}
+                                            java.time.LocalDateTime dataCheckin, StatusInscricao status) {}
 }

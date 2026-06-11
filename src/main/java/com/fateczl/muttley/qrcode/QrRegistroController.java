@@ -172,6 +172,7 @@ public class QrRegistroController {
                 participante.getId(),
                 palestra.getId(),
                 null,
+                null,
                 StatusInscricao.PENDENTE,
                 null
         ));

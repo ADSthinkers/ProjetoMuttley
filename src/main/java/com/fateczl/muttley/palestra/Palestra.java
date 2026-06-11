@@ -6,6 +6,7 @@ import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
+import com.fateczl.muttley.status.StatusOperacional;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -79,4 +80,7 @@ public class Palestra {
 
     @Enumerated(EnumType.STRING)
     private StatusPalestra status;
+
+    @Enumerated(EnumType.STRING)
+    private StatusOperacional statusOperacional;
 }

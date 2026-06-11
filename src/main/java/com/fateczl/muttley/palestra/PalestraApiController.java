@@ -2,6 +2,7 @@ package com.fateczl.muttley.palestra;
 
 import com.fateczl.muttley.auditoria.AcaoAuditoria;
 import com.fateczl.muttley.auditoria.AuditoriaService;
+import com.fateczl.muttley.status.StatusOperacional;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -60,12 +61,24 @@ public class PalestraApiController {
                 id, dto.titulo(), dto.descricao(), dto.competenciaIds(), dto.palestranteIds(),
                 dto.eventoId(), dto.localId(), dto.inicio(), dto.fim(), null, null,
                 dto.tipo(), dto.modalidade(), dto.cargaHoraria(), dto.vagas(), dto.banner(),
-                dto.patrocinadorId(), dto.status());
+                dto.patrocinadorId(), dto.status(), dto.statusOperacional());
         Palestra salva = service.saveOrUpdate(dtoComId);
         auditoriaService.registrar(AcaoAuditoria.ALTERADO, "Palestra", salva.getId(),
                 "Palestra alterada: " + salva.getTitulo(), ator(request));
         return ResponseEntity.ok(mapper.toDto(salva));
     }
+
+    @PatchMapping("/{id}/status-operacional")
+    public ResponseEntity<PalestraDTO> atualizarStatusOperacional(@PathVariable Long id,
+                                                                   @RequestBody StatusOperacionalRequest body,
+                                                                   HttpServletRequest request) {
+        Palestra salva = service.atualizarStatusOperacional(id, body.statusOperacional());
+        auditoriaService.registrar(AcaoAuditoria.ALTERADO, "Palestra", salva.getId(),
+                "Status operacional da palestra alterado para: " + salva.getStatusOperacional(), ator(request));
+        return ResponseEntity.ok(mapper.toDto(salva));
+    }
+
+    public record StatusOperacionalRequest(StatusOperacional statusOperacional) {}
 
     // remove uma palestra pelo id após registrar a exclusão no log de auditoria
     @DeleteMapping("/{id}")

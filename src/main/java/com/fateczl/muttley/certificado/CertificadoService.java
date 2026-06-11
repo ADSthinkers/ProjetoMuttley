@@ -113,6 +113,9 @@ public class CertificadoService {
             if (c.getPalestra() != null) {
                 c.getPalestra().getPalestrantes().size();
                 c.getPalestra().getCompetencias().size();
+                if (c.getPalestra().getEvento() != null && c.getPalestra().getEvento().getAssinantes() != null) {
+                    c.getPalestra().getEvento().getAssinantes().size();
+                }
             }
             return c;
         });
@@ -125,6 +128,9 @@ public class CertificadoService {
             if (c.getPalestra() != null) {
                 c.getPalestra().getPalestrantes().size();
                 c.getPalestra().getCompetencias().size();
+                if (c.getPalestra().getEvento() != null && c.getPalestra().getEvento().getAssinantes() != null) {
+                    c.getPalestra().getEvento().getAssinantes().size();
+                }
             }
             return c;
         });

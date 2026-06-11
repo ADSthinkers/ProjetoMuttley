@@ -1,6 +1,7 @@
 package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.tipo.Modalidade;
+import com.fateczl.muttley.status.StatusOperacional;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,5 +20,6 @@ public record EventoDTO(
     String banner,
     Long patrocinadorId,
     @NotEmpty(message = "Selecione pelo menos um assinante")
-    List<Long> assinanteIds
+    List<Long> assinanteIds,
+    StatusOperacional statusOperacional
 ) {}

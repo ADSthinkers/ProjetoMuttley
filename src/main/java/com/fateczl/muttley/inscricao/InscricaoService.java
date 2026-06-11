@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +51,7 @@ public class InscricaoService {
     public Inscricao atualizarStatus(Long id, StatusInscricao novoStatus) {
         Inscricao inscricao = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
-        inscricao.setStatus(novoStatus);
+        aplicarStatus(inscricao, novoStatus);
         return repository.save(inscricao);
     }
 
@@ -58,7 +59,7 @@ public class InscricaoService {
     public Inscricao confirmarPresenca(Long participanteId, Long palestraId) {
         return repository.findByParticipanteIdAndPalestraId(participanteId, palestraId)
                 .map(i -> {
-                    i.setStatus(StatusInscricao.CONFIRMADA);
+                    aplicarStatus(i, StatusInscricao.CONFIRMADA);
                     return repository.save(i);
                 })
                 .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
@@ -117,7 +118,17 @@ public class InscricaoService {
     public void cancelar(Long id) {
         Inscricao inscricao = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
-        inscricao.setStatus(StatusInscricao.CANCELADA);
+        aplicarStatus(inscricao, StatusInscricao.CANCELADA);
         repository.save(inscricao);
+    }
+
+    private void aplicarStatus(Inscricao inscricao, StatusInscricao status) {
+        inscricao.setStatus(status);
+        if (status == StatusInscricao.CONFIRMADA && inscricao.getDataCheckin() == null) {
+            inscricao.setDataCheckin(LocalDateTime.now());
+        }
+        if (status == StatusInscricao.CANCELADA) {
+            inscricao.setDataCheckin(null);
+        }
     }
 }

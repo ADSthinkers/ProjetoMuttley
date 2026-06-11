@@ -35,7 +35,7 @@ public class InscricaoController {
                         i.getId(),
                         i.getParticipante() != null ? i.getParticipante().getNome() : "-",
                         i.getPalestra() != null ? i.getPalestra().getTitulo() : "-",
-                        i.getDataInscricao(), i.getStatus()
+                        i.getDataInscricao(), i.getDataCheckin(), i.getStatus()
                 )).toList();
         model.addAttribute("listaInscricoes", lista);
         return "inscricao/listagem";
@@ -44,7 +44,7 @@ public class InscricaoController {
     // exibe o formulário de nova inscrição com as listas de participantes e palestras
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("inscricaoDTO", new InscricaoDTO(null, null, null, null, null, null));
+        model.addAttribute("inscricaoDTO", new InscricaoDTO(null, null, null, null, null, null, null));
         model.addAttribute("participantes", participanteRepository.findAll());
         model.addAttribute("palestras", palestraRepository.findAll());
         return "inscricao/formulario";

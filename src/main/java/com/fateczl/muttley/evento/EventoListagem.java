@@ -1,6 +1,7 @@
 package com.fateczl.muttley.evento;
 
 import com.fateczl.muttley.tipo.Modalidade;
+import com.fateczl.muttley.status.StatusOperacional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,5 +16,6 @@ public record EventoListagem(
     Modalidade modalidade,
     String banner,
     String patrocinadorNome,
-    List<String> assinantes
+    List<String> assinantes,
+    StatusOperacional statusOperacional
 ) {}

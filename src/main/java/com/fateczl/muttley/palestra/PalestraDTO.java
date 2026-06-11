@@ -1,6 +1,7 @@
 package com.fateczl.muttley.palestra;
 
 import com.fateczl.muttley.tipo.Modalidade;
+import com.fateczl.muttley.status.StatusOperacional;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
@@ -44,5 +45,6 @@ public record PalestraDTO(
     Integer vagas,
     String banner,
     Long patrocinadorId,
-    StatusPalestra status
+    StatusPalestra status,
+    StatusOperacional statusOperacional
 ) {}

@@ -5,6 +5,7 @@ import com.fateczl.muttley.assinante.AssinanteRepository;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.palestra.PalestraRepository;
+import com.fateczl.muttley.status.StatusOperacional;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -63,14 +64,29 @@ public class EventoService {
             existente.setPatrocinador(patrocinador);
             existente.setCategoria(categoria);
             existente.setAssinantes(assinantes);
+            if (dto.statusOperacional() != null) existente.setStatusOperacional(dto.statusOperacional());
             return repository.save(existente);
         } else {
             Evento novo = mapper.toEntity(dto);
             novo.setPatrocinador(patrocinador);
             novo.setCategoria(categoria);
             novo.setAssinantes(assinantes);
+            if (dto.statusOperacional() != null) novo.setStatusOperacional(dto.statusOperacional());
             return repository.save(novo);
         }
+    }
+
+    public Evento atualizarStatusOperacional(Long id, StatusOperacional status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status operacional é obrigatório");
+        }
+        Evento evento = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
+        if (status == StatusOperacional.ARQUIVADO && evento.getStatusOperacional() != StatusOperacional.FINALIZADO) {
+            throw new IllegalStateException("Evento só pode ser arquivado após ser finalizado");
+        }
+        evento.setStatusOperacional(status);
+        return repository.save(evento);
     }
 
     // lista todos os eventos cadastrados

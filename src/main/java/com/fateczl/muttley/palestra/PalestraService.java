@@ -11,6 +11,7 @@ import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.certificado.CertificadoRepository;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
+import com.fateczl.muttley.status.StatusOperacional;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -133,6 +134,19 @@ public class PalestraService {
         palestraRepository.save(palestra);
     }
 
+    public Palestra atualizarStatusOperacional(Long palestraId, StatusOperacional status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Status operacional é obrigatório");
+        }
+        Palestra palestra = palestraRepository.findById(palestraId)
+                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+        if (status == StatusOperacional.ARQUIVADO && palestra.getStatusOperacional() != StatusOperacional.FINALIZADO) {
+            throw new IllegalStateException("Palestra só pode ser arquivada após ser finalizada");
+        }
+        palestra.setStatusOperacional(status);
+        return palestraRepository.save(palestra);
+    }
+
     // cria ou atualiza uma palestra resolvendo todas as associações de competências, palestrantes, evento e local
     public Palestra saveOrUpdate(PalestraDTO dto) {
         List<Long> competenciaIds = dto.competenciaIds();
@@ -149,6 +163,17 @@ public class PalestraService {
 
         Evento evento = eventoService.buscarPorId(dto.eventoId())
                 .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
+        if (evento.getStatusOperacional() == StatusOperacional.FINALIZADO) {
+            if (dto.id() == null) {
+                throw new IllegalStateException("Não é possível adicionar palestra a evento finalizado");
+            }
+            Palestra existente = palestraRepository.findById(dto.id())
+                    .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+            Long eventoAtualId = existente.getEvento() != null ? existente.getEvento().getId() : null;
+            if (!evento.getId().equals(eventoAtualId)) {
+                throw new IllegalStateException("Não é possível vincular palestra a evento finalizado");
+            }
+        }
 
         Local local = null;
         if (dto.localId() != null) {
@@ -181,6 +206,7 @@ public class PalestraService {
             existente.setPatrocinador(patrocinador);
             existente.setCargaHoraria(cargaHoraria);
             if (dto.status() != null) existente.setStatus(dto.status());
+            if (dto.statusOperacional() != null) existente.setStatusOperacional(dto.statusOperacional());
             Palestra salva = palestraRepository.save(existente);
             atualizarCargaHorariaCertificados(salva.getId(), cargaHoraria);
             return salva;
@@ -195,6 +221,7 @@ public class PalestraService {
             nova.setQrCodeToken(UUID.randomUUID().toString());
             nova.setQrCodeCheckinToken(UUID.randomUUID().toString());
             nova.setStatus(StatusPalestra.PENDENTE);
+            if (dto.statusOperacional() != null) nova.setStatusOperacional(dto.statusOperacional());
             return palestraRepository.save(nova);
         }
     }

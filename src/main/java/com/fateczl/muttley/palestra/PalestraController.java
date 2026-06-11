@@ -84,7 +84,7 @@ public class PalestraController {
             dto = palestraMapper.toDto(palestra);
         } else {
             dto = new PalestraDTO(null, "", "", new ArrayList<>(), new ArrayList<>(),
-                    null, null, null, null, null, null, null, null, null, null, null, null, null);
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         }
         popularModel(model, dto);
         return "palestra/formulario";

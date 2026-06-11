@@ -4,6 +4,7 @@ import com.fateczl.muttley.assinante.Assinante;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.tipo.Modalidade;
+import com.fateczl.muttley.status.StatusOperacional;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +45,9 @@ public class Evento {
     private Modalidade modalidade;
 
     private String banner;
+
+    @Enumerated(EnumType.STRING)
+    private StatusOperacional statusOperacional;
 
     @ManyToOne
     @JoinColumn(name = "patrocinador_id")

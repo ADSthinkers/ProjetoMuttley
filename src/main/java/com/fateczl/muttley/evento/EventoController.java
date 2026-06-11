@@ -48,7 +48,7 @@ public class EventoController {
     // exibe o formulário de criação de um novo evento
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null, List.of()));
+        model.addAttribute("evento", new EventoDTO(null, "", null, null, null, null, null, null, null, List.of(), null));
         popularModel(model);
         return "evento/formulario";
     }
