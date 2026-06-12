@@ -4,6 +4,7 @@ import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.participante.Participante;
+import com.fateczl.muttley.xp.Xp;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,6 +43,16 @@ public class Medalha {
     @ManyToOne
     @JoinColumn(name = "palestra_id")
     private Palestra palestra;
+
+    @ManyToOne
+    @JoinColumn(name = "competencia_id")
+    private Competencia competencia;
+
+    @ManyToOne
+    @JoinColumn(name = "xp_id")
+    private Xp xp;
+
+    private Integer nivelAlcancado;
 
     private LocalDate dataConquista;
 

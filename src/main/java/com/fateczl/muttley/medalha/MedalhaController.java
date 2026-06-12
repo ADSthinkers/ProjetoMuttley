@@ -42,7 +42,9 @@ public class MedalhaController {
                         m.getDataConquista(),
                         m.getCompetencias() != null
                                 ? m.getCompetencias().stream().map(c -> c.getNome()).toList()
-                                : java.util.List.of()
+                                : java.util.List.of(),
+                        m.getCompetencia() != null ? m.getCompetencia().getNome() : null,
+                        m.getNivelAlcancado()
                 )).toList();
         model.addAttribute("listaMedalhas", lista);
         return "medalha/listagem";
@@ -51,7 +53,8 @@ public class MedalhaController {
     // exibe o formulário de cadastro de nova medalha com as opções de participantes e palestras
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("medalhaDTO", new MedalhaDTO(null, null, "", "", null, null, null, null));
+        model.addAttribute("medalhaDTO", new MedalhaDTO(null, null, "", "", null, null, null, null,
+                null, null, null));
         model.addAttribute("tipos", TipoMedalha.values());
         model.addAttribute("participantes", participanteRepository.findAll());
         model.addAttribute("palestras", palestraRepository.findAll());
@@ -66,7 +69,11 @@ public class MedalhaController {
             MedalhaDTO dto = new MedalhaDTO(m.getId(), m.getTipo(), m.getNome(), m.getDescricao(),
                     m.getParticipante() != null ? m.getParticipante().getId() : null,
                     m.getPalestra() != null ? m.getPalestra().getId() : null,
-                    m.getDataConquista(), null);
+                    m.getDataConquista(),
+                    m.getCompetencias() != null ? m.getCompetencias().stream().map(c -> c.getId()).toList() : null,
+                    m.getCompetencia() != null ? m.getCompetencia().getId() : null,
+                    m.getXp() != null ? m.getXp().getId() : null,
+                    m.getNivelAlcancado());
             model.addAttribute("medalhaDTO", dto);
         });
         if (!model.containsAttribute("medalhaDTO")) return "redirect:/medalha";

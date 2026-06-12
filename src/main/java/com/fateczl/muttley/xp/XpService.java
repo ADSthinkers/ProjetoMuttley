@@ -3,6 +3,7 @@ package com.fateczl.muttley.xp;
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.competencia.CompetenciaService;
 import com.fateczl.muttley.email.EmailService;
+import com.fateczl.muttley.medalha.MedalhaService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteService;
@@ -32,6 +33,9 @@ public class XpService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MedalhaService medalhaService;
+
     // cria ou atualiza um registro de XP resolvendo as associações de competência e participante
      
     public Xp saveOrAtualizeXp(XpDTO dto) {
@@ -49,7 +53,7 @@ public class XpService {
             existente.setCompetencia(competencia);
             existente.setParticipante(participante);
             Xp salvo = xpRepository.save(existente);
-            notificarEvolucaoSeNecessario(participante, competencia, horasAnteriores, salvo.getHoras());
+            processarEvolucaoSeNecessario(participante, competencia, salvo, horasAnteriores, salvo.getHoras());
             return salvo;
         } else {
             Xp novo = new Xp();
@@ -57,7 +61,7 @@ public class XpService {
             novo.setCompetencia(competencia);
             novo.setParticipante(participante);
             Xp salvo = xpRepository.save(novo);
-            notificarEvolucaoSeNecessario(participante, competencia, 0f, salvo.getHoras());
+            processarEvolucaoSeNecessario(participante, competencia, salvo, 0f, salvo.getHoras());
             return salvo;
         }
     }
@@ -77,24 +81,27 @@ public class XpService {
                 float horasAnteriores = xp.getHoras();
                 xp.setHoras(xp.getHoras() + horas);
                 Xp salvo = xpRepository.save(xp);
-                notificarEvolucaoSeNecessario(participante, competencia, horasAnteriores, salvo.getHoras());
+                processarEvolucaoSeNecessario(participante, competencia, salvo, horasAnteriores, salvo.getHoras());
             } else {
                 Xp novo = new Xp();
                 novo.setHoras(horas);
                 novo.setCompetencia(competencia);
                 novo.setParticipante(participante);
                 Xp salvo = xpRepository.save(novo);
-                notificarEvolucaoSeNecessario(participante, competencia, 0f, salvo.getHoras());
+                processarEvolucaoSeNecessario(participante, competencia, salvo, 0f, salvo.getHoras());
             }
         }
     }
 
-    private void notificarEvolucaoSeNecessario(Participante participante, Competencia competencia,
+    private void processarEvolucaoSeNecessario(Participante participante, Competencia competencia, Xp xp,
                                                float horasAnteriores, float horasAtualizadas) {
         int nivelAnterior = calcularNivelCompetencia(horasAnteriores, competencia);
         int nivelAtual = calcularNivelCompetencia(horasAtualizadas, competencia);
 
         if (nivelAtual > nivelAnterior) {
+            for (int nivel = nivelAnterior + 1; nivel <= nivelAtual; nivel++) {
+                medalhaService.concederEvolucaoCompetenciaSeNaoExistir(participante, competencia, xp, nivel);
+            }
             emailService.enviarEvolucaoCompetencia(participante, competencia, horasAtualizadas, nivelAtual);
         }
     }

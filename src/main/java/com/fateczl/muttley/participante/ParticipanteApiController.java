@@ -105,7 +105,9 @@ public class ParticipanteApiController {
                         m.getDataConquista(),
                         m.getCompetencias() != null
                                 ? m.getCompetencias().stream().map(c -> c.getNome()).toList()
-                                : List.of()))
+                                : List.of(),
+                        m.getCompetencia() != null ? m.getCompetencia().getNome() : null,
+                        m.getNivelAlcancado()))
                 .toList();
         return ResponseEntity.ok(medalhas);
     }

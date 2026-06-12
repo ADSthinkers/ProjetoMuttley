@@ -52,7 +52,8 @@ public class MedalhaApiController {
     @PutMapping("/{id}")
     public ResponseEntity<MedalhaDTO> atualizar(@PathVariable Long id, @RequestBody @Valid MedalhaDTO dto) {
         MedalhaDTO dtoComId = new MedalhaDTO(id, dto.tipo(), dto.nome(), dto.descricao(),
-                dto.participanteId(), dto.palestraId(), dto.dataConquista(), dto.competenciaIds());
+                dto.participanteId(), dto.palestraId(), dto.dataConquista(), dto.competenciaIds(),
+                dto.competenciaId(), dto.xpId(), dto.nivelAlcancado());
         return ResponseEntity.ok(toDto(service.salvarOuAtualizar(dtoComId)));
     }
 
@@ -65,7 +66,9 @@ public class MedalhaApiController {
                 m.getDataConquista(),
                 m.getCompetencias() != null
                         ? m.getCompetencias().stream().map(c -> c.getNome()).toList()
-                        : List.of());
+                        : List.of(),
+                m.getCompetencia() != null ? m.getCompetencia().getNome() : null,
+                m.getNivelAlcancado());
     }
 
     // converte a entidade Medalha para o DTO com ids das associações
@@ -77,7 +80,10 @@ public class MedalhaApiController {
                 m.getDataConquista(),
                 m.getCompetencias() != null
                         ? m.getCompetencias().stream().map(c -> c.getId()).toList()
-                        : List.of());
+                        : List.of(),
+                m.getCompetencia() != null ? m.getCompetencia().getId() : null,
+                m.getXp() != null ? m.getXp().getId() : null,
+                m.getNivelAlcancado());
     }
 
     // remove uma medalha pelo seu identificador

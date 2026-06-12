@@ -6,7 +6,6 @@ import com.fateczl.muttley.certificado.Certificado;
 import com.fateczl.muttley.certificado.CertificadoPdfService;
 import com.fateczl.muttley.certificado.CertificadoService;
 import com.fateczl.muttley.email.EmailService;
-import com.fateczl.muttley.medalha.MedalhaService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.palestra.PalestraService;
 import com.fateczl.muttley.palestra.StatusPalestra;
@@ -34,7 +33,6 @@ public class InscricaoApiController {
     private final PalestraService palestraService;
     private final CertificadoService certificadoService;
     private final CertificadoPdfService certificadoPdfService;
-    private final MedalhaService medalhaService;
     private final XpService xpService;
     private final ParticipacaoService participacaoService;
     private final EmailService emailService;
@@ -44,7 +42,6 @@ public class InscricaoApiController {
                                   PalestraService palestraService,
                                   CertificadoService certificadoService,
                                   CertificadoPdfService certificadoPdfService,
-                                  MedalhaService medalhaService,
                                   XpService xpService,
                                   ParticipacaoService participacaoService,
                                   EmailService emailService) {
@@ -53,7 +50,6 @@ public class InscricaoApiController {
         this.palestraService = palestraService;
         this.certificadoService = certificadoService;
         this.certificadoPdfService = certificadoPdfService;
-        this.medalhaService = medalhaService;
         this.xpService = xpService;
         this.participacaoService = participacaoService;
         this.emailService = emailService;
@@ -131,10 +127,6 @@ public class InscricaoApiController {
             auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", cert.getId(),
                     "Certificado emitido para " + inscricao.getParticipante().getNome(), realizadoPor);
 
-            medalhaService.concederSeNaoExistir(inscricao.getParticipante().getId(), palestra);
-            auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
-                    "Medalha concedida a " + inscricao.getParticipante().getNome(), realizadoPor);
-
             xpService.registrarParaPalestra(inscricao.getParticipante().getId(), palestra);
             enviarCertificadoPorEmail(cert.getId(), request);
             checkins.add(new CheckinConfirmadoResponse(
@@ -152,10 +144,6 @@ public class InscricaoApiController {
                 Certificado certPalestrante = certificadoService.emitirOuBuscarPalestrante(palestrante.getId(), palestraId);
                 auditoriaService.registrar(AcaoAuditoria.CERTIFICADO_EMITIDO, "Certificado", certPalestrante.getId(),
                         "Certificado de apresentação emitido para " + palestrante.getNome(), realizadoPor);
-
-                medalhaService.concederPalestranteSeNaoExistir(palestrante.getId(), palestra);
-                auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
-                        "Medalha de apresentação concedida a " + palestrante.getNome(), realizadoPor);
 
                 enviarCertificadoPorEmail(certPalestrante.getId(), request);
                 countPalestrantes++;

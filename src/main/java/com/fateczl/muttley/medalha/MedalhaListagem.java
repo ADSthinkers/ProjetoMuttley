@@ -10,5 +10,7 @@ public record MedalhaListagem(
     String participanteNome,
     String palestraTitulo,
     LocalDate dataConquista,
-    List<String> competenciasNomes
+    List<String> competenciasNomes,
+    String competenciaNome,
+    Integer nivelAlcancado
 ) {}

@@ -8,6 +8,8 @@ import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteRepository;
+import com.fateczl.muttley.xp.Xp;
+import com.fateczl.muttley.xp.XpRepository;
 
 
 import jakarta.persistence.EntityNotFoundException;
@@ -27,29 +29,39 @@ public class MedalhaService {
     private final PalestranteRepository palestranteRepository;
     private final PalestraRepository palestraRepository;
     private final CompetenciaRepository competenciaRepository;
+    private final XpRepository xpRepository;
 
     public MedalhaService(MedalhaRepository repository,
                            ParticipanteRepository participanteRepository,
                            PalestranteRepository palestranteRepository,
                            PalestraRepository palestraRepository,
-                           CompetenciaRepository competenciaRepository) {
+                           CompetenciaRepository competenciaRepository,
+                           XpRepository xpRepository) {
         this.repository = repository;
         this.participanteRepository = participanteRepository;
         this.palestranteRepository = palestranteRepository;
         this.palestraRepository = palestraRepository;
         this.competenciaRepository = competenciaRepository;
+        this.xpRepository = xpRepository;
     }
 
-    // cria ou atualiza uma medalha associando participante, palestra e competências
+    // cria ou atualiza uma medalha de evolução de competência
      
     public Medalha salvarOuAtualizar(MedalhaDTO dto) {
         Participante participante = participanteRepository.findById(dto.participanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
-        Palestra palestra = palestraRepository.findById(dto.palestraId())
-                .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"));
+        Palestra palestra = dto.palestraId() != null
+                ? palestraRepository.findById(dto.palestraId())
+                    .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"))
+                : null;
+        Competencia competencia = resolverCompetencia(dto);
+        Xp xp = dto.xpId() != null
+                ? xpRepository.findById(dto.xpId())
+                    .orElseThrow(() -> new EntityNotFoundException("XP não encontrado"))
+                : null;
         List<Competencia> competencias = dto.competenciaIds() != null && !dto.competenciaIds().isEmpty()
                 ? competenciaRepository.findAllById(dto.competenciaIds())
-                : List.of();
+                : competencia != null ? List.of(competencia) : List.of();
 
         if (dto.id() != null) {
             Medalha existente = repository.findById(dto.id())
@@ -59,6 +71,9 @@ public class MedalhaService {
             existente.setDescricao(dto.descricao());
             existente.setParticipante(participante);
             existente.setPalestra(palestra);
+            existente.setCompetencia(competencia);
+            existente.setXp(xp);
+            existente.setNivelAlcancado(dto.nivelAlcancado());
             existente.setCompetencias(competencias);
             if (dto.dataConquista() != null) existente.setDataConquista(dto.dataConquista());
             return repository.save(existente);
@@ -69,6 +84,9 @@ public class MedalhaService {
             nova.setDescricao(dto.descricao());
             nova.setParticipante(participante);
             nova.setPalestra(palestra);
+            nova.setCompetencia(competencia);
+            nova.setXp(xp);
+            nova.setNivelAlcancado(dto.nivelAlcancado());
             nova.setCompetencias(competencias);
             nova.setDataConquista(dto.dataConquista() != null ? dto.dataConquista() : LocalDate.now());
             return repository.save(nova);
@@ -82,6 +100,7 @@ public class MedalhaService {
         medalhas.forEach(m -> {
             if (m.getParticipante() != null) m.getParticipante().getNome();
             if (m.getPalestra() != null) m.getPalestra().getTitulo();
+            if (m.getCompetencia() != null) m.getCompetencia().getNome();
             if (m.getCompetencias() != null) m.getCompetencias().size();
         });
         return medalhas;
@@ -97,39 +116,41 @@ public class MedalhaService {
     public List<Medalha> listarPorParticipante(Long participanteId) {
         List<Medalha> medalhas = repository.findByParticipanteId(participanteId);
         medalhas.forEach(m -> {
+            if (m.getCompetencia() != null) m.getCompetencia().getNome();
             if (m.getCompetencias() != null) m.getCompetencias().size();
         });
         return medalhas;
     }
 
-    // concede uma medalha de participação ao participante preenchendo nome, descrição e competências da palestra
+    // mantido por compatibilidade: medalhas agora são emitidas apenas por evolução de competência
     public void concederSeNaoExistir(Long participanteId, Palestra palestra) {
-        if (repository.existsByParticipanteIdAndPalestraId(participanteId, palestra.getId())) return;
-        List<Long> competenciaIds = palestra.getCompetencias() != null
-                ? palestra.getCompetencias().stream().map(Competencia::getId).toList()
-                : List.of();
-        MedalhaDTO dto = new MedalhaDTO(null, TipoMedalha.PARTICIPACAO,
-                palestra.getTitulo(), palestra.getDescricao(),
-                participanteId, palestra.getId(), null, competenciaIds);
-        salvarOuAtualizar(dto);
+        return;
     }
 
-    // concede uma medalha de apresentação ao palestrante preenchendo nome, descrição e competências da palestra
+    // mantido por compatibilidade: medalhas agora são emitidas apenas por evolução de competência
     public void concederPalestranteSeNaoExistir(Long palestranteId, Palestra palestra) {
-        if (repository.existsByPalestranteIdAndPalestraId(palestranteId, palestra.getId())) return;
-        Palestrante palestrante = palestranteRepository.findById(palestranteId)
-                .orElseThrow(() -> new EntityNotFoundException("Palestrante não encontrado"));
-        List<Competencia> competencias = palestra.getCompetencias() != null
-                ? competenciaRepository.findAllById(
-                        palestra.getCompetencias().stream().map(Competencia::getId).toList())
-                : List.of();
+        return;
+    }
+
+    public void concederEvolucaoCompetenciaSeNaoExistir(Participante participante, Competencia competencia,
+                                                         Xp xp, int nivelAlcancado) {
+        if (participante == null || competencia == null || nivelAlcancado <= 1) {
+            return;
+        }
+        if (repository.existsByParticipanteIdAndCompetenciaIdAndNivelAlcancado(
+                participante.getId(), competencia.getId(), nivelAlcancado)) {
+            return;
+        }
+
         Medalha medalha = new Medalha();
-        medalha.setTipo(TipoMedalha.APRESENTACAO);
-        medalha.setNome(palestra.getTitulo());
-        medalha.setDescricao(palestra.getDescricao());
-        medalha.setPalestrante(palestrante);
-        medalha.setPalestra(palestra);
-        medalha.setCompetencias(competencias);
+        medalha.setTipo(TipoMedalha.COMPETENCIA);
+        medalha.setNome("Nível " + nivelAlcancado + " em " + competencia.getNome());
+        medalha.setDescricao("Conquista por evolução na competência " + competencia.getNome() + ".");
+        medalha.setParticipante(participante);
+        medalha.setCompetencia(competencia);
+        medalha.setCompetencias(List.of(competencia));
+        medalha.setXp(xp);
+        medalha.setNivelAlcancado(nivelAlcancado);
         medalha.setDataConquista(LocalDate.now());
         repository.save(medalha);
     }
@@ -138,5 +159,17 @@ public class MedalhaService {
 
     public void deletar(Long id) {
         repository.deleteById(id);
+    }
+
+    private Competencia resolverCompetencia(MedalhaDTO dto) {
+        if (dto.competenciaId() != null) {
+            return competenciaRepository.findById(dto.competenciaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Competência não encontrada"));
+        }
+        if (dto.competenciaIds() != null && !dto.competenciaIds().isEmpty()) {
+            return competenciaRepository.findById(dto.competenciaIds().get(0))
+                    .orElseThrow(() -> new EntityNotFoundException("Competência não encontrada"));
+        }
+        return null;
     }
 }

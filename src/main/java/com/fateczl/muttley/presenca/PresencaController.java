@@ -9,7 +9,6 @@ import com.fateczl.muttley.email.EmailService;
 import com.fateczl.muttley.inscricao.Inscricao;
 import com.fateczl.muttley.inscricao.InscricaoService;
 import com.fateczl.muttley.inscricao.StatusInscricao;
-import com.fateczl.muttley.medalha.MedalhaService;
 import com.fateczl.muttley.palestra.Palestra;
 import com.fateczl.muttley.participacao.ParticipacaoService;
 import com.fateczl.muttley.xp.XpService;
@@ -35,7 +34,6 @@ public class PresencaController {
     private final PalestraService palestraService;
     private final CertificadoService certificadoService;
     private final CertificadoPdfService certificadoPdfService;
-    private final MedalhaService medalhaService;
     private final XpService xpService;
     private final ParticipacaoService participacaoService;
     private final AuditoriaService auditoriaService;
@@ -48,7 +46,6 @@ public class PresencaController {
                                PalestraService palestraService,
                                CertificadoService certificadoService,
                                CertificadoPdfService certificadoPdfService,
-                               MedalhaService medalhaService,
                                XpService xpService,
                                ParticipacaoService participacaoService,
                                AuditoriaService auditoriaService,
@@ -57,7 +54,6 @@ public class PresencaController {
         this.palestraService = palestraService;
         this.certificadoService = certificadoService;
         this.certificadoPdfService = certificadoPdfService;
-        this.medalhaService = medalhaService;
         this.xpService = xpService;
         this.participacaoService = participacaoService;
         this.auditoriaService = auditoriaService;
@@ -121,9 +117,6 @@ public class PresencaController {
                     "Certificado emitido para " + inscricao.getParticipante().getNome(), realizadoPor);
 
             participacaoService.registrarOuAtualizar(inscricao.getParticipante(), palestra);
-            medalhaService.concederSeNaoExistir(participanteId, palestra);
-            auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
-                    "Medalha concedida a " + inscricao.getParticipante().getNome(), realizadoPor);
 
             xpService.registrarParaPalestra(participanteId, palestra);
 
@@ -146,10 +139,6 @@ public class PresencaController {
                         certPalestrante.getId(),
                         "Certificado de apresentação emitido para " + palestrante.getNome(),
                         realizadoPor);
-
-                medalhaService.concederPalestranteSeNaoExistir(palestrante.getId(), palestra);
-                auditoriaService.registrar(AcaoAuditoria.MEDALHA_CONCEDIDA, "Medalha", palestraId,
-                        "Medalha de apresentação concedida a " + palestrante.getNome(), realizadoPor);
 
                 certificadoService.buscarPorIdComDetalhes(certPalestrante.getId()).ifPresent(certCompleto -> {
                     byte[] pdf = certificadoPdfService.gerar(certCompleto, baseUrl);

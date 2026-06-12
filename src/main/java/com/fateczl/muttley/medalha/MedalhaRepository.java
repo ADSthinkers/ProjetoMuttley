@@ -8,4 +8,6 @@ public interface MedalhaRepository extends JpaRepository<Medalha, Long> {
     List<Medalha> findByParticipanteId(Long participanteId);
     boolean existsByParticipanteIdAndPalestraId(Long participanteId, Long palestraId);
     boolean existsByPalestranteIdAndPalestraId(Long palestranteId, Long palestraId);
+    boolean existsByParticipanteIdAndCompetenciaIdAndNivelAlcancado(
+            Long participanteId, Long competenciaId, Integer nivelAlcancado);
 }
