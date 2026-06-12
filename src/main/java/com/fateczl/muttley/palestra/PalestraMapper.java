@@ -19,6 +19,7 @@ public interface PalestraMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencias", ignore = true)
+    @Mapping(target = "apresentacoes", ignore = true)
     @Mapping(target = "palestrantes", ignore = true)
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "local", ignore = true)
@@ -29,6 +30,7 @@ public interface PalestraMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "competencias", ignore = true)
+    @Mapping(target = "apresentacoes", ignore = true)
     @Mapping(target = "palestrantes", ignore = true)
     @Mapping(target = "evento", ignore = true)
     @Mapping(target = "local", ignore = true)

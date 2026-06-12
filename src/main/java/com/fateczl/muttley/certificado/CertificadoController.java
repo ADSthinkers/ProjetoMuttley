@@ -40,7 +40,7 @@ public class CertificadoController {
         List<CertificadoListagem> lista = service.listarTodos().stream()
                 .map(c -> new CertificadoListagem(
                         c.getId(),
-                        c.getParticipante() != null ? c.getParticipante().getNome() : "-",
+                        c.getNomeTitular(),
                         c.getPalestra() != null ? c.getPalestra().getTitulo() : "-",
                         c.getDataEmissao(), c.getCargaHoraria(), c.getCodigoValidacao()
                 )).toList();
@@ -73,7 +73,7 @@ public class CertificadoController {
     // exibe a página de validação de um certificado pelo código informado na URL
     @GetMapping("/validar/{codigo}")
     public String validar(@PathVariable String codigo, Model model) {
-        service.buscarPorCodigo(codigo).ifPresentOrElse(
+        service.buscarPorCodigoComDetalhes(codigo).ifPresentOrElse(
                 c -> model.addAttribute("certificado", c),
                 () -> model.addAttribute("erro", "Certificado não encontrado ou inválido")
         );

@@ -1,5 +1,6 @@
 package com.fateczl.muttley.palestra;
 
+import com.fateczl.muttley.apresentacao.Apresentacao;
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.evento.Evento;
 import com.fateczl.muttley.local.Local;
@@ -12,7 +13,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 // entidade que representa uma palestra associada a um evento com palestrantes, competências e token QR Code
 @Entity
@@ -49,13 +52,8 @@ public class Palestra {
     )
     private List<Competencia> competencias;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "palestra_palestrante",
-        joinColumns = @JoinColumn(name = "palestra_id"),
-        inverseJoinColumns = @JoinColumn(name = "palestrante_id")
-    )
-    private List<Palestrante> palestrantes;
+    @OneToMany(mappedBy = "palestra", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Apresentacao> apresentacoes = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "evento_id")
@@ -83,4 +81,28 @@ public class Palestra {
 
     @Enumerated(EnumType.STRING)
     private StatusOperacional statusOperacional;
+
+    public List<Palestrante> getPalestrantes() {
+        if (apresentacoes == null) {
+            return List.of();
+        }
+        return apresentacoes.stream()
+                .map(Apresentacao::getPalestrante)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public void setPalestrantes(List<Palestrante> palestrantes) {
+        if (apresentacoes == null) {
+            apresentacoes = new ArrayList<>();
+        }
+        apresentacoes.clear();
+        if (palestrantes == null) {
+            return;
+        }
+        palestrantes.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .forEach(palestrante -> apresentacoes.add(new Apresentacao(this, palestrante)));
+    }
 }

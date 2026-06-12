@@ -8,7 +8,7 @@ import com.fateczl.muttley.local.Local;
 import com.fateczl.muttley.local.LocalRepository;
 import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.palestrante.PalestranteRepository;
-import com.fateczl.muttley.certificado.CertificadoRepository;
+import com.fateczl.muttley.certificado.CertificadoService;
 import com.fateczl.muttley.patrocinador.Patrocinador;
 import com.fateczl.muttley.patrocinador.PatrocinadorRepository;
 import com.fateczl.muttley.status.StatusOperacional;
@@ -50,7 +50,7 @@ public class PalestraService {
     private LocalRepository localRepository;
 
     @Autowired
-    private CertificadoRepository certificadoRepository;
+    private CertificadoService certificadoService;
 
     // lista todas as palestras ordenadas pelo título com carregamento forçado de palestrantes e competências
     @Transactional
@@ -120,9 +120,9 @@ public class PalestraService {
 
     // propaga a nova carga horária para todos os certificados vinculados à palestra
     private void atualizarCargaHorariaCertificados(Long palestraId, float cargaHoraria) {
-        certificadoRepository.findByPalestraId(palestraId).forEach(cert -> {
+        certificadoService.listarPorPalestra(palestraId).forEach(cert -> {
             cert.setCargaHoraria(cargaHoraria);
-            certificadoRepository.save(cert);
+            certificadoService.salvar(cert);
         });
     }
 
@@ -134,6 +134,7 @@ public class PalestraService {
         palestraRepository.save(palestra);
     }
 
+    @Transactional
     public Palestra atualizarStatusOperacional(Long palestraId, StatusOperacional status) {
         if (status == null) {
             throw new IllegalArgumentException("Status operacional é obrigatório");
@@ -144,7 +145,19 @@ public class PalestraService {
             throw new IllegalStateException("Palestra só pode ser arquivada após ser finalizada");
         }
         palestra.setStatusOperacional(status);
-        return palestraRepository.save(palestra);
+        Palestra salva = palestraRepository.save(palestra);
+        if (status == StatusOperacional.FINALIZADO) {
+            emitirCertificadosApresentacao(salva);
+        }
+        return salva;
+    }
+
+    private void emitirCertificadosApresentacao(Palestra palestra) {
+        if (palestra.getPalestrantes() == null || palestra.getPalestrantes().isEmpty()) {
+            return;
+        }
+        palestra.getPalestrantes().forEach(palestrante ->
+                certificadoService.emitirOuBuscarPalestrante(palestrante.getId(), palestra.getId()));
     }
 
     // cria ou atualiza uma palestra resolvendo todas as associações de competências, palestrantes, evento e local

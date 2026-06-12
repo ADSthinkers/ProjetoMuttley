@@ -116,7 +116,7 @@ public class ParticipanteApiController {
         List<CertificadoListagem> certificados = certificadoService.listarPorParticipante(id).stream()
                 .map(c -> new CertificadoListagem(
                         c.getId(),
-                        c.getParticipante() != null ? c.getParticipante().getNome() : null,
+                        c.getNomeTitular(),
                         c.getPalestra() != null ? c.getPalestra().getTitulo() : null,
                         c.getDataEmissao(), c.getCargaHoraria(), c.getCodigoValidacao()))
                 .toList();

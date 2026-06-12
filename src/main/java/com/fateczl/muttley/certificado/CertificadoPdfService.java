@@ -85,23 +85,39 @@ public class CertificadoPdfService {
         String data = palestra != null && palestra.getInicio() != null
                 ? palestra.getInicio().toLocalDate().format(FMT)
                 : dataEmissao(certificado);
+        String horas = horas(certificado);
+
+        if (isApresentacao) {
+            return textoCertificadoApresentacao(certificado, nome, atividade, data, horas);
+        }
+
+        return textoCertificadoParticipacao(palestra, nome, atividade, data, horas);
+    }
+
+    private String textoCertificadoParticipacao(Palestra palestra, String nome, String atividade, String data, String horas) {
         String ministrantes = palestra != null && palestra.getPalestrantes() != null && !palestra.getPalestrantes().isEmpty()
                 ? palestra.getPalestrantes().stream().map(p -> p.getNome()).collect(Collectors.joining(", "))
                 : "ministrante(s)";
         String competencias = palestra != null && palestra.getCompetencias() != null && !palestra.getCompetencias().isEmpty()
                 ? palestra.getCompetencias().stream().map(c -> c.getNome()).collect(Collectors.joining(", "))
                 : "competências relacionadas";
-        String horas = horas(certificado);
-
-        if (isApresentacao) {
-            return "Certificamos que " + nome + " ministrou a atividade " + atividade
-                    + ", realizada no dia " + data + ", com carga horária total de " + horas + ".";
-        }
 
         return "Certificamos que " + nome + " participou da atividade " + atividade
                 + ", realizada no dia " + data + " e ministrada por " + ministrantes
                 + ", com carga horária total de " + horas
                 + ", tendo desenvolvido com êxito as competências de " + competencias + ".";
+    }
+
+    private String textoCertificadoApresentacao(Certificado certificado, String nome, String atividade, String data, String horas) {
+        Palestra palestra = certificado.getPalestra();
+        String evento = palestra != null && palestra.getEvento() != null && palestra.getEvento().getTitulo() != null
+                ? " no evento " + palestra.getEvento().getTitulo()
+                : "";
+
+        return "Certificamos que " + nome + " atuou como palestrante responsável pela apresentação da atividade "
+                + atividade + evento + ", realizada no dia " + data
+                + ", contribuindo com a exposição técnica e condução do conteúdo programático, com carga horária total de "
+                + horas + ".";
     }
 
     private void drawAssinaturas(PdfContentByte canvas, Certificado certificado, BaseFont arial, BaseFont arialBold)

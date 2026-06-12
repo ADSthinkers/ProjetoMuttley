@@ -10,29 +10,19 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-// entidade que representa um certificado emitido para participante ou palestrante de uma palestra
+// entidade base para certificados emitidos por participacao ou apresentacao
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "tipo_origem")
 public class Certificado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "participante_id")
-    private Participante participante;
-
-    @ManyToOne
-    @JoinColumn(name = "palestrante_id")
-    private Palestrante palestrante;
-
-    @ManyToOne
-    @JoinColumn(name = "palestra_id")
-    private Palestra palestra;
 
     private LocalDateTime dataEmissao;
 
@@ -52,8 +42,22 @@ public class Certificado {
         if (tipo == null) tipo = TipoCertificado.PARTICIPACAO;
     }
 
+    public Participante getParticipante() {
+        return null;
+    }
+
+    public Palestrante getPalestrante() {
+        return null;
+    }
+
+    public Palestra getPalestra() {
+        return null;
+    }
+
     // retorna o nome do titular do certificado, priorizando palestrante sobre participante
     public String getNomeTitular() {
+        Palestrante palestrante = getPalestrante();
+        Participante participante = getParticipante();
         if (palestrante != null) return palestrante.getNome();
         if (participante != null) return participante.getNome();
         return "Titular";
@@ -61,6 +65,8 @@ public class Certificado {
 
     // retorna o e-mail do titular do certificado, priorizando palestrante sobre participante
     public String getEmailTitular() {
+        Palestrante palestrante = getPalestrante();
+        Participante participante = getParticipante();
         if (palestrante != null) return palestrante.getEmail();
         if (participante != null) return participante.getEmail();
         return null;

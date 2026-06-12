@@ -30,7 +30,7 @@ public class CertificadoApiController {
     public ResponseEntity<List<CertificadoListagem>> listar() {
         return ResponseEntity.ok(service.listarTodos().stream()
                 .map(c -> new CertificadoListagem(c.getId(),
-                        c.getParticipante() != null ? c.getParticipante().getNome() : null,
+                        c.getNomeTitular(),
                         c.getPalestra() != null ? c.getPalestra().getTitulo() : null,
                         c.getDataEmissao(), c.getCargaHoraria(), c.getCodigoValidacao()))
                 .toList());
@@ -50,9 +50,9 @@ public class CertificadoApiController {
     @GetMapping("/validar/{codigo}")
     @PublicRoute
     public ResponseEntity<CertificadoListagem> validar(@PathVariable String codigo) {
-        return service.buscarPorCodigo(codigo)
+        return service.buscarPorCodigoComDetalhes(codigo)
                 .map(c -> new CertificadoListagem(c.getId(),
-                        c.getParticipante() != null ? c.getParticipante().getNome() : null,
+                        c.getNomeTitular(),
                         c.getPalestra() != null ? c.getPalestra().getTitulo() : null,
                         c.getDataEmissao(), c.getCargaHoraria(), c.getCodigoValidacao()))
                 .map(ResponseEntity::ok)
