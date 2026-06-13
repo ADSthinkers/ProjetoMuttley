@@ -46,7 +46,7 @@ const QrCode = ({ tipo = "inscricao" }) => {
 
     const endpointBase = isCheckin ? `/qrcode/checkin/${token}` : `/qrcode/${token}`;
     const flowLabel = isCheckin ? "Check-in" : "Inscrição";
-    const inactive = isInactive(palestra, "palestra");
+    const inactive = isInactive(palestra, "palestra") || getActivityStatus(palestra, "palestra") === "FINALIZADO";
     const inactiveLabel = getOperationalStatusLabel(getActivityStatus(palestra, "palestra"));
 
     useEffect(() => {

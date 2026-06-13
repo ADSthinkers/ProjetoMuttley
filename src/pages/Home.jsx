@@ -11,8 +11,29 @@ const filtros = ["Todos", "Palestra", "Evento"];
 
 const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 
+const parseLocalDate = (value) => {
+    if (!value) return null;
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(year, month - 1, day);
+    }
+    return new Date(value);
+};
+
+const formatRangeDate = (startValue, endValue) => {
+    const start = parseLocalDate(startValue);
+    const end = parseLocalDate(endValue);
+    if (!start) return "-";
+
+    const startText = start.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+    if (!end || start.toDateString() === end.toDateString()) return startText;
+
+    const endText = end.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+    return `${startText} - ${endText}`;
+};
+
 const formatItemDate = (dataStr) => {
-    const date = new Date(dataStr);
+    const date = parseLocalDate(dataStr);
     return {
         dia: String(date.getDate()).padStart(2, "0"),
         mes: meses[date.getMonth()],
@@ -55,6 +76,7 @@ const Home = () => {
                     ...e,
                     tipo: "Evento",
                     ...formatItemDate(e.dataInicio),
+                    periodo: formatRangeDate(e.dataInicio, e.dataFim),
                     descricao: e.descricao || e.categoria || "Evento cadastrado",
                     link: `/evento/${e.id}`
                 }));
@@ -249,8 +271,8 @@ const ActivityCard = ({ item, muted }) => {
                     )}
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs font-secondary text-primary/45 shrink-0">
-                    <ClockIcon size={14} />
-                    {item.horario}
+                    {item.tipo === "Evento" ? <CalendarStarIcon size={14} /> : <ClockIcon size={14} />}
+                    {item.tipo === "Evento" ? item.periodo : item.horario}
                 </span>
             </div>
 

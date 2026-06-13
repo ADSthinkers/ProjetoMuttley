@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import Select from 'react-select';
 import axios from 'axios';
 import { PALESTRA_STATUS } from "../utils/palestraStatus";
+import { blocksNewPalestras, getOperationalStatusLabel } from "../utils/activityStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -27,6 +28,8 @@ const formatPatrocinadorLabel = (patrocinador) => (
     patrocinador.email ||
     `Patrocinador #${patrocinador.id}`
 );
+
+const normalizarTexto = (value) => String(value || "").trim().toLocaleLowerCase("pt-BR");
 
 const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -65,6 +68,7 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
+    const [todosEventos, setTodosEventos] = useState([]);
     const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,11 +86,38 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
 
                 setCompetenciasDisponiveis(compRes.data.map(c => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palRes.data.map(p => ({ value: p.id, label: p.nome })));
-                setEventosDisponiveis(eveRes.data.map(e => ({ value: e.id, label: e.titulo, date: e.dataInicio })));
+                const patrocinadores = patrocinadoresRes.data.map(p => ({
+                    value: p.id,
+                    label: formatPatrocinadorLabel(p),
+                    nomeFantasia: p.nomeFantasia,
+                    razaoSocial: p.razaoSocial,
+                    nomeCompleto: p.nomeCompleto,
+                    email: p.email
+                }));
+                const findPatrocinadorIdByName = (nome) => {
+                    const normalizedName = normalizarTexto(nome);
+                    if (!normalizedName) return null;
+
+                    return patrocinadores.find((patrocinador) => [
+                        patrocinador.label,
+                        patrocinador.nomeFantasia,
+                        patrocinador.razaoSocial,
+                        patrocinador.nomeCompleto,
+                        patrocinador.email
+                    ].some((value) => normalizarTexto(value) === normalizedName))?.value || null;
+                };
+                const eventos = eveRes.data.map(e => ({
+                    value: e.id,
+                    label: e.titulo,
+                    date: e.dataInicio,
+                    patrocinadorId: e.patrocinadorId ?? findPatrocinadorIdByName(e.patrocinadorNome),
+                    patrocinadorNome: e.patrocinadorNome,
+                    statusOperacional: e.statusOperacional
+                }));
+                setTodosEventos(eventos);
+                setEventosDisponiveis(eventos.filter(e => !blocksNewPalestras(e, "evento")));
                 setLocaisDisponiveis(locaisRes.data.map(l => ({ value: l.id, label: l.nome, capacidade: l.capacidade })));
-                setPatrocinadoresDisponiveis(
-                    patrocinadoresRes.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
-                );
+                setPatrocinadoresDisponiveis(patrocinadores);
             } catch (error) {
                 console.error("Erro ao buscar dados para o formulário:", error);
             } finally {
@@ -95,6 +126,34 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
         };
         fetchData();
     }, [api]);
+
+    const handleEventoChange = async (selectedOption) => {
+        setEvento(selectedOption ? selectedOption.label : "");
+        setEventoId(selectedOption ? selectedOption.value : "");
+        setFormError("");
+
+        if (!selectedOption) {
+            return;
+        }
+
+        if (selectedOption.date) {
+            setData(selectedOption.date);
+        }
+
+        if (selectedOption.patrocinadorId != null) {
+            setPatrocinadorId(selectedOption.patrocinadorId);
+            return;
+        }
+
+        try {
+            const eventoRes = await api.get(`/eventos/${selectedOption.value}`);
+            if (eventoRes.data?.patrocinadorId != null) {
+                setPatrocinadorId(eventoRes.data.patrocinadorId);
+            }
+        } catch (error) {
+            console.error("Erro ao buscar patrocinador do evento:", error);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -111,6 +170,17 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
 
         if (!eventoId) {
             setFormError("Selecione um evento para cadastrar a palestra.");
+            return;
+        }
+
+        const eventoSelecionado = todosEventos.find((evento) => evento.value === eventoId);
+        if (blocksNewPalestras(eventoSelecionado, "evento")) {
+            setFormError(`Eventos ${getOperationalStatusLabel(eventoSelecionado.statusOperacional).toLowerCase()}s não aceitam novas palestras.`);
+            return;
+        }
+
+        if (!eventosDisponiveis.some((evento) => evento.value === eventoId)) {
+            setFormError("Selecione um evento ativo para cadastrar a palestra.");
             return;
         }
 
@@ -316,20 +386,16 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                         <Select
                             isLoading={loading}
                             options={eventosDisponiveis}
-                            value={eventosDisponiveis.find(e => e.value === eventoId)}
+                            value={eventosDisponiveis.find(e => String(e.value) === String(eventoId))}
                             unstyled
                             isClearable={true}
-                            onChange={(selectedOption) => {
-                                setEvento(selectedOption ? selectedOption.label : "");
-                                setEventoId(selectedOption ? selectedOption.value : "");
-                                setFormError("");
-                                if (selectedOption && selectedOption.date) {
-                                    setData(selectedOption.date);
-                                }
-                            }}
+                            onChange={handleEventoChange}
                             placeholder="Selecione um evento"
                             classNames={selectClasses}
                         />
+                        {todosEventos.some((evento) => blocksNewPalestras(evento, "evento")) && (
+                            <span className="text-xs font-secondary text-primary/45">Eventos cancelados, finalizados ou arquivados não aceitam novas palestras.</span>
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -337,11 +403,11 @@ const PalestraForm = ({ setObjeto, setEtapa, objeto }) => {
                         <Select
                             isLoading={loading}
                             options={patrocinadoresDisponiveis}
-                            value={patrocinadoresDisponiveis.find(p => p.value === patrocinadorId)}
+                            value={patrocinadoresDisponiveis.find(p => String(p.value) === String(patrocinadorId))}
                             unstyled
                             isClearable
                             onChange={(selectedOption) => setPatrocinadorId(selectedOption ? selectedOption.value : "")}
-                            placeholder="Selecione um patrocinador"
+                            placeholder={eventoId ? "Patrocinador do evento, se houver" : "Selecione um patrocinador"}
                             classNames={selectClasses}
                         />
                     </div>

@@ -27,7 +27,7 @@ import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
 import { getPalestraStatusLabel, PALESTRA_STATUS } from "../utils/palestraStatus";
-import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, isInactive, setStoredActivityStatus } from "../utils/activityStatus";
+import { blocksNewPalestras, getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatusLabel, isInactive, setStoredActivityStatus } from "../utils/activityStatus";
 
 const modalidades = [
     { value: "PRESENCIAL", label: "Presencial" },
@@ -56,9 +56,56 @@ const formatarHora = (value) => {
     return new Date(value).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 };
 
+const formatarDataHora = (value) => {
+    if (!value) return "-";
+    return new Date(value).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+};
+
 const toDateInput = (value) => value ? new Date(value).toISOString().split("T")[0] : "";
 const toTimeInput = (value) => value ? new Date(value).toTimeString().substring(0, 5) : "";
 const toNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
+const getCheckinTimestamp = (inscricao) => (
+    inscricao.dataCheckin ||
+    inscricao.dataConfirmacao ||
+    inscricao.dataPresenca ||
+    inscricao.confirmadoEm ||
+    inscricao.checkinEm ||
+    null
+);
+
+const calcularPicosCheckin = (inscricoes) => {
+    const buckets = inscricoes
+        .filter((inscricao) => inscricao.status === "CONFIRMADA")
+        .map(getCheckinTimestamp)
+        .filter(Boolean)
+        .reduce((acc, timestamp) => {
+            const date = new Date(timestamp);
+            if (Number.isNaN(date.getTime())) return acc;
+            const hour = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }).slice(0, 2);
+            const label = `${hour}:00 - ${hour}:59`;
+            acc[label] = (acc[label] || 0) + 1;
+            return acc;
+        }, {});
+
+    return Object.entries(buckets)
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+};
+
+const montarCheckinsComHorario = (inscricoes) => inscricoes
+    .filter((inscricao) => inscricao.status === "CONFIRMADA")
+    .map((inscricao) => ({ ...inscricao, horarioCheckin: getCheckinTimestamp(inscricao) }))
+    .filter((inscricao) => {
+        const date = new Date(inscricao.horarioCheckin);
+        return !Number.isNaN(date.getTime());
+    })
+    .sort((a, b) => new Date(a.horarioCheckin) - new Date(b.horarioCheckin));
 
 const PalestraDetalhe = () => {
     const { idPal } = useParams();
@@ -83,6 +130,7 @@ const PalestraDetalhe = () => {
     const [competenciasDisponiveis, setCompetenciasDisponiveis] = useState([]);
     const [palestrantesDisponiveis, setPalestrantesDisponiveis] = useState([]);
     const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
+    const [todosEventos, setTodosEventos] = useState([]);
     const [locaisDisponiveis, setLocaisDisponiveis] = useState([]);
     const [inscricoesPresenca, setInscricoesPresenca] = useState([]);
     const [buscaParticipante, setBuscaParticipante] = useState("");
@@ -125,7 +173,13 @@ const PalestraDetalhe = () => {
                 setPalestraData(palestra);
                 setCompetenciasDisponiveis(compRes.data.map((c) => ({ value: c.id, label: c.nome })));
                 setPalestrantesDisponiveis(palestrantesRes.data.map((p) => ({ value: p.id, label: p.nome })));
-                setEventosDisponiveis(eventosRes.data.map((e) => ({ value: e.id, label: e.titulo })));
+                const eventos = eventosRes.data.map((e) => ({
+                    value: e.id,
+                    label: e.titulo,
+                    statusOperacional: e.statusOperacional
+                }));
+                setTodosEventos(eventos);
+                setEventosDisponiveis(eventos.filter((e) => !blocksNewPalestras(e, "evento")));
                 setLocaisDisponiveis(locaisRes.data.map((local) => ({ value: local.id, label: local.nome, capacidade: local.capacidade })));
                 setInscricoesPresenca(inscricoesRes.data);
                 setForm({
@@ -175,15 +229,16 @@ const PalestraDetalhe = () => {
 
     const competenciaNomes = competenciasDisponiveis.filter((c) => (palestraData?.competenciaIds || []).includes(c.value)).map((c) => c.label);
     const palestranteNomes = palestrantesDisponiveis.filter((p) => (palestraData?.palestranteIds || []).includes(p.value)).map((p) => p.label);
-    const eventoNome = eventosDisponiveis.find((e) => e.value === palestraData?.eventoId)?.label;
+    const eventoSelecionadoAtual = todosEventos.find((e) => e.value === palestraData?.eventoId);
+    const eventoNome = eventoSelecionadoAtual?.label;
     const localNome = locaisDisponiveis.find((local) => local.value === palestraData?.localId)?.label || palestraData?.localNome;
     const publicInscricaoQrUrl = palestraData?.qrCodeToken ? `${window.location.origin}/inscricao/qrcode/${palestraData.qrCodeToken}` : "";
     const publicCheckinQrUrl = palestraData?.qrCodeCheckinToken ? `${window.location.origin}/checkin/qrcode/${palestraData.qrCodeCheckinToken}` : "";
     const publicQrUrl = qrTipo === "checkin" ? publicCheckinQrUrl : publicInscricaoQrUrl;
     const qrFileName = `qrcode-${qrTipo}-${(palestraData?.titulo || "palestra").toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.png`;
     const operationalStatus = getActivityStatus(palestraData, "palestra");
-    const eventOperationalStatus = getActivityStatus({ id: palestraData?.eventoId }, "evento");
-    const inactive = isInactive(palestraData, "palestra") || eventOperationalStatus === "CANCELADO" || eventOperationalStatus === "ARQUIVADO";
+    const eventOperationalStatus = getActivityStatus(eventoSelecionadoAtual || { id: palestraData?.eventoId }, "evento");
+    const inactive = isInactive(palestraData, "palestra") || operationalStatus === "FINALIZADO" || eventOperationalStatus === "CANCELADO" || eventOperationalStatus === "FINALIZADO" || eventOperationalStatus === "ARQUIVADO";
     const inscricoesAtivas = inscricoesPresenca.filter((inscricao) => inscricao.status !== "CANCELADA");
     const fallbackInscricoesCount = Math.max(
         toNumber(palestraData?.inscritos),
@@ -198,7 +253,13 @@ const PalestraDetalhe = () => {
     const hasCertificados = palestraData?.status === "CERTIFICADOS_EMITIDOS" || hasCheckins;
     const canDelete = !hasInscricoes && !hasCertificados && !operationalStatus;
     const canCancel = hasInscricoes && !hasCertificados && !operationalStatus;
-    const canArchive = hasCertificados && !operationalStatus;
+    const canFinalize = hasCertificados && !operationalStatus;
+    const canArchive = operationalStatus === "FINALIZADO";
+    const showDadosTab = operationalStatus === "FINALIZADO" || operationalStatus === "ARQUIVADO";
+    const totalPresentes = inscricoesAtivas.filter((inscricao) => inscricao.status === "CONFIRMADA").length;
+    const taxaComparecimento = inscricoesAtivasCount > 0 ? Math.round((totalPresentes / inscricoesAtivasCount) * 100) : 0;
+    const picosCheckin = calcularPicosCheckin(inscricoesAtivas);
+    const checkinsComHorario = montarCheckinsComHorario(inscricoesAtivas);
 
     const updateForm = (field, value) => {
         setForm((current) => ({ ...current, [field]: value }));
@@ -230,6 +291,15 @@ const PalestraDetalhe = () => {
             toast.error("Selecione um local para a palestra.");
             return;
         }
+        const eventoSelecionado = todosEventos.find((evento) => evento.value === form.eventoId);
+        if (blocksNewPalestras(eventoSelecionado, "evento")) {
+            toast.error(`Eventos ${getOperationalStatusLabel(eventoSelecionado.statusOperacional).toLowerCase()}s não aceitam palestras associadas.`);
+            return;
+        }
+        if (!eventosDisponiveis.some((evento) => evento.value === form.eventoId)) {
+            toast.error("Selecione um evento ativo para salvar a palestra.");
+            return;
+        }
         setSaving(true);
 
         const payload = {
@@ -255,7 +325,7 @@ const PalestraDetalhe = () => {
             toast.success("Palestra atualizada com sucesso.");
         } catch (err) {
             console.error("Erro ao salvar palestra:", err);
-            toast.error("Erro ao salvar alterações.");
+            toast.error(err.response?.data?.erro || err.response?.data?.message || "Erro ao salvar alterações.");
         } finally {
             setSaving(false);
         }
@@ -272,10 +342,21 @@ const PalestraDetalhe = () => {
         }
     };
 
-    const updateOperationalStatus = (status) => {
-        setStoredActivityStatus("palestra", idPal, status);
-        setPalestraData((current) => current ? { ...current, statusOperacional: status } : current);
-        toast.success(status === "CANCELADO" ? "Palestra cancelada." : "Palestra arquivada.");
+    const updateOperationalStatus = async (status) => {
+        try {
+            const response = await api.patch(`/palestras/${idPal}/status-operacional`, { statusOperacional: status });
+            setStoredActivityStatus("palestra", idPal, status);
+            setPalestraData(response.data);
+            const successMessages = {
+                CANCELADO: "Palestra cancelada.",
+                FINALIZADO: "Palestra finalizada.",
+                ARQUIVADO: "Palestra arquivada.",
+            };
+            toast.success(successMessages[status] || "Status atualizado.");
+        } catch (err) {
+            console.error("Erro ao atualizar status operacional da palestra:", err);
+            toast.error(err.response?.data?.message || err.response?.data?.erro || "Erro ao atualizar status da palestra.");
+        }
     };
 
     const handleCancel = () => {
@@ -283,8 +364,13 @@ const PalestraDetalhe = () => {
         updateOperationalStatus("CANCELADO");
     };
 
+    const handleFinalize = () => {
+        if (!window.confirm("Finalizar esta palestra? Após a finalização, a opção de arquivamento ficará disponível.")) return;
+        updateOperationalStatus("FINALIZADO");
+    };
+
     const handleArchive = () => {
-        if (!window.confirm("Arquivar esta palestra? Esta ação é irreversível e bloqueará novos QRs.")) return;
+        if (!window.confirm("Arquivar esta palestra finalizada? Esta ação é irreversível.")) return;
         updateOperationalStatus("ARQUIVADO");
     };
 
@@ -402,6 +488,12 @@ const PalestraDetalhe = () => {
                             <InfoIcon size={20} />
                             Detalhes
                         </button>
+                        {showDadosTab && (
+                            <button type="button" className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "dados" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`} onClick={() => setActiveTab("dados")}>
+                                <UsersIcon size={20} />
+                                Dados
+                            </button>
+                        )}
                         <button type="button" className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "acoes" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`} onClick={() => setActiveTab("acoes")}>
                             <SlidersHorizontalIcon size={20} />
                             Ações
@@ -416,6 +508,7 @@ const PalestraDetalhe = () => {
                                 competenciasDisponiveis={competenciasDisponiveis}
                                 palestrantesDisponiveis={palestrantesDisponiveis}
                                 eventosDisponiveis={eventosDisponiveis}
+                                todosEventos={todosEventos}
                                 locaisDisponiveis={locaisDisponiveis}
                                 saving={saving}
                                 houveAlteracao={houveAlteracao}
@@ -428,8 +521,20 @@ const PalestraDetalhe = () => {
                                 palestranteNomes={palestranteNomes}
                                 eventoNome={eventoNome}
                                 localNome={localNome}
+                                totalInscritos={inscricoesAtivasCount}
+                                totalPresentes={totalPresentes}
                             />
                         )
+                    )}
+
+                    {activeTab === "dados" && showDadosTab && (
+                        <PalestraDataTab
+                            totalInscritos={inscricoesAtivasCount}
+                            totalPresentes={totalPresentes}
+                            taxaComparecimento={taxaComparecimento}
+                            picosCheckin={picosCheckin}
+                            checkinsComHorario={checkinsComHorario}
+                        />
                     )}
 
                     {activeTab === "acoes" && (
@@ -477,16 +582,25 @@ const PalestraDetalhe = () => {
                                     onClick={handleCancel}
                                 />
                             )}
+                            {canFinalize && (
+                                <ActionCard
+                                    icon={<CheckCircleIcon size={44} />}
+                                    title="Finalizar palestra"
+                                    description="Disponível após o primeiro check-in. Depois disso, o arquivamento ficará disponível."
+                                    buttonLabel="Finalizar palestra"
+                                    onClick={handleFinalize}
+                                />
+                            )}
                             {canArchive && (
                                 <ActionCard
                                     icon={<ArchiveIcon size={44} />}
                                     title="Arquivar palestra"
-                                    description="Palestras com check-ins ou certificados não podem ser canceladas."
+                                    description="Arquiva uma palestra já finalizada. Esta ação é irreversível."
                                     buttonLabel="Arquivar palestra"
                                     onClick={handleArchive}
                                 />
                             )}
-                            {operationalStatus && (
+                            {operationalStatus && operationalStatus !== "FINALIZADO" && (
                                 <ActionCard
                                     disabled
                                     icon={operationalStatus === "ARQUIVADO" ? <ArchiveIcon size={44} /> : <XIcon size={44} />}
@@ -598,7 +712,7 @@ const PalestraDetalhe = () => {
     );
 };
 
-const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestrantesDisponiveis, eventosDisponiveis, locaisDisponiveis, saving, houveAlteracao, handleSave }) => (
+const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestrantesDisponiveis, eventosDisponiveis, todosEventos, locaisDisponiveis, saving, houveAlteracao, handleSave }) => (
     <motion.form variants={itemVariants} className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5" onSubmit={handleSave}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Field label="Título da palestra*" className="lg:col-span-2">
@@ -614,7 +728,18 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
                 <Select isMulti options={competenciasDisponiveis} value={competenciasDisponiveis.filter((c) => form.competenciaIds.includes(c.value))} unstyled onChange={(options) => updateForm("competenciaIds", (options || []).map((o) => o.value))} placeholder="Selecione competências" classNames={selectClasses} />
             </Field>
             <Field label="Evento" optional>
-                <Select options={eventosDisponiveis} value={eventosDisponiveis.find((e) => e.value === form.eventoId)} unstyled isClearable onChange={(option) => updateForm("eventoId", option ? option.value : "")} placeholder="Selecione um evento" classNames={selectClasses} />
+                <Select
+                    options={eventosDisponiveis}
+                    value={eventosDisponiveis.find((e) => e.value === form.eventoId)}
+                    unstyled
+                    isClearable
+                    onChange={(option) => updateForm("eventoId", option ? option.value : "")}
+                    placeholder="Selecione um evento"
+                    classNames={selectClasses}
+                />
+                {todosEventos.some((evento) => blocksNewPalestras(evento, "evento")) && (
+                    <span className="text-xs font-secondary text-primary/45">Eventos cancelados, finalizados ou arquivados não aceitam novas palestras.</span>
+                )}
             </Field>
             <Field label="Local / Sala*">
                 <Select
@@ -660,7 +785,7 @@ const PalestraEditForm = ({ form, updateForm, competenciasDisponiveis, palestran
     </motion.form>
 );
 
-const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome, localNome }) => {
+const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eventoNome, localNome, totalInscritos, totalPresentes }) => {
     const operationalStatus = getActivityStatus(palestraData, "palestra");
 
     return (
@@ -695,6 +820,8 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
                 />
                 <DetailCard icon={<ClockIcon size={24} />} label="Carga horária" value={palestraData?.cargaHoraria ? `${palestraData.cargaHoraria}h` : "-"} />
                 <DetailCard icon={<UsersIcon size={24} />} label="Capacidade" value={palestraData?.vagas} />
+                <DetailCard icon={<UsersIcon size={24} />} label="Inscritos" value={totalInscritos} />
+                <DetailCard icon={<CheckCircleIcon size={24} />} label="Check-ins" value={totalPresentes} />
                 <DetailCard icon={<QrCodeIcon size={24} />} label="QR inscrição" value={palestraData?.qrCodeToken ? "Disponível" : "-"} />
                 <DetailCard icon={<QrCodeIcon size={24} />} label="QR check-in" value={palestraData?.qrCodeCheckinToken ? "Disponível" : "-"} />
             </div>
@@ -702,6 +829,86 @@ const PalestraDetails = ({ palestraData, competenciaNomes, palestranteNomes, eve
     </motion.div>
     );
 };
+
+const PalestraDataTab = ({ totalInscritos, totalPresentes, taxaComparecimento, picosCheckin, checkinsComHorario }) => (
+    <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-5">
+        <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5">
+            <SectionTitle title="Comparecimento" />
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-1 gap-4">
+                <DataMetric icon={<UsersIcon size={24} />} label="Total de inscritos" value={totalInscritos} />
+                <DataMetric icon={<CheckCircleIcon size={24} />} label="Total de presentes" value={totalPresentes} />
+                <DataMetric icon={<ClockIcon size={24} />} label="Taxa de comparecimento" value={`${taxaComparecimento}%`} />
+            </div>
+            <div className="w-full h-3 rounded-full bg-accent/20 overflow-hidden">
+                <div className="h-full bg-accent transition-all" style={{ width: `${Math.min(taxaComparecimento, 100)}%` }} />
+            </div>
+            <p className="text-sm font-secondary text-primary/55">
+                {totalPresentes} de {totalInscritos} inscrito(s) confirmaram presença.
+            </p>
+        </div>
+
+        <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5">
+            <SectionTitle title="Horários de pico de check-in" />
+            {picosCheckin.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                    {picosCheckin.slice(0, 6).map((pico, index) => {
+                        const max = picosCheckin[0]?.count || 1;
+                        const width = Math.max((pico.count / max) * 100, 8);
+
+                        return (
+                            <div key={pico.label} className="bg-accent/15 rounded-2xl p-4 border border-accent/10">
+                                <div className="flex items-center justify-between gap-3 mb-2">
+                                    <span className="font-primary font-bold text-primary">{index + 1}. {pico.label}</span>
+                                    <span className="text-sm font-secondary text-primary/60">{pico.count} check-in(s)</span>
+                                </div>
+                                <div className="h-2 rounded-full bg-base-100/65 overflow-hidden">
+                                    <div className="h-full bg-accent" style={{ width: `${width}%` }} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="bg-accent/15 rounded-2xl p-5 border border-dashed border-accent/25 text-sm font-secondary text-primary/55">
+                    Nenhum horário de check-in foi encontrado para esta palestra.
+                </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+                <h3 className="text-base font-primary font-bold text-primary">Check-ins registrados</h3>
+                {checkinsComHorario.length > 0 ? (
+                    <div className="max-h-72 overflow-y-auto pr-1 flex flex-col gap-2">
+                        {checkinsComHorario.map((checkin) => (
+                            <div key={checkin.id} className="bg-accent/15 rounded-2xl p-4 border border-accent/10 flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                    <p className="font-primary font-bold text-primary truncate">{checkin.participanteNome || "Participante"}</p>
+                                    <p className="text-xs font-secondary text-primary/55 truncate">{checkin.email || checkin.cpf || "Sem contato cadastrado"}</p>
+                                </div>
+                                <span className="text-sm font-secondary font-semibold text-primary whitespace-nowrap">
+                                    {formatarDataHora(checkin.horarioCheckin)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-accent/15 rounded-2xl p-5 border border-dashed border-accent/25 text-sm font-secondary text-primary/55">
+                        Nenhum check-in com horário registrado.
+                    </div>
+                )}
+            </div>
+        </div>
+    </motion.div>
+);
+
+const DataMetric = ({ icon, label, value }) => (
+    <div className="bg-accent/20 rounded-2xl p-5 flex items-center gap-4 min-h-24">
+        <div className="w-11 h-11 rounded-xl bg-accent/40 flex items-center justify-center text-primary shrink-0">{icon}</div>
+        <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-xs font-secondary text-primary/50 uppercase">{label}</span>
+            <span className="text-3xl font-primary font-bold text-primary">{value}</span>
+        </div>
+    </div>
+);
 
 const Field = ({ label, optional, className = "", children }) => (
     <div className={`flex flex-col gap-2 ${className}`}>

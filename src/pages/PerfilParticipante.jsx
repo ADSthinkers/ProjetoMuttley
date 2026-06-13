@@ -9,6 +9,7 @@ import axios from 'axios';
 import toast, { Toaster } from "react-hot-toast";
 import { isAdmin } from "../utils/auth";
 import { formatCpf } from "../utils/formatters";
+import CertificadosPessoaTab from "../components/CertificadosPessoaTab";
 
 const toParticipanteForm = (data = {}) => ({
     nome: data.nome || "",
@@ -19,6 +20,8 @@ const toParticipanteForm = (data = {}) => ({
     telefone: data.telefone || "",
     curso: data.curso || "",
 });
+
+const normalizarNome = (value) => (value || "").trim().toLocaleLowerCase("pt-BR");
 
 const PerfilParticipante = () => {
     const { id } = useParams();
@@ -51,21 +54,24 @@ const PerfilParticipante = () => {
                 return;
             }
             try { 
-                const [participanteRes, palestrasRes, competenciasRes, medalhasRes, xpsRes, horasRes] = await Promise.all([
+                const [participanteRes, palestrasRes, competenciasRes, medalhasRes, xpsRes, horasRes, certificadosRes] = await Promise.all([
                     api.get(`/participantes/${id}`),
                     api.get(`/participantes/${id}/palestras`),
                     api.get(`/participantes/${id}/competencias`),
                     api.get(`/medalhas/participante/${id}`),
                     api.get(`/xps/participante/${id}`),
-                    api.get(`/participantes/${id}/horas`)
+                    api.get(`/participantes/${id}/horas`),
+                    api.get("/certificados").catch(() => ({ data: [] }))
                 ]);
+                const nomeParticipante = normalizarNome(participanteRes.data?.nome);
                 setParticipante({
                     ...participanteRes.data,
                     palestras: palestrasRes.data,
                     competencias: competenciasRes.data,
                     medalhas: medalhasRes.data,
                     xps: xpsRes.data,
-                    totalHoras: horasRes.data?.totalHoras || 0
+                    totalHoras: horasRes.data?.totalHoras || 0,
+                    certificados: certificadosRes.data.filter((certificado) => normalizarNome(certificado.participanteNome) === nomeParticipante)
                 });
                 setForm(toParticipanteForm(participanteRes.data));
                 setLoading(false);
@@ -190,7 +196,7 @@ const PerfilParticipante = () => {
 
                     {/* Navegação por Abas */}
                     <motion.div variants={itemVariants} className="flex gap-4 border-b border-primary/10">
-                        {["dados", "palestras", "competencias", "medalhas"].map((tab) => (
+                        {["dados", "palestras", "competencias", "medalhas", "certificados"].map((tab) => (
                             <button 
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -200,6 +206,7 @@ const PerfilParticipante = () => {
                                 {tab === "palestras" && <><BookOpenIcon size={20} /> Palestras</>}
                                 {tab === "competencias" && <><MedalIcon size={20} /> Competências</>}
                                 {tab === "medalhas" && <><TrophyIcon size={20} /> Medalhas</>}
+                                {tab === "certificados" && <><CheckCircleIcon size={20} /> Certificados</>}
                                 
                                 {activeTab === tab && (
                                     <motion.div 
@@ -322,6 +329,10 @@ const PerfilParticipante = () => {
                                             </div>
                                         )}
                                     </motion.div>
+                                )}
+
+                                {activeTab === "certificados" && (
+                                    <CertificadosPessoaTab certificados={participante.certificados || []} api={api} />
                                 )}
                             </motion.div>
                         </AnimatePresence>

@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeftIcon, BriefcaseIcon, CheckCircleIcon, CircleNotchIcon, EnvelopeIcon, FileTextIcon, IdentificationCardIcon, ImageSquareIcon, PencilSimpleIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, BriefcaseIcon, CalendarIcon, CaretRightIcon, CheckCircleIcon, CircleNotchIcon, EnvelopeIcon, FileTextIcon, IdentificationCardIcon, ImageSquareIcon, PencilSimpleIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
@@ -41,6 +41,11 @@ const toPayload = (form) => ({
     assinatura: form.assinatura,
 });
 
+const formatarData = (data) => {
+    if (!data) return "-";
+    return new Date(`${data}T00:00:00`).toLocaleDateString("pt-BR");
+};
+
 const AssinanteDetalhe = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -57,6 +62,7 @@ const AssinanteDetalhe = () => {
     }), [dbURL, dbKEY]);
 
     const [assinante, setAssinante] = useState(null);
+    const [eventosAssinados, setEventosAssinados] = useState([]);
     const [form, setForm] = useState(toForm());
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -72,9 +78,18 @@ const AssinanteDetalhe = () => {
             }
 
             try {
-                const response = await api.get(`/assinantes/${id}`);
-                setAssinante(response.data);
-                setForm(toForm(response.data));
+                const [assinanteRes, eventosRes] = await Promise.all([
+                    api.get(`/assinantes/${id}`),
+                    api.get("/eventos"),
+                ]);
+                const assinanteData = assinanteRes.data;
+                const nomeAssinante = String(assinanteData.nome || "").toLowerCase();
+
+                setAssinante(assinanteData);
+                setForm(toForm(assinanteData));
+                setEventosAssinados((eventosRes.data || []).filter((evento) => (
+                    (evento.assinantes || []).some((nome) => String(nome || "").toLowerCase() === nomeAssinante)
+                )));
             } catch (err) {
                 console.error("Erro ao buscar assinante", err);
                 setError("Não foi possível carregar os dados do assinante.");
@@ -250,6 +265,37 @@ const AssinanteDetalhe = () => {
                                         <img src={`data:image/png;base64,${assinante.assinatura}`} alt="Assinatura" className="max-h-32 max-w-full object-contain rounded-xl bg-white p-4 self-start" />
                                     ) : (
                                         <p className="text-primary/45 font-secondary">Sem imagem cadastrada.</p>
+                                    )}
+                                </div>
+                                <div className="md:col-span-2 bg-accent/5 p-6 rounded-2xl border border-accent/10 flex flex-col gap-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 text-primary font-primary font-bold">
+                                            <CalendarIcon size={24} />
+                                            Eventos assinados
+                                        </div>
+                                        <span className="text-xs font-secondary text-primary/45">{eventosAssinados.length} evento(s)</span>
+                                    </div>
+
+                                    {eventosAssinados.length > 0 ? (
+                                        <div className="flex flex-col gap-2">
+                                            {eventosAssinados.map((evento) => (
+                                                <button
+                                                    key={evento.id}
+                                                    type="button"
+                                                    onClick={() => navigate(`/evento/${evento.id}`)}
+                                                    className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-3 items-center text-left bg-accent/15 hover:bg-accent/25 border border-accent/10 rounded-2xl px-4 py-3 transition-colors cursor-pointer"
+                                                >
+                                                    <span className="font-primary font-bold text-primary truncate">{evento.titulo}</span>
+                                                    <span className="text-xs font-secondary text-primary/60">Início: {formatarData(evento.dataInicio)}</span>
+                                                    <span className="flex items-center gap-2 text-xs font-secondary text-primary/60">
+                                                        Fim: {formatarData(evento.dataFim)}
+                                                        <CaretRightIcon size={16} />
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm font-secondary text-primary/45 bg-accent/15 rounded-2xl p-4">Este assinante ainda não está vinculado a eventos.</p>
                                     )}
                                 </div>
                             </motion.div>

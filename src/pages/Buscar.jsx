@@ -17,6 +17,15 @@ import PageTransition, { containerVariants, itemVariants } from "../components/P
 import { motion, AnimatePresence } from "framer-motion";
 import axios from 'axios';
 
+const parseLocalDate = (value) => {
+    if (!value) return null;
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(year, month - 1, day);
+    }
+    return new Date(value);
+};
+
 const Buscar = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const dbKEY = import.meta.env.VITE_DB_API_KEY;
@@ -55,7 +64,8 @@ const Buscar = () => {
                     tipo: "Evento", 
                     nome: e.titulo, 
                     descricao: e.descricao || e.categoria, 
-                    inicio: new Date(e.dataInicio) 
+                    inicio: parseLocalDate(e.dataInicio),
+                    fim: e.dataFim ? parseLocalDate(e.dataFim) : null
                 }));
                 const palestras = palestrasRes.data.map(p => ({ 
                     ...p, 

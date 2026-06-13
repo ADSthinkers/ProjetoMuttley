@@ -15,11 +15,35 @@ import { getActivityStatus, getOperationalStatusBadgeClass, getOperationalStatus
  */
 
 
+const parseDateValue = (data) => {
+    if (!data) return null;
+    if (data instanceof Date) return data;
+    if (typeof data === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data)) {
+        const [year, month, day] = data.split("-").map(Number);
+        return new Date(year, month - 1, day);
+    }
+    const date = new Date(data);
+    return Number.isNaN(date.getTime()) ? null : date;
+};
+
 const formatarData = (data) => {
-    if (!data) return ""
-    if (typeof data === "string") return data
-    return data.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
-}
+    if (typeof data === "string" && !/^\d{4}-\d{2}-\d{2}/.test(data)) return data;
+    const date = parseDateValue(data);
+    if (!date) return "";
+    return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+};
+
+const formatarRangeDatas = (item) => {
+    if (item.tipo?.toLowerCase() !== "evento") return formatarData(item.inicio || item.data);
+
+    const inicio = item.dataInicio || item.inicio || item.data;
+    const fim = item.dataFim || item.fim;
+    const inicioFormatado = formatarData(inicio);
+    const fimFormatado = formatarData(fim);
+
+    if (!fimFormatado || fimFormatado === inicioFormatado) return inicioFormatado;
+    return `${inicioFormatado} - ${fimFormatado}`;
+};
 
 const formatarHora = (data) => {
     if (!data || typeof data === "string") return "";
@@ -72,8 +96,8 @@ const CardFull = ({ item, navegarItem }) => {
                 <StatusBadge item={item} />
             </div>
             <div className="absolute bottom-4 left-4 bg-base-100/90 rounded-2xl px-4 py-2 border border-accent/20 backdrop-blur-sm">
-                <p className="text-[10px] font-secondary uppercase text-primary/45">Data</p>
-                <p className="text-sm font-primary font-bold text-primary">{formatarData(item.inicio)}</p>
+                <p className="text-[10px] font-secondary uppercase text-primary/45">{item.tipo?.toLowerCase() === "evento" ? "Período" : "Data"}</p>
+                <p className="text-sm font-primary font-bold text-primary">{formatarRangeDatas(item)}</p>
             </div>
         </div>
 
@@ -96,7 +120,7 @@ const CardFull = ({ item, navegarItem }) => {
                     <MetaPill icon={<MapPinIcon size={15} />} label="Local" value={item.localNome} />
                 )}
                 {item.tipo?.toLowerCase() === "evento" && (
-                    <MetaPill icon={<CalendarStarIcon size={15} />} label="Fim" value={formatarData(item.fim) || "-"} />
+                    <MetaPill icon={<CalendarStarIcon size={15} />} label="Período" value={formatarRangeDatas(item) || "-"} />
                 )}
                 {item.modalidade && <MetaPill icon={<LecternIcon size={15} />} label="Modalidade" value={formatarEnum(item.modalidade)} />}
             </div>
@@ -128,7 +152,7 @@ const CardCompact = ({ item, navegarItem}) => {
         <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-2">
                 <span className="text-sm font-secondary text-primary/50 shrink-0">
-                    {formatarData(item.data)}
+                    {formatarRangeDatas(item)}
                 </span>
                 <Badge tipo={item.tipo} />
                 <StatusBadge item={item} />

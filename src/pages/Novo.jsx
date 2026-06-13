@@ -64,6 +64,23 @@ const getApiErrorMessage = (err) => {
     return messages.length > 0 ? messages.join(", ") : "Erro na validação dos dados.";
 };
 
+const getReviewLabel = (key) => {
+    if (key === "assinanteIds") return "assinantes";
+    return key.replace(/([A-Z])/g, ' $1');
+};
+
+const getReviewValue = (key, value, objeto) => {
+    if (key === "assinanteIds") {
+        const nomes = (objeto.assinantesSelecionados || [])
+            .map((assinante) => assinante.nome)
+            .filter(Boolean);
+
+        return nomes.length > 0 ? nomes.join(", ") : value.join(", ");
+    }
+
+    return Array.isArray(value) ? value.join(", ") : String(value);
+};
+
 const Novo = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const dbKEY = import.meta.env.VITE_DB_API_KEY;
@@ -360,8 +377,9 @@ const Novo = () => {
                                             {Object.entries(objeto).map(([key, value]) => {
                                                 if (typeof value === 'object' && !Array.isArray(value)) return null;
                                                 if (key === "assinaturaPreview") return null;
+                                                if (key === "assinantesSelecionados") return null;
                                                 
-                                                const label = key.replace(/([A-Z])/g, ' $1');
+                                                const label = getReviewLabel(key);
                                                 const isPassword = key.toLowerCase() === "senha";
                                                 const isSignature = key === "assinatura";
 
@@ -380,7 +398,7 @@ const Novo = () => {
                                                                 <span className="text-lg font-primary text-primary font-medium break-words">
                                                                     {isPassword && !showPassword 
                                                                         ? "••••••••" 
-                                                                        : (Array.isArray(value) ? value.join(", ") : String(value))}
+                                                                        : getReviewValue(key, value, objeto)}
                                                                 </span>
                                                             )}
                                                             {isPassword && (

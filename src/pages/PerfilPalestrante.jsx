@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import axios from 'axios';
 import toast, { Toaster } from "react-hot-toast";
 import { isAdmin } from "../utils/auth";
+import CertificadosPessoaTab from "../components/CertificadosPessoaTab";
 
 const toPalestranteForm = (data = {}) => ({
     id: data.id,
@@ -51,6 +52,8 @@ const toPalestrantePayload = (form) => ({
     linkedin: form.linkedin,
     foto: form.foto,
 });
+
+const normalizarNome = (value) => (value || "").trim().toLocaleLowerCase("pt-BR");
 
 const PerfilPalestrante = () => {
     const { id } = useParams();
@@ -82,9 +85,16 @@ const PerfilPalestrante = () => {
                 return;
             }
             try { 
-                const response = await api.get(`/palestrantes/${id}`);
-                setPalestrante(response.data);
-                setForm(toPalestranteForm(response.data));
+                const [palestranteRes, certificadosRes] = await Promise.all([
+                    api.get(`/palestrantes/${id}`),
+                    api.get("/certificados").catch(() => ({ data: [] }))
+                ]);
+                const nomePalestrante = normalizarNome(palestranteRes.data?.nome);
+                setPalestrante({
+                    ...palestranteRes.data,
+                    certificados: certificadosRes.data.filter((certificado) => normalizarNome(certificado.participanteNome) === nomePalestrante)
+                });
+                setForm(toPalestranteForm(palestranteRes.data));
                 setLoading(false);
             } catch (error) {
                 console.error("Erro ao buscar dados", error);
@@ -113,7 +123,10 @@ const PerfilPalestrante = () => {
         setSaving(true);
         try {
             const response = await api.put(`/palestrantes/${id}`, toPalestrantePayload(form));
-            setPalestrante(response.data);
+            setPalestrante((current) => ({
+                ...current,
+                ...response.data,
+            }));
             setForm(toPalestranteForm(response.data));
             setIsEditing(false);
             toast.success("Palestrante atualizado com sucesso!");
@@ -222,7 +235,7 @@ const PerfilPalestrante = () => {
 
                     {/* Navegação por Abas */}
                     <motion.div variants={itemVariants} className="flex gap-4 border-b border-primary/10">
-                        {["dados", "palestras"].map((tab) => (
+                        {["dados", "palestras", "certificados"].map((tab) => (
                             <button 
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -230,6 +243,7 @@ const PerfilPalestrante = () => {
                             >
                                 {tab === "dados" && <><UserIcon size={20} /> Dados e Formação</>}
                                 {tab === "palestras" && <><MicrophoneStageIcon size={20} /> Palestras Ministradas</>}
+                                {tab === "certificados" && <><CheckCircleIcon size={20} /> Certificados</>}
                                 
                                 {activeTab === tab && (
                                     <motion.div 
@@ -329,6 +343,10 @@ const PerfilPalestrante = () => {
                                             <p className="text-primary/40 text-center py-10 font-secondary">Nenhuma palestra ministrada registrada.</p>
                                         )}
                                     </motion.div>
+                                )}
+
+                                {activeTab === "certificados" && (
+                                    <CertificadosPessoaTab certificados={palestrante.certificados || []} api={api} />
                                 )}
                             </motion.div>
                         </AnimatePresence>

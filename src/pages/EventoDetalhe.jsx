@@ -4,7 +4,9 @@ import {
     ArrowLeftIcon,
     ArchiveIcon,
     CalendarStarIcon,
+    CheckCircleIcon,
     CircleNotchIcon,
+    ClockIcon,
     HandshakeIcon,
     ImageSquareIcon,
     InfoIcon,
@@ -12,11 +14,12 @@ import {
     SlidersHorizontalIcon,
     TagIcon,
     TrashSimpleIcon,
+    UsersIcon,
     XIcon
 } from "@phosphor-icons/react";
 import { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import PageTransition, { itemVariants } from "../components/PageTransition";
 import { motion } from "framer-motion";
@@ -36,9 +39,77 @@ const formatarData = (data) => {
     return new Date(`${data}T00:00:00`).toLocaleDateString("pt-BR");
 };
 
+const formatarDataHora = (value) => {
+    if (!value) return "-";
+    return new Date(value).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+};
+
 const formatarModalidade = (modalidade) => {
     return modalidades.find((m) => m.value === modalidade)?.label || "-";
 };
+
+const getCheckinTimestamp = (inscricao) => (
+    inscricao.dataCheckin ||
+    inscricao.dataConfirmacao ||
+    inscricao.dataPresenca ||
+    inscricao.confirmadoEm ||
+    inscricao.checkinEm ||
+    null
+);
+
+const calcularPicosCheckin = (inscricoes) => {
+    const buckets = inscricoes
+        .filter((inscricao) => inscricao.status === "CONFIRMADA")
+        .map(getCheckinTimestamp)
+        .filter(Boolean)
+        .reduce((acc, timestamp) => {
+            const date = new Date(timestamp);
+            if (Number.isNaN(date.getTime())) return acc;
+            const hour = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }).slice(0, 2);
+            const label = `${hour}:00 - ${hour}:59`;
+            acc[label] = (acc[label] || 0) + 1;
+            return acc;
+        }, {});
+
+    return Object.entries(buckets)
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+};
+
+const montarCheckinsComHorario = (palestras) => palestras
+    .flatMap((palestra) => (palestra.inscricoes || [])
+        .filter((inscricao) => inscricao.status === "CONFIRMADA")
+        .map((inscricao) => ({
+            ...inscricao,
+            palestraId: palestra.id,
+            palestraTitulo: palestra.titulo,
+            horarioCheckin: getCheckinTimestamp(inscricao)
+        })))
+    .filter((inscricao) => {
+        const date = new Date(inscricao.horarioCheckin);
+        return !Number.isNaN(date.getTime());
+    })
+    .sort((a, b) => new Date(a.horarioCheckin) - new Date(b.horarioCheckin));
+
+const montarPresencaPorPalestra = (palestras) => palestras.map((palestra) => {
+    const inscricoesAtivas = (palestra.inscricoes || []).filter((inscricao) => inscricao.status !== "CANCELADA");
+    const presentes = inscricoesAtivas.filter((inscricao) => inscricao.status === "CONFIRMADA").length;
+    const total = inscricoesAtivas.length;
+
+    return {
+        id: palestra.id,
+        titulo: palestra.titulo || "Palestra",
+        inscritos: total,
+        presentes,
+        taxa: total > 0 ? Math.round((presentes / total) * 100) : 0
+    };
+});
 
 const formatarPatrocinadorLabel = (patrocinador) => (
     patrocinador?.nomeFantasia ||
@@ -56,6 +127,7 @@ const formatarCategoriaLabel = (categoria) => (
 
 const EventoDetalhe = () => {
     const { idEvento } = useParams();
+    const navigate = useNavigate();
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const dbKEY = import.meta.env.VITE_DB_API_KEY;
 
@@ -76,6 +148,7 @@ const EventoDetalhe = () => {
     const [eventData, setEventData] = useState(null);
     const [patrocinadoresDisponiveis, setPatrocinadoresDisponiveis] = useState([]);
     const [assinantesDisponiveis, setAssinantesDisponiveis] = useState([]);
+    const [assinantesDetalhados, setAssinantesDetalhados] = useState([]);
     const [categoriasDisponiveis, setCategoriasDisponiveis] = useState([]);
     const [palestrasDoEvento, setPalestrasDoEvento] = useState([]);
 
@@ -117,6 +190,21 @@ const EventoDetalhe = () => {
                 setEventData(evento);
                 setPatrocinadoresDisponiveis(patrocinadores);
                 setAssinantesDisponiveis(assinantes);
+                if ((evento.assinanteIds || []).length > 0) {
+                    const detalhesAssinantes = await Promise.all(
+                        evento.assinanteIds.map(async (assinanteId) => {
+                            try {
+                                const assinanteRes = await api.get(`/assinantes/${assinanteId}`);
+                                return assinanteRes.data;
+                            } catch {
+                                return null;
+                            }
+                        })
+                    );
+                    setAssinantesDetalhados(detalhesAssinantes.filter(Boolean));
+                } else {
+                    setAssinantesDetalhados([]);
+                }
                 setCategoriasDisponiveis(categoriasRes.data);
                 const palestrasVinculadas = palestrasRes.data.filter((palestra) => String(palestra.eventoId) === String(idEvento));
                 const palestrasComInscricoes = await Promise.all(palestrasVinculadas.map(async (palestra) => {
@@ -155,13 +243,22 @@ const EventoDetalhe = () => {
     const categoriaNome = eventData?.categoria || formatarCategoriaLabel(categoriaEvento);
     const operationalStatus = getActivityStatus(eventData, "evento");
     const hasPalestras = palestrasDoEvento.length > 0;
-    const hasCheckinsOrCertificates = palestrasDoEvento.some((palestra) => (
-        palestra.status === "CERTIFICADOS_EMITIDOS" ||
+    const hasCheckins = palestrasDoEvento.some((palestra) => (
         (palestra.inscricoes || []).some((inscricao) => inscricao.status === "CONFIRMADA")
     ));
     const canDelete = !hasPalestras && !operationalStatus;
-    const canCancel = hasPalestras && !hasCheckinsOrCertificates && !operationalStatus;
-    const canArchive = hasPalestras && hasCheckinsOrCertificates && !operationalStatus;
+    const canCancel = hasPalestras && !hasCheckins && !operationalStatus;
+    const canFinalize = hasPalestras && hasCheckins && !operationalStatus;
+    const canArchive = operationalStatus === "FINALIZADO";
+    const showDadosTab = operationalStatus === "FINALIZADO" || operationalStatus === "ARQUIVADO";
+    const inscricoesDoEvento = palestrasDoEvento.flatMap((palestra) => palestra.inscricoes || []);
+    const inscricoesAtivasDoEvento = inscricoesDoEvento.filter((inscricao) => inscricao.status !== "CANCELADA");
+    const totalInscritosEvento = inscricoesAtivasDoEvento.length;
+    const totalPresentesEvento = inscricoesAtivasDoEvento.filter((inscricao) => inscricao.status === "CONFIRMADA").length;
+    const taxaComparecimentoEvento = totalInscritosEvento > 0 ? Math.round((totalPresentesEvento / totalInscritosEvento) * 100) : 0;
+    const presencaPorPalestra = montarPresencaPorPalestra(palestrasDoEvento);
+    const picosCheckinEvento = calcularPicosCheckin(inscricoesAtivasDoEvento);
+    const checkinsComHorarioEvento = montarCheckinsComHorario(palestrasDoEvento);
 
     const houveAlteracao = useMemo(() => {
         if (!eventData) return false;
@@ -200,6 +297,21 @@ const EventoDetalhe = () => {
         try {
             const response = await api.put(`/eventos/${idEvento}`, payload);
             setEventData(response.data);
+            if ((response.data.assinanteIds || []).length > 0) {
+                const detalhesAssinantes = await Promise.all(
+                    response.data.assinanteIds.map(async (assinanteId) => {
+                        try {
+                            const assinanteRes = await api.get(`/assinantes/${assinanteId}`);
+                            return assinanteRes.data;
+                        } catch {
+                            return null;
+                        }
+                    })
+                );
+                setAssinantesDetalhados(detalhesAssinantes.filter(Boolean));
+            } else {
+                setAssinantesDetalhados([]);
+            }
             setForm({
                 titulo: response.data.titulo || "",
                 descricao: response.data.descricao || "",
@@ -232,21 +344,42 @@ const EventoDetalhe = () => {
         }
     };
 
-    const updateOperationalStatus = (status) => {
-        setStoredActivityStatus("evento", idEvento, status);
-        palestrasDoEvento.forEach((palestra) => setStoredActivityStatus("palestra", palestra.id, status));
-        setEventData((current) => current ? { ...current, statusOperacional: status } : current);
-        setPalestrasDoEvento((current) => current.map((palestra) => ({ ...palestra, statusOperacional: status })));
-        toast.success(status === "CANCELADO" ? "Evento cancelado." : "Evento arquivado.");
+    const updateOperationalStatus = async (status) => {
+        try {
+            const response = await api.patch(`/eventos/${idEvento}/status-operacional`, { statusOperacional: status });
+            setStoredActivityStatus("evento", idEvento, status);
+            if (status === "CANCELADO") {
+                palestrasDoEvento.forEach((palestra) => setStoredActivityStatus("palestra", palestra.id, "CANCELADO"));
+                setPalestrasDoEvento((current) => current.map((palestra) => ({ ...palestra, statusOperacional: "CANCELADO" })));
+            }
+            setEventData(response.data);
+            if (status === "FINALIZADO" || status === "ARQUIVADO") {
+                setActiveTab("dados");
+            }
+            const successMessages = {
+                CANCELADO: "Evento cancelado.",
+                FINALIZADO: "Evento finalizado.",
+                ARQUIVADO: "Evento arquivado.",
+            };
+            toast.success(successMessages[status] || "Status atualizado.");
+        } catch (err) {
+            console.error("Erro ao atualizar status operacional do evento:", err);
+            toast.error(err.response?.data?.message || err.response?.data?.erro || "Erro ao atualizar status do evento.");
+        }
     };
 
     const handleCancel = () => {
-        if (!window.confirm("Cancelar este evento? Esta ação é irreversível e bloqueará os QRs das palestras vinculadas.")) return;
+        if (!window.confirm("Cancelar este evento? Esta ação é irreversível e cancelará todas as palestras vinculadas.")) return;
         updateOperationalStatus("CANCELADO");
     };
 
+    const handleFinalize = () => {
+        if (!window.confirm("Finalizar este evento? Após a finalização, a opção de arquivamento ficará disponível.")) return;
+        updateOperationalStatus("FINALIZADO");
+    };
+
     const handleArchive = () => {
-        if (!window.confirm("Arquivar este evento? Esta ação é irreversível e bloqueará os QRs das palestras vinculadas.")) return;
+        if (!window.confirm("Arquivar este evento finalizado? Esta ação é irreversível e manterá os QRs bloqueados.")) return;
         updateOperationalStatus("ARQUIVADO");
     };
 
@@ -354,6 +487,16 @@ const EventoDetalhe = () => {
                                 Ações
                             </button>
                         )}
+                        {showDadosTab && (
+                            <button
+                                type="button"
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-secondary text-primary text-sm cursor-pointer ${activeTab === "dados" ? "bg-accent font-semibold" : "hover:bg-accent/30"}`}
+                                onClick={() => setActiveTab("dados")}
+                            >
+                                <UsersIcon size={20} />
+                                Dados
+                            </button>
+                        )}
                     </motion.div>
 
                     {activeTab === "detalhes" && (
@@ -371,8 +514,27 @@ const EventoDetalhe = () => {
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <EventoDetails eventData={eventData} patrocinadorNome={patrocinadorSelecionado?.label} categoriaNome={categoriaNome} palestrasCount={palestrasDoEvento.length} />
+                            <EventoDetails
+                                eventData={eventData}
+                                patrocinadorNome={patrocinadorSelecionado?.label}
+                                categoriaNome={categoriaNome}
+                                palestrasCount={palestrasDoEvento.length}
+                                assinantesDisponiveis={assinantesDisponiveis}
+                                assinantesDetalhados={assinantesDetalhados}
+                                onAssinanteClick={(assinanteId) => navigate(`/assinante/${assinanteId}`)}
+                            />
                         )
+                    )}
+
+                    {activeTab === "dados" && showDadosTab && (
+                        <EventoDataTab
+                            totalInscritos={totalInscritosEvento}
+                            totalPresentes={totalPresentesEvento}
+                            taxaComparecimento={taxaComparecimentoEvento}
+                            presencaPorPalestra={presencaPorPalestra}
+                            picosCheckin={picosCheckinEvento}
+                            checkinsComHorario={checkinsComHorarioEvento}
+                        />
                     )}
 
                     {activeTab === "acoes" && (
@@ -404,16 +566,25 @@ const EventoDetalhe = () => {
                                     onClick={handleCancel}
                                 />
                             )}
+                            {canFinalize && (
+                                <ActionCard
+                                    icon={<CheckCircleIcon size={44} />}
+                                    title="Finalizar evento"
+                                    description="Marca o evento como finalizado. Depois disso, o arquivamento ficará disponível."
+                                    buttonLabel="Finalizar evento"
+                                    onClick={handleFinalize}
+                                />
+                            )}
                             {canArchive && (
                                 <ActionCard
                                     icon={<ArchiveIcon size={44} />}
                                     title="Arquivar evento"
-                                    description="Eventos com check-ins ou certificados não podem ser cancelados."
+                                    description="Arquiva um evento já finalizado. Esta ação é irreversível."
                                     buttonLabel="Arquivar evento"
                                     onClick={handleArchive}
                                 />
                             )}
-                            {operationalStatus && (
+                            {operationalStatus && operationalStatus !== "FINALIZADO" && (
                                 <ActionCard
                                     disabled
                                     icon={operationalStatus === "ARQUIVADO" ? <ArchiveIcon size={44} /> : <XIcon size={44} />}
@@ -541,8 +712,13 @@ const EventoEditForm = ({ form, updateForm, api, setCategoriasDisponiveis, patro
     </motion.form>
 );
 
-const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome, palestrasCount }) => {
+const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome, palestrasCount, assinantesDisponiveis, assinantesDetalhados, onAssinanteClick }) => {
     const operationalStatus = getActivityStatus(eventData, "evento");
+    const assinantesDoEvento = assinantesDetalhados.length > 0
+        ? assinantesDetalhados
+        : assinantesDisponiveis
+            .filter((assinante) => (eventData?.assinanteIds || []).includes(assinante.value))
+            .map((assinante) => ({ id: assinante.value, nome: assinante.label }));
 
     return (
     <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-5">
@@ -575,6 +751,37 @@ const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome, palestrasCo
                 <DetailCard icon={<HandshakeIcon size={24} />} label="Patrocinador" value={patrocinadorNome || eventData?.patrocinadorNome} />
                 <DetailCard icon={<ImageSquareIcon size={24} />} label="Banner" value={eventData?.banner} />
             </div>
+            <div className="flex flex-col gap-2">
+                <span className="text-xs font-secondary text-primary/50 uppercase">Assinantes</span>
+                <div className="grid grid-cols-1 gap-2">
+                    {assinantesDoEvento.length > 0 ? (
+                        assinantesDoEvento.map((assinante) => (
+                            <button
+                                key={assinante.id}
+                                type="button"
+                                onClick={() => onAssinanteClick(assinante.id)}
+                                className="text-left rounded-2xl bg-accent/20 hover:bg-accent/30 border border-accent/10 p-4 flex flex-col gap-3 transition-colors cursor-pointer"
+                            >
+                                <div className="min-w-0">
+                                    <p className="font-primary font-bold text-primary truncate">{assinante.nome}</p>
+                                    {assinante.cargo && <p className="text-xs font-secondary text-primary/50 truncate">{assinante.cargo}</p>}
+                                </div>
+                                {assinante.assinatura ? (
+                                    <img
+                                        src={`data:image/png;base64,${assinante.assinatura}`}
+                                        alt={`Assinatura de ${assinante.nome}`}
+                                        className="max-h-20 max-w-full object-contain rounded-xl bg-white p-3 self-start"
+                                    />
+                                ) : (
+                                    <span className="text-xs font-secondary text-primary/40">Assinatura indisponível na listagem.</span>
+                                )}
+                            </button>
+                        ))
+                    ) : (
+                        <span className="text-sm font-secondary text-primary/45 bg-accent/20 rounded-2xl p-4 w-full">Nenhum assinante vinculado.</span>
+                    )}
+                </div>
+            </div>
             {eventData?.banner && (
                 <div className="overflow-hidden rounded-2xl border border-accent/15 bg-accent/20">
                     <img
@@ -588,6 +795,114 @@ const EventoDetails = ({ eventData, patrocinadorNome, categoriaNome, palestrasCo
     </motion.div>
     );
 };
+
+const EventoDataTab = ({ totalInscritos, totalPresentes, taxaComparecimento, presencaPorPalestra, picosCheckin, checkinsComHorario }) => (
+    <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-5">
+        <div className="flex flex-col gap-5">
+            <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5">
+                <SectionTitle title="Comparecimento geral" />
+                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-1 gap-4">
+                    <DataMetric icon={<UsersIcon size={24} />} label="Total de inscritos" value={totalInscritos} />
+                    <DataMetric icon={<CheckCircleIcon size={24} />} label="Total de presentes" value={totalPresentes} />
+                    <DataMetric icon={<ClockIcon size={24} />} label="Taxa de comparecimento" value={`${taxaComparecimento}%`} />
+                </div>
+                <div className="w-full h-3 rounded-full bg-accent/20 overflow-hidden">
+                    <div className="h-full bg-accent transition-all" style={{ width: `${Math.min(taxaComparecimento, 100)}%` }} />
+                </div>
+                <p className="text-sm font-secondary text-primary/55">
+                    {totalPresentes} de {totalInscritos} inscrição(ões) confirmaram presença nas palestras do evento.
+                </p>
+            </div>
+
+            <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5">
+                <SectionTitle title="Presença por palestra" />
+                {presencaPorPalestra.length > 0 ? (
+                    <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
+                        {presencaPorPalestra.map((palestra) => (
+                            <div key={palestra.id} className="bg-accent/15 rounded-2xl p-4 border border-accent/10">
+                                <div className="flex items-start justify-between gap-3 mb-3">
+                                    <div className="min-w-0">
+                                        <p className="font-primary font-bold text-primary truncate">{palestra.titulo}</p>
+                                        <p className="text-xs font-secondary text-primary/55">{palestra.presentes} de {palestra.inscritos} presente(s)</p>
+                                    </div>
+                                    <span className="text-sm font-secondary font-semibold text-primary whitespace-nowrap">{palestra.taxa}%</span>
+                                </div>
+                                <div className="h-2 rounded-full bg-base-100/65 overflow-hidden">
+                                    <div className="h-full bg-accent" style={{ width: `${Math.min(palestra.taxa, 100)}%` }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-accent/15 rounded-2xl p-5 border border-dashed border-accent/25 text-sm font-secondary text-primary/55">
+                        Nenhuma palestra vinculada a este evento.
+                    </div>
+                )}
+            </div>
+        </div>
+
+        <div className="bg-accent/10 border border-accent/15 rounded-3xl p-7 flex flex-col gap-5">
+            <SectionTitle title="Horários de pico de check-in" />
+            {picosCheckin.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                    {picosCheckin.slice(0, 6).map((pico, index) => {
+                        const max = picosCheckin[0]?.count || 1;
+                        const width = Math.max((pico.count / max) * 100, 8);
+
+                        return (
+                            <div key={pico.label} className="bg-accent/15 rounded-2xl p-4 border border-accent/10">
+                                <div className="flex items-center justify-between gap-3 mb-2">
+                                    <span className="font-primary font-bold text-primary">{index + 1}. {pico.label}</span>
+                                    <span className="text-sm font-secondary text-primary/60">{pico.count} check-in(s)</span>
+                                </div>
+                                <div className="h-2 rounded-full bg-base-100/65 overflow-hidden">
+                                    <div className="h-full bg-accent" style={{ width: `${width}%` }} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="bg-accent/15 rounded-2xl p-5 border border-dashed border-accent/25 text-sm font-secondary text-primary/55">
+                    Nenhum horário de check-in foi encontrado para as palestras deste evento.
+                </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+                <h3 className="text-base font-primary font-bold text-primary">Check-ins registrados</h3>
+                {checkinsComHorario.length > 0 ? (
+                    <div className="max-h-80 overflow-y-auto pr-1 flex flex-col gap-2">
+                        {checkinsComHorario.map((checkin) => (
+                            <div key={`${checkin.palestraId}-${checkin.id}`} className="bg-accent/15 rounded-2xl p-4 border border-accent/10 flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                    <p className="font-primary font-bold text-primary truncate">{checkin.participanteNome || "Participante"}</p>
+                                    <p className="text-xs font-secondary text-primary/55 truncate">{checkin.palestraTitulo}</p>
+                                </div>
+                                <span className="text-sm font-secondary font-semibold text-primary whitespace-nowrap">
+                                    {formatarDataHora(checkin.horarioCheckin)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-accent/15 rounded-2xl p-5 border border-dashed border-accent/25 text-sm font-secondary text-primary/55">
+                        Nenhum check-in com horário registrado.
+                    </div>
+                )}
+            </div>
+        </div>
+    </motion.div>
+);
+
+const DataMetric = ({ icon, label, value }) => (
+    <div className="bg-accent/20 rounded-2xl p-5 flex items-center gap-4 min-h-24">
+        <div className="w-11 h-11 rounded-xl bg-accent/40 flex items-center justify-center text-primary shrink-0">{icon}</div>
+        <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-xs font-secondary text-primary/50 uppercase">{label}</span>
+            <span className="text-3xl font-primary font-bold text-primary">{value}</span>
+        </div>
+    </div>
+);
 
 const Field = ({ label, optional, className = "", children }) => (
     <div className={`flex flex-col gap-2 ${className}`}>

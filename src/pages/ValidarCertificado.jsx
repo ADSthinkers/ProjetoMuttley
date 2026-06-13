@@ -10,6 +10,7 @@ import {
     CalendarBlankIcon,
     ClockIcon,
     BookOpenIcon,
+    MicrophoneStageIcon,
     FingerprintIcon,
     CircleNotchIcon
 } from "@phosphor-icons/react";
@@ -43,11 +44,14 @@ const formatCertificadoDate = (value) => {
     return date ? date.toLocaleDateString("pt-BR") : "-";
 };
 
+const normalizarNome = (value) => (value || "").trim().toLocaleLowerCase("pt-BR");
+
 const ValidarCertificado = () => {
     const { codigo } = useParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [certificado, setCertificado] = useState(null);
+    const [tipoCertificado, setTipoCertificado] = useState("PARTICIPACAO");
 
     const dbURL = import.meta.env.VITE_DB_API_URL;
     const dbKEY = import.meta.env.VITE_DB_API_KEY;
@@ -65,9 +69,16 @@ const ValidarCertificado = () => {
         const fetchCertificado = async () => {
             if (!codigo) return;
             try {
-                // We'll use the API endpoint that validates by code
-                const response = await api.get(`/certificados/validar/${codigo}`);
-                setCertificado(response.data);
+                const [certificadoRes, palestrantesRes] = await Promise.all([
+                    api.get(`/certificados/validar/${codigo}`),
+                    api.get("/palestrantes").catch(() => ({ data: [] }))
+                ]);
+                const certificadoData = certificadoRes.data;
+                const titular = normalizarNome(certificadoData?.participanteNome);
+                const isPalestrante = palestrantesRes.data.some((palestrante) => normalizarNome(palestrante.nome) === titular);
+
+                setCertificado(certificadoData);
+                setTipoCertificado(certificadoData?.tipo || (isPalestrante ? "APRESENTACAO" : "PARTICIPACAO"));
             } catch (err) {
                 console.error("Erro ao validar certificado:", err);
                 setError("Certificado não encontrado ou código inválido.");
@@ -102,6 +113,14 @@ const ValidarCertificado = () => {
             toast.error("Não foi possível baixar o certificado.");
         }
     };
+
+    const isApresentacao = tipoCertificado === "APRESENTACAO";
+    const certificadoTitulo = isApresentacao ? "Certificado de Apresentação Válido" : "Certificado de Participação Válido";
+    const titularLabel = isApresentacao ? "Palestrante" : "Participante";
+    const tipoLabel = isApresentacao ? "Apresentação" : "Participação";
+    const tipoDescription = isApresentacao
+        ? "Este documento comprova a atuação como palestrante nesta atividade."
+        : "Este documento comprova a participação confirmada nesta atividade.";
 
     if (loading) {
         return (
@@ -170,11 +189,11 @@ const ValidarCertificado = () => {
                                 
                                 <div className="flex flex-col gap-2 z-10">
                                     <div className="badge badge-accent font-secondary font-bold uppercase tracking-widest text-[10px] py-3 px-4">
-                                        Autêntico
+                                        {tipoLabel}
                                     </div>
-                                    <h1 className="text-4xl font-primary text-primary font-bold mt-2">Certificado Válido</h1>
+                                    <h1 className="text-4xl font-primary text-primary font-bold mt-2">{certificadoTitulo}</h1>
                                     <p className="font-secondary text-primary/60">
-                                        Este documento foi emitido oficialmente pelo sistema Muttley.
+                                        {tipoDescription}
                                     </p>
                                 </div>
                             </motion.div>
@@ -185,8 +204,8 @@ const ValidarCertificado = () => {
                                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
                             >
                                 <InfoBlock 
-                                    icon={<IdentificationCardIcon size={24} />} 
-                                    label="Participante" 
+                                    icon={isApresentacao ? <MicrophoneStageIcon size={24} /> : <IdentificationCardIcon size={24} />} 
+                                    label={titularLabel}
                                     value={certificado?.participanteNome || "-"} 
                                 />
                                 <InfoBlock 

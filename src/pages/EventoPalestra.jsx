@@ -17,9 +17,19 @@ const tiposFiltro = [
 const situacoesFiltro = [
     { value: "todos", label: "Todas" },
     { value: "ativos", label: "Ativos" },
+    { value: "FINALIZADO", label: "Finalizados" },
     { value: "CANCELADO", label: "Cancelados" },
     { value: "ARQUIVADO", label: "Arquivados" }
 ];
+
+const parseLocalDate = (value) => {
+    if (!value) return null;
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(year, month - 1, day);
+    }
+    return new Date(value);
+};
 
 const EventoPalestra = () => {
     const dbURL = import.meta.env.VITE_DB_API_URL;
@@ -53,8 +63,8 @@ const EventoPalestra = () => {
                 const eventos = eventosRes.data.map(e => ({
                     ...e,
                     tipo: "Evento",
-                    inicio: new Date(e.dataInicio),
-                    fim: e.dataFim ? new Date(e.dataFim) : null,
+                    inicio: parseLocalDate(e.dataInicio),
+                    fim: e.dataFim ? parseLocalDate(e.dataFim) : null,
                     descricao: e.descricao || e.categoria || "Evento cadastrado",
                     link: `/evento/${e.id}`
                 }));
@@ -178,7 +188,7 @@ const EventoPalestra = () => {
                                     options={tiposFiltro}
                                 />
                                 <FilterSelect
-                                    label="Status da palestra"
+                                    label="Status"
                                     icon={<ClockIcon size={16} />}
                                     value={filtros.statusPalestra}
                                     onChange={(value) => setFiltros((current) => ({ ...current, statusPalestra: value }))}

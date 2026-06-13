@@ -55,7 +55,12 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
                     patrocinadoresResponse.data.map(p => ({ value: p.id, label: formatPatrocinadorLabel(p) }))
                 );
                 setAssinantesDisponiveis(
-                    assinantesResponse.data.map(a => ({ value: a.id, label: `${a.nome} - ${a.cargo}` }))
+                    assinantesResponse.data.map(a => ({
+                        value: a.id,
+                        label: `${a.nome} - ${a.cargo}`,
+                        nome: a.nome,
+                        cargo: a.cargo
+                    }))
                 );
             } catch (error) {
                 console.error("Erro ao buscar opções do evento:", error);
@@ -69,6 +74,13 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (assinanteIds.length === 0) return;
+        const assinantesSelecionados = assinantesDisponiveis
+            .filter((assinante) => assinanteIds.includes(assinante.value))
+            .map((assinante) => ({
+                id: assinante.value,
+                nome: assinante.nome || assinante.label,
+                cargo: assinante.cargo
+            }));
 
         setObjeto({
             titulo,
@@ -79,7 +91,8 @@ const EventoForm = ({ setObjeto, setEtapa, objeto }) => {
             modalidade: modalidade || null,
             banner,
             patrocinadorId: patrocinadorId || null,
-            assinanteIds
+            assinanteIds,
+            assinantesSelecionados
         });
         setEtapa(3);
     };
