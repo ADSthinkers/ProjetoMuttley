@@ -101,7 +101,6 @@ public class ParticipanteApiController {
                 .map(m -> new MedalhaListagem(
                         m.getId(), m.getTipo(), m.getNome(),
                         m.getParticipante() != null ? m.getParticipante().getNome() : null,
-                        m.getPalestra() != null ? m.getPalestra().getTitulo() : null,
                         m.getDataConquista(),
                         m.getCompetencias() != null
                                 ? m.getCompetencias().stream().map(c -> c.getNome()).toList()

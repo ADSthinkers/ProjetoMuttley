@@ -11,7 +11,6 @@ public record MedalhaDTO(
     String nome,
     String descricao,
     @NotNull(message = "Participante é obrigatório") Long participanteId,
-    Long palestraId,
     LocalDate dataConquista,
     List<Long> competenciaIds,
     Long competenciaId,

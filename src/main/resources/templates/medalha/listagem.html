@@ -167,7 +167,6 @@
                         <th>Tipo</th>
                         <th>Nome</th>
                         <th>Participante</th>
-                        <th>Palestra</th>
                         <th>Competências</th>
                         <th>Data Conquista</th>
                         <th>Ações</th>
@@ -180,7 +179,6 @@
                         </td>
                         <td th:text="${m.nome}" style="font-weight: 500;"></td>
                         <td th:text="${m.participanteNome}"></td>
-                        <td th:text="${m.palestraTitulo}"></td>
                         <td>
                             <span th:if="${m.competenciasNomes != null and !m.competenciasNomes.isEmpty()}"
                                   th:each="comp, stat : ${m.competenciasNomes}">

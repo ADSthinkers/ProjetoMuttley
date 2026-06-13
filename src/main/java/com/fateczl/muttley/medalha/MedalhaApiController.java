@@ -52,7 +52,7 @@ public class MedalhaApiController {
     @PutMapping("/{id}")
     public ResponseEntity<MedalhaDTO> atualizar(@PathVariable Long id, @RequestBody @Valid MedalhaDTO dto) {
         MedalhaDTO dtoComId = new MedalhaDTO(id, dto.tipo(), dto.nome(), dto.descricao(),
-                dto.participanteId(), dto.palestraId(), dto.dataConquista(), dto.competenciaIds(),
+                dto.participanteId(), dto.dataConquista(), dto.competenciaIds(),
                 dto.competenciaId(), dto.xpId(), dto.nivelAlcancado());
         return ResponseEntity.ok(toDto(service.salvarOuAtualizar(dtoComId)));
     }
@@ -62,7 +62,6 @@ public class MedalhaApiController {
         return new MedalhaListagem(
                 m.getId(), m.getTipo(), m.getNome(),
                 m.getParticipante() != null ? m.getParticipante().getNome() : null,
-                m.getPalestra() != null ? m.getPalestra().getTitulo() : null,
                 m.getDataConquista(),
                 m.getCompetencias() != null
                         ? m.getCompetencias().stream().map(c -> c.getNome()).toList()
@@ -76,7 +75,6 @@ public class MedalhaApiController {
         return new MedalhaDTO(
                 m.getId(), m.getTipo(), m.getNome(), m.getDescricao(),
                 m.getParticipante() != null ? m.getParticipante().getId() : null,
-                m.getPalestra() != null ? m.getPalestra().getId() : null,
                 m.getDataConquista(),
                 m.getCompetencias() != null
                         ? m.getCompetencias().stream().map(c -> c.getId()).toList()

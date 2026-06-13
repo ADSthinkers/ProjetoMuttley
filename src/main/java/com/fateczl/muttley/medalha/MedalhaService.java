@@ -2,10 +2,6 @@ package com.fateczl.muttley.medalha;
 
 import com.fateczl.muttley.competencia.Competencia;
 import com.fateczl.muttley.competencia.CompetenciaRepository;
-import com.fateczl.muttley.palestra.Palestra;
-import com.fateczl.muttley.palestra.PalestraRepository;
-import com.fateczl.muttley.palestrante.Palestrante;
-import com.fateczl.muttley.palestrante.PalestranteRepository;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.participante.ParticipanteRepository;
 import com.fateczl.muttley.xp.Xp;
@@ -26,21 +22,15 @@ public class MedalhaService {
 
     private final MedalhaRepository repository;
     private final ParticipanteRepository participanteRepository;
-    private final PalestranteRepository palestranteRepository;
-    private final PalestraRepository palestraRepository;
     private final CompetenciaRepository competenciaRepository;
     private final XpRepository xpRepository;
 
     public MedalhaService(MedalhaRepository repository,
                            ParticipanteRepository participanteRepository,
-                           PalestranteRepository palestranteRepository,
-                           PalestraRepository palestraRepository,
                            CompetenciaRepository competenciaRepository,
                            XpRepository xpRepository) {
         this.repository = repository;
         this.participanteRepository = participanteRepository;
-        this.palestranteRepository = palestranteRepository;
-        this.palestraRepository = palestraRepository;
         this.competenciaRepository = competenciaRepository;
         this.xpRepository = xpRepository;
     }
@@ -50,10 +40,6 @@ public class MedalhaService {
     public Medalha salvarOuAtualizar(MedalhaDTO dto) {
         Participante participante = participanteRepository.findById(dto.participanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Participante não encontrado"));
-        Palestra palestra = dto.palestraId() != null
-                ? palestraRepository.findById(dto.palestraId())
-                    .orElseThrow(() -> new EntityNotFoundException("Palestra não encontrada"))
-                : null;
         Competencia competencia = resolverCompetencia(dto);
         Xp xp = dto.xpId() != null
                 ? xpRepository.findById(dto.xpId())
@@ -70,7 +56,6 @@ public class MedalhaService {
             existente.setNome(dto.nome());
             existente.setDescricao(dto.descricao());
             existente.setParticipante(participante);
-            existente.setPalestra(palestra);
             existente.setCompetencia(competencia);
             existente.setXp(xp);
             existente.setNivelAlcancado(dto.nivelAlcancado());
@@ -83,7 +68,6 @@ public class MedalhaService {
             nova.setNome(dto.nome());
             nova.setDescricao(dto.descricao());
             nova.setParticipante(participante);
-            nova.setPalestra(palestra);
             nova.setCompetencia(competencia);
             nova.setXp(xp);
             nova.setNivelAlcancado(dto.nivelAlcancado());
@@ -99,7 +83,6 @@ public class MedalhaService {
         List<Medalha> medalhas = repository.findAll();
         medalhas.forEach(m -> {
             if (m.getParticipante() != null) m.getParticipante().getNome();
-            if (m.getPalestra() != null) m.getPalestra().getTitulo();
             if (m.getCompetencia() != null) m.getCompetencia().getNome();
             if (m.getCompetencias() != null) m.getCompetencias().size();
         });
@@ -120,16 +103,6 @@ public class MedalhaService {
             if (m.getCompetencias() != null) m.getCompetencias().size();
         });
         return medalhas;
-    }
-
-    // mantido por compatibilidade: medalhas agora são emitidas apenas por evolução de competência
-    public void concederSeNaoExistir(Long participanteId, Palestra palestra) {
-        return;
-    }
-
-    // mantido por compatibilidade: medalhas agora são emitidas apenas por evolução de competência
-    public void concederPalestranteSeNaoExistir(Long palestranteId, Palestra palestra) {
-        return;
     }
 
     public void concederEvolucaoCompetenciaSeNaoExistir(Participante participante, Competencia competencia,

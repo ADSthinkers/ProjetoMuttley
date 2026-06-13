@@ -8,7 +8,6 @@ public record MedalhaListagem(
     TipoMedalha tipo,
     String nome,
     String participanteNome,
-    String palestraTitulo,
     LocalDate dataConquista,
     List<String> competenciasNomes,
     String competenciaNome,

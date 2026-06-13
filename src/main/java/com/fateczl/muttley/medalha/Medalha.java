@@ -1,8 +1,6 @@
 package com.fateczl.muttley.medalha;
 
 import com.fateczl.muttley.competencia.Competencia;
-import com.fateczl.muttley.palestra.Palestra;
-import com.fateczl.muttley.palestrante.Palestrante;
 import com.fateczl.muttley.participante.Participante;
 import com.fateczl.muttley.xp.Xp;
 
@@ -35,14 +33,6 @@ public class Medalha {
     @ManyToOne
     @JoinColumn(name = "participante_id")
     private Participante participante;
-
-    @ManyToOne
-    @JoinColumn(name = "palestrante_id")
-    private Palestrante palestrante;
-
-    @ManyToOne
-    @JoinColumn(name = "palestra_id")
-    private Palestra palestra;
 
     @ManyToOne
     @JoinColumn(name = "competencia_id")

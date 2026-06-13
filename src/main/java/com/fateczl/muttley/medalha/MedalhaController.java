@@ -1,7 +1,6 @@
 package com.fateczl.muttley.medalha;
 
 import com.fateczl.muttley.competencia.CompetenciaService;
-import com.fateczl.muttley.palestra.PalestraRepository;
 import com.fateczl.muttley.participante.ParticipanteRepository;
 
 import org.springframework.stereotype.Controller;
@@ -18,16 +17,13 @@ public class MedalhaController {
 
     private final MedalhaService service;
     private final ParticipanteRepository participanteRepository;
-    private final PalestraRepository palestraRepository;
     private final CompetenciaService competenciaService;
 
     public MedalhaController(MedalhaService service,
                               ParticipanteRepository participanteRepository,
-                              PalestraRepository palestraRepository,
                               CompetenciaService competenciaService) {
         this.service = service;
         this.participanteRepository = participanteRepository;
-        this.palestraRepository = palestraRepository;
         this.competenciaService = competenciaService;
     }
 
@@ -38,7 +34,6 @@ public class MedalhaController {
                 .map(m -> new MedalhaListagem(
                         m.getId(), m.getTipo(), m.getNome(),
                         m.getParticipante() != null ? m.getParticipante().getNome() : "-",
-                        m.getPalestra() != null ? m.getPalestra().getTitulo() : "-",
                         m.getDataConquista(),
                         m.getCompetencias() != null
                                 ? m.getCompetencias().stream().map(c -> c.getNome()).toList()
@@ -50,14 +45,13 @@ public class MedalhaController {
         return "medalha/listagem";
     }
 
-    // exibe o formulário de cadastro de nova medalha com as opções de participantes e palestras
+    // exibe o formulário de cadastro de nova medalha com as opções de participantes e competências
     @GetMapping("/formulario")
     public String exibirFormulario(Model model) {
-        model.addAttribute("medalhaDTO", new MedalhaDTO(null, null, "", "", null, null, null, null,
+        model.addAttribute("medalhaDTO", new MedalhaDTO(null, null, "", "", null, null, null,
                 null, null, null));
         model.addAttribute("tipos", TipoMedalha.values());
         model.addAttribute("participantes", participanteRepository.findAll());
-        model.addAttribute("palestras", palestraRepository.findAll());
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
         return "medalha/formulario";
     }
@@ -68,7 +62,6 @@ public class MedalhaController {
         service.buscarPorId(id).ifPresent(m -> {
             MedalhaDTO dto = new MedalhaDTO(m.getId(), m.getTipo(), m.getNome(), m.getDescricao(),
                     m.getParticipante() != null ? m.getParticipante().getId() : null,
-                    m.getPalestra() != null ? m.getPalestra().getId() : null,
                     m.getDataConquista(),
                     m.getCompetencias() != null ? m.getCompetencias().stream().map(c -> c.getId()).toList() : null,
                     m.getCompetencia() != null ? m.getCompetencia().getId() : null,
@@ -79,7 +72,6 @@ public class MedalhaController {
         if (!model.containsAttribute("medalhaDTO")) return "redirect:/medalha";
         model.addAttribute("tipos", TipoMedalha.values());
         model.addAttribute("participantes", participanteRepository.findAll());
-        model.addAttribute("palestras", palestraRepository.findAll());
         model.addAttribute("competencias", competenciaService.findAllCompetencias());
         return "medalha/formulario";
     }
